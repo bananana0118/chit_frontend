@@ -8,6 +8,12 @@ export default {
   ],
   theme: {
     extend: {
+      width: {
+        'fixed-screen': '360px',
+      },
+      height: {
+        'fixed-screen': '600px',
+      },
       colors: {
         primary: '#38C958',
         secondary: '#9568FF',
