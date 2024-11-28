@@ -21,7 +21,7 @@ jobs:
           API_TOKEN_GITHUB: ${{ secrets.YJ_GITHUB_KEY }}
         with:
           source-directory: 'output'
-          destination-github-username: YeaJeong
+          destination-github-username: bananana0118
           destination-repository-name: chit_frontend
           user-email: ${{ secrets.YJ_ACCOUNT_EMAIL }}
           commit-message: ${{ github.event.commits[0].message }}
