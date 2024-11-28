@@ -1,4 +1,4 @@
-import type { Config } from 'tailwindcss'
+import type { Config } from 'tailwindcss';
 
 export default {
   content: [
@@ -34,7 +34,8 @@ export default {
         'bold-middle': ['18px', { lineHeight: '1.5', fontWeight: '700' }],
         'bold-small': ['14px', { lineHeight: '1.5', fontWeight: '700' }],
         'semi-bold': ['10px', { lineHeight: '1.5', fontWeight: '600' }],
-        medium: ['13px', { lineHeight: '1.5', fontWeight: '500' }],
+        medium: ['12px', { lineHeight: '1.5', fontWeight: '500' }],
+        'medium-large': ['14px', { lineHeight: '1.5', fontWeight: '500' }],
       },
     },
   },
@@ -43,18 +44,18 @@ export default {
       addUtilities,
       theme,
     }: {
-      addUtilities: (utilities: Record<string, Record<string, string>>) => void
-      theme: (path: string) => unknown
+      addUtilities: (utilities: Record<string, Record<string, string>>) => void;
+      theme: (path: string) => unknown;
     }) {
-      const textColors = theme('colors.textColors') as Record<string, string>
+      const textColors = theme('colors.textColors') as Record<string, string>;
       const textColorUtilities = Object.entries(textColors).reduce<
         Record<string, Record<string, string>>
       >((acc, [key, value]) => {
-        acc[`.text-${key}`] = { color: value } // 명확한 타입 지정
-        return acc
-      }, {})
+        acc[`.text-${key}`] = { color: value }; // 명확한 타입 지정
+        return acc;
+      }, {});
 
-      addUtilities({ ...textColorUtilities })
+      addUtilities({ ...textColorUtilities });
     },
   ],
-} satisfies Config
+} satisfies Config;
