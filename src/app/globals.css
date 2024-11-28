@@ -23,3 +23,9 @@ body {
   background: var(--background);
   font-family: var(--font-pretendard);
 }
+
+@media (max-width: 320px) {
+  .button-container {
+    min-width: 280px; /* 창 너비가 320px 이하일 때 최소 너비 설정 */
+  }
+}
