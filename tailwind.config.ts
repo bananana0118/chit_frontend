@@ -14,13 +14,20 @@ export default {
       height: {
         'fixed-screen': '600px',
       },
+      borderWidth: {
+        '3': '3px', // 3px 테두리 추가
+      },
+      boxShadow: {
+        'inset-primary': '0 0 0 4px #38C958 inset', // 사용자 정의 inset box-shadow 추가
+        'inset-disable': '0 0 0 4px #A7A7A7 inset', // 사용자 정의 inset box-shadow 추가
+      },
       colors: {
         primary: '#38C958',
         secondary: '#9568FF',
         background: '#141517',
         'background-sub': '#F9F9F9',
         alert: '#FF6161',
-        disable: 'A7A7A7',
+        disable: '#A7A7A7',
         textColors: {
           main: '#FDFDFD',
           sub: '#0A0A0A',
