@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
+import PageLayout from './components/layout/PageLayout';
 
 const pretendard = localFont({
   src: './fonts/PretendardVariable.woff2',
@@ -22,9 +23,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${pretendard.variable}`}>
       <body
-        className={`${pretendard.variable} h-screen w-screen bg-background antialiased`}
+        className={`${pretendard.variable} h-screen w-screen cursor-default bg-background text-white antialiased`}
       >
-        {children}
+        <PageLayout>{children}</PageLayout>
       </body>
     </html>
   );
