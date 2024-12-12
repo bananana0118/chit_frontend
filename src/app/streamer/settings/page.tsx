@@ -19,7 +19,7 @@ export default function Home() {
       <section className="flex w-full flex-1 flex-col items-start">
         <div className="mb-8">
           <CategoryText isMiddle={true} category={DUMMY.category} />
-          <span className="text-medium-small mt-2 w-fit cursor-pointer border-b border-disable text-disable">
+          <span className="mt-2 w-fit cursor-pointer border-b border-disable text-medium-small text-disable">
             카테고리 정보 다시 불러오기
           </span>
         </div>
@@ -27,14 +27,14 @@ export default function Home() {
           <p className="pb-2">
             <span className="text-secondary">참여 코드</span>가 필요할까요?
           </p>
-          <div className="flex w-full flex-row items-center justify-start rounded-md bg-white p-3 text-medium-large">
+          <div className="flex w-full flex-row items-center justify-start rounded-md bg-white p-3 text-medium-large text-black">
             <input
-              className="flex-1"
+              className="flex-1 outline-none"
               type="password"
               name="password"
               placeholder="참여코드가 있다면 입력해주세요"
             />
-            <div className="relative bottom-0 right-0 top-0 cursor-pointer">
+            <div className="relative bottom-0 right-0 top-0 cursor-pointer pl-2">
               <Eyes></Eyes>
             </div>
           </div>
