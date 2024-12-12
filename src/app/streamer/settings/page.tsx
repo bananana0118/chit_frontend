@@ -13,7 +13,7 @@ const DUMMY_ON = {
 
 const DUMMY = DUMMY_ON;
 
-export default function Home() {
+export default function Settings() {
   return (
     <div className="flex w-full flex-1 flex-col items-center justify-center">
       <section className="flex w-full flex-1 flex-col items-start">

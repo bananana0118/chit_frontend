@@ -1,9 +1,9 @@
 import ChitLogo from './assets/logo/ChitLogo';
 import NaverLogo from './assets/logo/logo_naver.svg';
-import StreamerLayoutWithButton from './components/layout/StreamerLayoutWithButton';
+import StreamerLayout from './components/layout/StreamerLayout';
 export default function Home() {
   return (
-    <StreamerLayoutWithButton>
+    <StreamerLayout>
       <section className="flex w-full flex-1 flex-col items-center justify-center">
         <p className="mb-2 text-bold-middle text-white">
           더 쉽고 편한 시참 관리
@@ -16,6 +16,6 @@ export default function Home() {
           로그인하고 3초만에 시참 생성하기
         </div>
       </div>
-    </StreamerLayoutWithButton>
+    </StreamerLayout>
   );
 }

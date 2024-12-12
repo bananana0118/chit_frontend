@@ -1,6 +1,6 @@
 import Image from 'next/image';
-import StreamerLayoutWithButton from '../components/layout/StreamerLayoutWithButton';
 import ChitLogo from '../assets/logo/ChitLogo';
+import StreamerLayout from '../components/layout/StreamerLayout';
 
 export default function RootLayout({
   children,
@@ -8,7 +8,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <StreamerLayoutWithButton>
+    <StreamerLayout>
       <nav className="flex w-full flex-row items-center justify-between py-2">
         <ChitLogo width={44} height={22}></ChitLogo>
         <Image
@@ -19,6 +19,6 @@ export default function RootLayout({
         ></Image>
       </nav>
       {children}
-    </StreamerLayoutWithButton>
+    </StreamerLayout>
   );
 }
