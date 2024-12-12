@@ -1,6 +1,4 @@
 import Image from 'next/image';
-import ChitLogo from '../assets/logo/ChitLogo';
-import StreamerLayoutWithButton from '../components/layout/StreamerLayoutWithButton';
 import CategoryText from '../components/text/CategoryText';
 import StreamerTextLive from '../components/text/StreamerTextLive';
 import StreamerTextComment from '../components/text/StreamerTextComment';
@@ -26,16 +24,7 @@ const DUMMY = DUMMY_OFF;
 
 export default function Home() {
   return (
-    <StreamerLayoutWithButton>
-      <nav className="flex w-full flex-row items-center justify-between px-5 py-3">
-        <ChitLogo width={44} height={22}></ChitLogo>
-        <Image
-          src={'/profile.png'}
-          width={32}
-          height={32}
-          alt="profile"
-        ></Image>
-      </nav>
+    <div className="flex w-full flex-1 flex-col items-center justify-center">
       <section className="flex w-full flex-1 flex-col items-center justify-center">
         <div className="mb-10 flex flex-col items-center justify-center gap-2">
           <StreamerTextLive isLive={DUMMY.isLive}></StreamerTextLive>
@@ -64,6 +53,6 @@ export default function Home() {
       >
         <div className={`ml-3 text-medium-large`}>시참 등록 생성할래요</div>
       </div>
-    </StreamerLayoutWithButton>
+    </div>
   );
 }
