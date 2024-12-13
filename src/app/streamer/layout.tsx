@@ -9,7 +9,7 @@ export default function RootLayout({
 }>) {
   return (
     <StreamerLayout>
-      <nav className="flex w-full flex-row items-center justify-between py-2">
+      <nav className="mb-3 flex w-full flex-row items-center justify-between py-2">
         <ChitLogo width={44} height={22}></ChitLogo>
         <Image
           src={'/profile.png'}
