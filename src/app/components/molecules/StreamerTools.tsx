@@ -1,6 +1,6 @@
-import BtnCopyLink from '../atoms/BtnCopyLink';
-import BtnOnOffParticiation from '../atoms/BtnOnOffParticiation';
-import BtnSetting from '../atoms/BtnSetting';
+import BtnCopyLink from '../atoms/button/BtnCopyLink';
+import BtnOnOffParticiation from '../atoms/button/BtnOnOffParticiation';
+import BtnSetting from '../atoms/button/BtnSetting';
 
 //추후 데이터 넘기기
 

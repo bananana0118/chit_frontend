@@ -1,7 +1,7 @@
 import Eyes from '@/app/assets/icons/Eyes';
 import Minus from '@/app/assets/icons/Minus';
 import Plus from '@/app/assets/icons/Plus';
-import CategoryText from '@/app/components/text/CategoryText';
+import CategoryText from '@/app/components/atoms/text/CategoryText';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const DUMMY_ON = {

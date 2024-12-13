@@ -1,10 +1,10 @@
 import Image from 'next/image';
-import CategoryText from '../components/text/CategoryText';
-import StreamerTextLive from '../components/text/StreamerTextLive';
-import StreamerTextComment from '../components/text/StreamerTextComment';
-import Live from '../components/label/Live';
-import OFF from '../components/label/Off';
-import RefreshText from '../components/text/RefreshText';
+import CategoryText from '../components/atoms/text/CategoryText';
+import StreamerTextLive from '../components/atoms/text/StreamerTextLive';
+import StreamerTextComment from '../components/atoms/text/StreamerTextComment';
+import Live from '../components/atoms/label/Live';
+import OFF from '../components/atoms/label/Off';
+import RefreshText from '../components/atoms/text/RefreshText';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const DUMMY_ON = {
   isLive: 1,
