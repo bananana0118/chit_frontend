@@ -41,6 +41,7 @@ export default {
         'bold-middle': ['18px', { lineHeight: '1.5', fontWeight: '700' }],
         'bold-small': ['14px', { lineHeight: '1.5', fontWeight: '700' }],
         'semi-bold': ['10px', { lineHeight: '1.5', fontWeight: '600' }],
+        'medium-small': ['10px', { lineHeight: '1.5', fontWeight: '500' }],
         medium: ['12px', { lineHeight: '1.5', fontWeight: '500' }],
         'medium-large': ['14px', { lineHeight: '1.5', fontWeight: '500' }],
       },
