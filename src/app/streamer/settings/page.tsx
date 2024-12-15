@@ -19,7 +19,7 @@ export default function Settings() {
       <section className="flex w-full flex-1 flex-col items-start">
         <div className="mb-8">
           <CategoryText isMiddle={true} category={DUMMY.category} />
-          <span className="mt-2 w-fit cursor-pointer border-b border-disable text-medium-small text-disable">
+          <span className="w-fit cursor-pointer border-b border-disable text-medium-small text-disable">
             카테고리 정보 다시 불러오기
           </span>
         </div>

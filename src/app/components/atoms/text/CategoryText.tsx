@@ -8,7 +8,7 @@ type Props = {
 export default function CategoryText({ category, isMiddle }: Props) {
   return (
     <div
-      className={`flex flex-row items-center justify-center ${category ? 'text-primary' : 'text-disable'}`}
+      className={`flex flex-row items-center justify-center pb-2 ${category ? 'text-primary' : 'text-disable'}`}
     >
       <GameIcon width={20} height={18} aria-label="Game Icon"></GameIcon>
       <div className={`${isMiddle ? 'text-bold-middle' : 'text-bold-small'}`}>
