@@ -34,13 +34,11 @@ export default function Settings() {
               닉네임은 스트리머에게만 보여지며, 다른 목적으로 활용하지 않아요
             </HintText>
           </div>
-          <div className="mb-[6px] flex w-full flex-row items-center justify-start rounded-md bg-white p-3 text-medium-large text-black">
-            <Input
-              type="text"
-              name="gameNickname"
-              placeholder="여기에 게임닉네임을 입력해 주세요"
-            />
-          </div>
+          <Input
+            type="text"
+            name="gameNickname"
+            placeholder="여기에 게임닉네임을 입력해 주세요"
+          />
           <HintText>* 등록한 닉네임은 나중에 수정할 수 있어요</HintText>
         </div>
       </section>
