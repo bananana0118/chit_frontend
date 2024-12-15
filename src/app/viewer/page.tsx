@@ -1,17 +1,15 @@
 import Image from 'next/image';
-import CategoryText from '../components/atoms/text/CategoryText';
 import StreamerTextLive from '../components/atoms/text/StreamerTextLive';
-import StreamerTextComment from '../components/atoms/text/StreamerTextComment';
 import Live from '../components/atoms/label/Live';
 import OFF from '../components/atoms/label/Off';
-import RefreshText from '../components/atoms/text/RefreshText';
-import BtnWithChildren from '../components/atoms/button/BtnWithChildren';
+import BtnWithChildren from '@/app/components/atoms/button/BtnWithChildren';
+import ViewerPageLayout from '../components/layout/ViewerPageLayout';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const DUMMY_ON = {
   isLive: 1,
   name: '따효니',
   category: '월드오브 워크래프트 : 내부전쟁',
-  isCreate: 'true',
+  isCreate: true,
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -19,17 +17,39 @@ const DUMMY_OFF = {
   isLive: 0,
   name: '따효니',
   category: '',
-  isCreate: 'false',
+  isCreate: false,
 };
 const DUMMY = DUMMY_OFF;
 
 export default function Home() {
+  if (!DUMMY.isCreate) {
+    return (
+      <ViewerPageLayout>
+        <section className="flex w-full flex-1 flex-col items-center justify-center">
+          <div className="w-full">
+            <div className="mb-12 flex w-full flex-col items-center justify-center">
+              <p className="blcok text-bold-large">종료된 시참이에요</p>
+              <p>다음 시참을 기대해주세요 :)</p>
+            </div>
+            <div className="flex w-full flex-col items-center justify-center">
+              <p className="text-medium-small text-alert">
+                스트리머가 시참을 진행중이라면
+              </p>
+              <p className="text-medium-small text-alert">
+                시참 링크를 요청해보세요!
+              </p>
+            </div>
+          </div>
+        </section>
+      </ViewerPageLayout>
+    );
+  }
+
   return (
-    <div className="flex w-full flex-1 flex-col items-center justify-center">
+    <ViewerPageLayout>
       <section className="flex w-full flex-1 flex-col items-center justify-center">
         <div className="mb-10 flex flex-col items-center justify-center gap-2">
           <StreamerTextLive isLive={DUMMY.isLive}></StreamerTextLive>
-          <StreamerTextComment isLive={DUMMY.isLive}></StreamerTextComment>
         </div>
         <Image
           src={'/tempImage.png'}
@@ -43,13 +63,8 @@ export default function Home() {
           {DUMMY.isLive ? <Live /> : <OFF />}
           <div className="text-bold-large">{DUMMY.name}</div>
         </div>
-        {DUMMY.isLive ? (
-          <CategoryText category={DUMMY.category}></CategoryText>
-        ) : (
-          <RefreshText />
-        )}
       </section>
-      <BtnWithChildren>시참 등록 생성할래요</BtnWithChildren>
-    </div>
+      <BtnWithChildren>로그인하고 3초만에 시참등록하기</BtnWithChildren>
+    </ViewerPageLayout>
   );
 }
