@@ -5,6 +5,7 @@ import StreamerTextComment from '../components/atoms/text/StreamerTextComment';
 import Live from '../components/atoms/label/Live';
 import OFF from '../components/atoms/label/Off';
 import RefreshText from '../components/atoms/text/RefreshText';
+import BtnWithChildren from '../components/atoms/button/BtnWithChildren';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const DUMMY_ON = {
   isLive: 1,
@@ -48,11 +49,7 @@ export default function Home() {
           <RefreshText />
         )}
       </section>
-      <div
-        className={`button-container flex w-full flex-row items-center justify-center rounded-md ${DUMMY.isLive ? 'cursor-pointer bg-primary' : 'cursor-default bg-disable'} p-[14px] text-white`}
-      >
-        <div className={`ml-3 text-medium-large`}>시참 등록 생성할래요</div>
-      </div>
+      <BtnWithChildren>시참 등록 생성할래요</BtnWithChildren>
     </div>
   );
 }

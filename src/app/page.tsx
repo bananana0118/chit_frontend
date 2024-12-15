@@ -1,5 +1,6 @@
 import ChitLogo from './assets/logo/ChitLogo';
 import NaverLogo from './assets/logo/logo_naver.svg';
+import BtnWithChildren from './components/atoms/button/BtnWithChildren';
 import StreamerLayout from './components/layout/StreamerLayout';
 export default function Home() {
   return (
@@ -10,12 +11,10 @@ export default function Home() {
         </p>
         <ChitLogo width={160} height={78}></ChitLogo>
       </section>
-      <div className="button-container flex w-full flex-row items-center justify-center rounded-md bg-[#03C75A] p-[14px] text-white">
+      <BtnWithChildren>
         <NaverLogo width={18} height={18}></NaverLogo>
-        <div className="ml-3 text-medium-large">
-          로그인하고 3초만에 시참 생성하기
-        </div>
-      </div>
+        로그인하고 3초만에 시참 생성하기
+      </BtnWithChildren>
     </StreamerLayout>
   );
 }

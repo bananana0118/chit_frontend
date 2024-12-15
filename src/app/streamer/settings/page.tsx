@@ -1,6 +1,8 @@
 import Eyes from '@/app/assets/icons/Eyes';
 import Minus from '@/app/assets/icons/Minus';
 import Plus from '@/app/assets/icons/Plus';
+import BtnWithChildren from '@/app/components/atoms/button/BtnWithChildren';
+import Input from '@/app/components/atoms/input/Input';
 import CategoryText from '@/app/components/atoms/text/CategoryText';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -28,8 +30,7 @@ export default function Settings() {
             <span className="text-secondary">참여 코드</span>가 필요할까요?
           </p>
           <div className="flex w-full flex-row items-center justify-start rounded-md bg-white p-3 text-medium-large text-black">
-            <input
-              className="flex-1 outline-none"
+            <Input
               type="password"
               name="password"
               placeholder="참여코드가 있다면 입력해주세요"
@@ -64,11 +65,7 @@ export default function Settings() {
           </div>
         </div>
       </section>
-      <div
-        className={`button-container flex w-full cursor-pointer flex-row items-center justify-center rounded-md bg-primary p-[14px] text-white`}
-      >
-        <div className={`ml-3 text-medium-large`}>시참 목록 완성 🎉 </div>
-      </div>
+      <BtnWithChildren>시참 목록 완성 🎉</BtnWithChildren>
     </div>
   );
 }

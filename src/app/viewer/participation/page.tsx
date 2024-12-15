@@ -1,4 +1,7 @@
+import BtnWithChildren from '@/app/components/atoms/button/BtnWithChildren';
+import Input from '@/app/components/atoms/input/Input';
 import CategoryText from '@/app/components/atoms/text/CategoryText';
+import HintText from '@/app/components/atoms/text/HintText';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const DUMMY_ON = {
@@ -11,6 +14,8 @@ const DUMMY_ON = {
 const DUMMY = DUMMY_ON;
 
 export default function Settings() {
+  const inputText = '';
+
   return (
     <div className="flex w-full flex-1 flex-col items-center justify-center">
       <section className="flex w-full flex-1 flex-col items-start">
@@ -24,28 +29,24 @@ export default function Settings() {
               <span className="text-secondary">게임 닉네임</span>을 알려주시면
             </p>
             <p>스트리머에게 전달해드릴게요:)</p>
-            <p className="text-medium-small text-hint">
+            <HintText>
               닉네임은 스트리머에게만 보여지며, 다른 목적으로 활용하지 않아요
-            </p>
+            </HintText>
           </div>
-          <div className="flex w-full flex-row items-center justify-start rounded-md bg-white p-3 text-medium-large text-black">
-            <input
-              className="flex-1 outline-none"
+          <div className="mb-[6px] flex w-full flex-row items-center justify-start rounded-md bg-white p-3 text-medium-large text-black">
+            <Input
               type="text"
               name="gameNickname"
               placeholder="여기에 게임닉네임을 입력해 주세요"
             />
           </div>
-          <p className="mt-[6px] text-medium-small text-hint">
-            * 등록한 닉네임은 나중에 수정할 수 있어요
-          </p>
+          <HintText>* 등록한 닉네임은 나중에 수정할 수 있어요</HintText>
         </div>
       </section>
-      <div
-        className={`button-container flex w-full cursor-pointer flex-row items-center justify-center rounded-md bg-primary p-[14px] text-white`}
-      >
-        <div className={`ml-3 text-medium-large`}>시참 목록 완성 🎉 </div>
-      </div>
+      {/* todo : state에 따라 닉네임 상태 분리하기  */}
+      <BtnWithChildren type={inputText.length > 0 ? 'default' : 'disable'}>
+        닉네임 다 입력했어요
+      </BtnWithChildren>
     </div>
   );
 }

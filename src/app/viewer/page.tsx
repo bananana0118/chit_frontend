@@ -2,6 +2,7 @@ import Image from 'next/image';
 import StreamerTextLive from '../components/atoms/text/StreamerTextLive';
 import Live from '../components/atoms/label/Live';
 import OFF from '../components/atoms/label/Off';
+import BtnWithChildren from '@/app/components/atoms/button/BtnWithChildren';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const DUMMY_ON = {
   isLive: 1,
@@ -62,13 +63,7 @@ export default function Home() {
           <div className="text-bold-large">{DUMMY.name}</div>
         </div>
       </section>
-      <div
-        className={`button-container flex w-full flex-row items-center justify-center rounded-md ${DUMMY.isLive ? 'cursor-pointer bg-primary' : 'cursor-default bg-disable'} p-[14px] text-white`}
-      >
-        <div className={`ml-3 text-medium-large`}>
-          로그인하고 3초만에 시참등록하기
-        </div>
-      </div>
+      <BtnWithChildren>로그인하고 3초만에 시참등록하기</BtnWithChildren>
     </div>
   );
 }
