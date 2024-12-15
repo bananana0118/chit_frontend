@@ -2,6 +2,7 @@ import CopyIcon from '@/app/assets/icons/CopyIcon';
 import BtnWithChildren from '@/app/components/atoms/button/BtnWithChildren';
 import Live from '@/app/components/atoms/label/Live';
 import OFF from '@/app/components/atoms/label/Off';
+import ViewerPageLayout from '@/app/components/layout/ViewerPageLayout';
 import Image from 'next/image';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -16,7 +17,7 @@ const DUMMY = DUMMY_ON;
 
 export default function page() {
   return (
-    <div className="flex w-full flex-1 flex-col items-start justify-center">
+    <ViewerPageLayout>
       <section className="flex flex-row justify-start">
         <Image
           src={'/tempImage.png'}
@@ -53,6 +54,6 @@ export default function page() {
         </div>
       </section>
       <BtnWithChildren type={'alert'}>이제 시참 그만할래요</BtnWithChildren>
-    </div>
+    </ViewerPageLayout>
   );
 }

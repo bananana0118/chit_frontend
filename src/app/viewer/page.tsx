@@ -3,6 +3,7 @@ import StreamerTextLive from '../components/atoms/text/StreamerTextLive';
 import Live from '../components/atoms/label/Live';
 import OFF from '../components/atoms/label/Off';
 import BtnWithChildren from '@/app/components/atoms/button/BtnWithChildren';
+import ViewerPageLayout from '../components/layout/ViewerPageLayout';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const DUMMY_ON = {
   isLive: 1,
@@ -23,7 +24,7 @@ const DUMMY = DUMMY_OFF;
 export default function Home() {
   if (!DUMMY.isCreate) {
     return (
-      <div className="flex w-full flex-1 flex-col items-center justify-center">
+      <ViewerPageLayout>
         <section className="flex w-full flex-1 flex-col items-center justify-center">
           <div className="w-full">
             <div className="mb-12 flex w-full flex-col items-center justify-center">
@@ -40,12 +41,12 @@ export default function Home() {
             </div>
           </div>
         </section>
-      </div>
+      </ViewerPageLayout>
     );
   }
 
   return (
-    <div className="flex w-full flex-1 flex-col items-center justify-center">
+    <ViewerPageLayout>
       <section className="flex w-full flex-1 flex-col items-center justify-center">
         <div className="mb-10 flex flex-col items-center justify-center gap-2">
           <StreamerTextLive isLive={DUMMY.isLive}></StreamerTextLive>
@@ -64,6 +65,6 @@ export default function Home() {
         </div>
       </section>
       <BtnWithChildren>로그인하고 3초만에 시참등록하기</BtnWithChildren>
-    </div>
+    </ViewerPageLayout>
   );
 }

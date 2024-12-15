@@ -2,6 +2,7 @@ import BtnWithChildren from '@/app/components/atoms/button/BtnWithChildren';
 import Live from '@/app/components/atoms/label/Live';
 import OFF from '@/app/components/atoms/label/Off';
 import HintText from '@/app/components/atoms/text/HintText';
+import ViewerPageLayout from '@/app/components/layout/ViewerPageLayout';
 import Image from 'next/image';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -16,7 +17,7 @@ const DUMMY = DUMMY_ON;
 
 export default function page() {
   return (
-    <div className="flex w-full flex-1 flex-col items-start justify-center">
+    <ViewerPageLayout>
       <section className="flex flex-row justify-start">
         <Image
           src={'/tempImage.png'}
@@ -54,6 +55,6 @@ export default function page() {
       <BtnWithChildren type={'default'}>
         시참목록에서 다시 등록할래요
       </BtnWithChildren>
-    </div>
+    </ViewerPageLayout>
   );
 }

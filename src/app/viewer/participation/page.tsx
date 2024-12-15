@@ -2,6 +2,7 @@ import BtnWithChildren from '@/app/components/atoms/button/BtnWithChildren';
 import Input from '@/app/components/atoms/input/Input';
 import CategoryText from '@/app/components/atoms/text/CategoryText';
 import HintText from '@/app/components/atoms/text/HintText';
+import ViewerPageLayout from '@/app/components/layout/ViewerPageLayout';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const DUMMY_ON = {
@@ -17,7 +18,7 @@ export default function Settings() {
   const inputText = '';
 
   return (
-    <div className="flex w-full flex-1 flex-col items-center justify-center">
+    <ViewerPageLayout>
       <section className="flex w-full flex-1 flex-col items-start">
         <div className="mb-8">
           <CategoryText isMiddle={true} category={DUMMY.category} />
@@ -47,6 +48,6 @@ export default function Settings() {
       <BtnWithChildren type={inputText.length > 0 ? 'default' : 'disable'}>
         닉네임 다 입력했어요
       </BtnWithChildren>
-    </div>
+    </ViewerPageLayout>
   );
 }
