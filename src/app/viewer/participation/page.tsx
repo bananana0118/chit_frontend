@@ -4,14 +4,6 @@ import CategoryText from '@/app/components/atoms/text/CategoryText';
 import HintText from '@/app/components/atoms/text/HintText';
 import ViewerPageLayout from '@/app/components/layout/ViewerPageLayout';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const DUMMY_ON = {
-  isLive: 1,
-  name: '따효니',
-  category: '월드오브 워크래프트 : 내부전쟁',
-  isCreate: 'true',
-};
-
 const DUMMY = DUMMY_ON;
 
 export default function Settings() {
