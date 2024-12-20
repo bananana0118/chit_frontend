@@ -1,3 +1,5 @@
+'use client';
+
 type BtnWithTextType = 'alert' | 'disable' | 'default';
 
 type Props = {
@@ -12,8 +14,15 @@ export default function BtnWithChildren({ children, type = 'default' }: Props) {
     default: 'primary', // 기본 버튼
   };
 
+  const setCookie = async () => {
+    const res = await fetch('api/set-cookie');
+    alert('로그인 되었습니다.');
+    console.log(res);
+  };
+
   return (
     <div
+      onClick={setCookie}
       className={`button-container flex w-full flex-row items-center justify-center rounded-md text-medium-large bg-${buttonStyles[type]} p-[14px] text-white`}
     >
       {children}

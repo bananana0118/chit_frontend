@@ -1,0 +1,10 @@
+import NaverLogoSvg from './logo_naver.svg';
+
+type Props = {
+  width: number;
+  height: number;
+};
+
+export default function NaverLogo({ width, height }: Props) {
+  return <NaverLogoSvg width={width} height={height}></NaverLogoSvg>;
+}
