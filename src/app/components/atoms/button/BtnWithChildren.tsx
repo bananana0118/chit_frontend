@@ -1,31 +1,63 @@
 'use client';
 
-type BtnWithTextType = 'alert' | 'disable' | 'default';
+type BtnWithTextType = 'alert' | 'disable' | 'default' | 'submit';
 
 type Props = {
   children: React.ReactNode;
   type?: BtnWithTextType;
+  onClickHandler?: () => void;
 };
 
-export default function BtnWithChildren({ children, type = 'default' }: Props) {
+export default function BtnWithChildren({
+  onClickHandler,
+  children,
+  type = 'default',
+}: Props) {
   const buttonStyles = {
     alert: 'alert', // 경고 버튼
     disable: 'disable', // 비활성화 버튼
     default: 'primary', // 기본 버튼
+    submit: 'default',
   };
 
-  const setCookie = async () => {
-    const res = await fetch('api/set-cookie');
-    alert('로그인 되었습니다.');
-    console.log(res);
-  };
+  if (type === 'disable')
+    return (
+      <div
+        className={`button-container flex w-full cursor-default flex-row items-center justify-center rounded-md text-medium-large bg-${buttonStyles[type]} p-[14px] text-white`}
+      >
+        {children}
+      </div>
+    );
 
   return (
     <div
-      onClick={setCookie}
-      className={`button-container flex w-full flex-row items-center justify-center rounded-md text-medium-large bg-${buttonStyles[type]} p-[14px] text-white`}
+      className={`button-container flex w-full cursor-pointer flex-row items-center justify-center rounded-md text-medium-large bg-${buttonStyles[type]} p-[14px] text-white`}
+      onClick={onClickHandler}
     >
       {children}
     </div>
   );
 }
+
+export const BtnSubmit = ({
+  onClickHandler,
+  children,
+  type = 'default',
+}: Props) => {
+  const buttonStyles = {
+    alert: 'alert', // 경고 버튼
+    disable: 'disable', // 비활성화 버튼
+    default: 'primary', // 기본 버튼
+    submit: 'primary',
+  };
+
+  return (
+    <button
+      className={`button-container flex w-full cursor-pointer flex-row items-center justify-center rounded-md text-medium-large bg-${buttonStyles[type]} p-[14px] text-white`}
+      onClick={onClickHandler}
+      type="submit"
+    >
+      {children}
+    </button>
+  );
+};

@@ -6,5 +6,9 @@ type Props = {
 };
 
 export default function NaverLogo({ width, height }: Props) {
-  return <NaverLogoSvg width={width} height={height}></NaverLogoSvg>;
+  return (
+    <div className="mr-1">
+      <NaverLogoSvg width={width} height={height}></NaverLogoSvg>
+    </div>
+  );
 }
