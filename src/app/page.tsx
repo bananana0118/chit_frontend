@@ -17,6 +17,7 @@ import { postStreamerInfo } from './services/streamer/streamer';
 
 export default function Home() {
   const accessToken = useAuthStore((state) => state.accessToken);
+  const isRehydrated = useAuthStore((state) => state.isRehydrated);
   const router = useRouter();
   const streamerInfo = useChannelStore((state) => state.streamerInfo);
   const setStreamerInfo = useChannelStore((state) => state.setStreamerInfo);
@@ -26,7 +27,7 @@ export default function Home() {
   };
 
   useEffect(() => {
-    console.log(accessToken);
+    console.log('ccess', accessToken);
     const fetchData = async () => {
       const dummyChannelId = '0dad8baf12a436f722faa8e5001c5011';
       const response = await postStreamerInfo(dummyChannelId);
@@ -35,11 +36,20 @@ export default function Home() {
       }
     };
 
-    if (!accessToken) router.push('/login');
-    else {
-      fetchData();
+    if (isRehydrated) {
+      if (!accessToken) {
+        router.push('/login');
+      } else {
+        fetchData();
+      }
     }
-  }, []);
+  }, [accessToken, isRehydrated]);
+
+  // 로드가 완료될 때까지 로딩 화면 표시
+  if (!isRehydrated) {
+    return <div>Loading...</div>;
+  }
+
   return (
     streamerInfo && (
       <CommonLayout>

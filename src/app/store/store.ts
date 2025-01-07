@@ -6,11 +6,13 @@ type RoleType = 'VIEWER' | 'STREAMER';
 interface AuthState {
   isLogin: boolean;
   role: RoleType;
+  isRehydrated: boolean; // 상태가 로드 완료되었는지 여부 추가
   accessToken: string;
 }
 
 type AuthAction = {
   setAccessToken: (authData: string) => void;
+  isRehydrated: boolean; // 상태가 로드 완료되었는지 여부 추가
   setLogin: (authData: boolean) => void;
   setRole: (role: RoleType) => void;
 };
@@ -20,10 +22,11 @@ export const AuthStorageKey = 'auth-session-storage';
 
 const useAuthStore = create(
   devtools(
-    persist<AuthState & AuthAction>(
+    persist<Partial<AuthState & AuthAction>>(
       (set) => ({
         accessToken: '',
         isLogin: false,
+        isRehydrated: false,
         role: 'VIEWER',
         setAccessToken: (value: string) =>
           set(() => ({
@@ -38,10 +41,18 @@ const useAuthStore = create(
             role: value,
           })),
       }),
+
       {
         name: AuthStorageKey,
         storage: createJSONStorage(() => sessionStorage),
-        onRehydrateStorage: (state) => console.log(state),
+        partialize: (state) => ({
+          accessToken: state.accessToken, // accessToken만 스토리지에 저장
+        }),
+        onRehydrateStorage: () => (state) => {
+          if (state) {
+            state.isRehydrated = true; // 로드 완료 플래그 설정
+          }
+        },
       },
     ),
     { anonymousActionType: 'authStore', enabled: true, name: 'authStore' },
