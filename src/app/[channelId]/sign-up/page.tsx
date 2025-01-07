@@ -7,8 +7,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import AlertIcon from '@/app/assets/icons/AlertIcon';
 import Image from 'next/image';
 import ViewerGuide from '@/app/assets/imgs/ViewerGuide.png';
-import axios from 'axios';
 import useAuthStore from '@/app/store/store';
+import { loginWithOAuth2 } from '@/app/services/auth/auth';
 
 export default function SignUp() {
   const [viewerChannelId, setViewerChannelId] = useState('');
@@ -20,33 +20,25 @@ export default function SignUp() {
   const setAccessToken = useAuthStore((state) => state.setAccessToken);
   const setLogin = useAuthStore((state) => state.setLogin);
 
-  const onCompleteChannelId = () => {
+  const onCompleteChannelId = async () => {
     const code = searchParams.get('code');
     const state = searchParams.get('state');
 
-    axios
-      .post('http://localhost:8080/api/v1/oauth2/login', {
-        code: code,
-        state: state,
+    if (!code || !state) {
+      alert('코드 또는 상태 값이 누락되었습니다.');
+      router.push('error');
+      return;
+    }
 
-        //todo  viewerChannelId 원래 이코드
-        channelId: '',
-      })
-      .then(({ data, status }) => {
-        if (status === 200) {
-          setAccessToken(data.data);
-          setLogin(true);
-          router.push('participation');
-        } else {
-          throw new Error();
-        }
-      })
-      .catch(({ status, error }) => {
-        if (status === 400) {
-          alert(`오류가 발생했습니다. : ${error}`);
-          router.push(`error`);
-        }
-      });
+    try {
+      const response = await loginWithOAuth2({ code, state, channelId: '' }); // 서비스 호출
+      setAccessToken(response.accessToken); // 액세스 토큰 저장
+      setLogin(true); // 로그인 상태 업데이트
+      router.push('participation'); // 성공 시 리다이렉트
+    } catch (error: any) {
+      alert(error.message || '오류가 발생했습니다.');
+      router.push('error'); // 실패 시 에러 페이지로 리다이렉트
+    }
   };
 
   return (
