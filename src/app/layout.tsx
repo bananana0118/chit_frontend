@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
 import PageLayout from './components/layout/PageLayout';
+import AuthProvider from './provider/AuthProvider';
 
 const pretendard = localFont({
   src: './fonts/PretendardVariable.woff2',
@@ -25,7 +26,9 @@ export default function RootLayout({
       <body
         className={`${pretendard.variable} h-screen w-screen cursor-default bg-background text-white antialiased`}
       >
-        <PageLayout>{children}</PageLayout>
+        <AuthProvider>
+          <PageLayout>{children}</PageLayout>
+        </AuthProvider>
       </body>
     </html>
   );
