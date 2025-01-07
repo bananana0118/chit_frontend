@@ -5,6 +5,7 @@ import { StreamerInfo } from '../services/streamer/streamer';
 interface ChannelState {
   channelId: string | undefined | string[];
   streamerInfo: StreamerInfo | null;
+  isRehydrated: boolean;
 }
 
 type ChannelAction = {
@@ -14,12 +15,13 @@ type ChannelAction = {
 
 export const ChannelStorageKey = 'channel-session-storage';
 
-const useChannelStore = create(
+const useChannelStore = create<ChannelState & ChannelAction>()(
   devtools(
-    persist<ChannelState & ChannelAction>(
+    persist(
       (set) => ({
         channelId: '',
         streamerInfo: null,
+        isRehydrated: false,
         setChannelData: (channelId) =>
           set(() => ({
             channelId: channelId,
@@ -32,6 +34,15 @@ const useChannelStore = create(
       {
         name: ChannelStorageKey,
         storage: createJSONStorage(() => sessionStorage),
+        partialize: (state) => ({
+          channelId: state.channelId,
+          streamerInfo: state.streamerInfo,
+        }),
+        onRehydrateStorage: () => (state) => {
+          if (state) {
+            state.isRehydrated = true; // 로드 완료 플래그 설정
+          }
+        },
       },
     ),
     { anonymousActionType: 'channelStore', name: 'channelStore' },

@@ -20,9 +20,9 @@ type AuthAction = {
 //일단 persist 처리리
 export const AuthStorageKey = 'auth-session-storage';
 
-const useAuthStore = create(
+const useAuthStore = create<AuthState & AuthAction>()(
   devtools(
-    persist<Partial<AuthState & AuthAction>>(
+    persist(
       (set) => ({
         accessToken: '',
         isLogin: false,
