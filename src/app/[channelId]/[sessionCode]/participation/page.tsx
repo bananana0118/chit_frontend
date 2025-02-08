@@ -6,39 +6,34 @@ import CategoryText from '@/app/components/atoms/text/CategoryText';
 import HintText from '@/app/components/atoms/text/HintText';
 import ViewerPageLayout from '@/app/components/layout/ViewerPageLayout';
 import useChannelStore from '@/app/store/channelStore';
-import axios from 'axios';
-import { useRouter } from 'next/navigation';
+import useAuthStore from '@/app/store/store';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
 export default function Settings() {
   const [viewerNickname, setViewerNickname] = useState('');
   const router = useRouter();
   const streamerInfo = useChannelStore((state) => state.streamerInfo);
+  const channelId = useChannelStore((state) => state.channelId);
+
   const onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setViewerNickname(e.target.value);
   };
 
+  const accessToken = useAuthStore((state) => state.accessToken);
+
   const onCompleteViewerNickname = () => {
-    axios
-      .post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/sse/contents-session/viewer/subscribe`,
-        {
-          //todo  sessionParticipationCode 원래 이코드
-          sessionParticipationCode: '',
-          gameNickname: viewerNickname,
-        },
-      )
-      .then(({ status }) => {
-        if (status === 200) {
-          router.push('waiting');
-        }
-      })
-      .catch(({ status, error }) => {
-        if (status === 400) {
-          alert(`오류가 발생했습니다. : ${error}`);
-          router.push(`error`);
-        }
-      });
+    if (accessToken) {
+      const eventSource = new EventSource(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/sse/session/viewer/subscribe?sessionParticipationCode=${'ezdCLycpZHn2'}&gameNickname=김밥천국&accessToken=${accessToken}`,
+      );
+      eventSource.onmessage = (event: MessageEvent) => {
+        const eventData = JSON.parse(event.data);
+        console.log(eventData);
+      };
+    }
+
+    // router.push(`/${channelId}/waiting`);
   };
 
   return (
@@ -46,6 +41,7 @@ export default function Settings() {
       <section className="flex w-full flex-1 flex-col items-start">
         <div className="mb-8">
           <CategoryText
+            isLeft={true}
             isMiddle={true}
             category={streamerInfo?.liveCategoryValue || ''}
           />

@@ -1,3 +1,4 @@
+'use client';
 import CopyIcon from '@/app/assets/icons/CopyIcon';
 import BtnWithChildren from '@/app/components/atoms/button/BtnWithChildren';
 import Live from '@/app/components/atoms/label/Live';
@@ -5,10 +6,14 @@ import OFF from '@/app/components/atoms/label/Off';
 import ViewerPageLayout from '@/app/components/layout/ViewerPageLayout';
 import useChannelStore from '@/app/store/channelStore';
 import Image from 'next/image';
+import { useEffect } from 'react';
+import useAuthStore from '@/app/store/store';
 
 export default function Page() {
   const streamerInfo = useChannelStore((state) => state.streamerInfo);
   const channel = streamerInfo?.channel;
+  const accessToken = useAuthStore((state) => state.accessToken);
+
   return (
     streamerInfo && (
       <ViewerPageLayout>

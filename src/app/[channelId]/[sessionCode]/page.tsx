@@ -2,23 +2,28 @@
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import BtnWithChildren from '../components/atoms/button/BtnWithChildren';
-import Live from '../components/atoms/label/Live';
-import OFF from '../components/atoms/label/Off';
-import CategoryText from '../components/atoms/text/CategoryText';
-import StreamerTextLive from '../components/atoms/text/StreamerTextLive';
-import CommonLayout from '../components/layout/CommonLayout';
-import ViewerPageLayout from '../components/layout/ViewerPageLayout';
-import { postStreamerInfo } from '../services/streamer/streamer';
-import useChannelStore from '../store/channelStore';
+import BtnWithChildren from '../../components/atoms/button/BtnWithChildren';
+import Live from '../../components/atoms/label/Live';
+import OFF from '../../components/atoms/label/Off';
+import CategoryText from '../../components/atoms/text/CategoryText';
+import StreamerTextLive from '../../components/atoms/text/StreamerTextLive';
+import CommonLayout from '../../components/layout/CommonLayout';
+import ViewerPageLayout from '../../components/layout/ViewerPageLayout';
+import { postStreamerInfo } from '../../services/streamer/streamer';
+import useChannelStore from '../../store/channelStore';
+import useAuthStore from '../../store/store';
 
 export default function Home() {
   const params = useParams();
   const router = useRouter();
-  const { channelId } = params;
+  const channelId = Array.isArray(params.channelId)
+    ? params.channelId[0]
+    : params.channelId;
+  const setRole = useAuthStore((state) => state.setRole);
   const streamerInfo = useChannelStore((state) => state.streamerInfo);
-  const setChannelId = useChannelStore((state) => state.setChannelData);
+  const setChannelId = useChannelStore((state) => state.setChannelId);
   const setStreamerInfo = useChannelStore((state) => state.setStreamerInfo);
+  const accessToken = useAuthStore((state) => state.accessToken);
   //로그인 되어있는지
   useEffect(() => {
     const fetchData = async (channelId: string) => {
@@ -32,6 +37,7 @@ export default function Home() {
           alert('channelId가 잘못됐거나 해당 스트리머의 방송 정보가 없습니다.');
           router.push(`/${channelId}/error`);
         } else {
+          setChannelId(streamerInfo.channel.channelId);
           setStreamerInfo(streamerInfo);
           console.log(streamerInfo);
         }
@@ -49,9 +55,14 @@ export default function Home() {
   }, [channelId, setChannelId]);
 
   const onClickLogin = async () => {
-    window.location.href = 'http://localhost:8080/api/v1/oauth2';
+    if (accessToken) {
+      router.push(`${channelId}/participation`);
+    } else {
+      window.location.href = 'http://localhost:8080/';
+    }
+    setRole('VIEWER');
   };
-
+  if (!streamerInfo) return;
   if (streamerInfo?.status === 'CLOSE') {
     return (
       <ViewerPageLayout>
