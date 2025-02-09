@@ -3,6 +3,7 @@ import localFont from 'next/font/local';
 import './globals.css';
 import PageLayout from './components/layout/PageLayout';
 import AuthProvider from './provider/AuthProvider';
+import { ToastContainer } from 'react-toastify';
 
 const pretendard = localFont({
   src: './fonts/PretendardVariable.woff2',
@@ -29,6 +30,7 @@ export default function RootLayout({
         <AuthProvider>
           <PageLayout>{children}</PageLayout>
         </AuthProvider>
+        <ToastContainer position="top-right" autoClose={3000}></ToastContainer>
       </body>
     </html>
   );
