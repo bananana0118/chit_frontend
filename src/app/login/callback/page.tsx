@@ -6,12 +6,15 @@ import CommonLayout from '../../components/layout/CommonLayout';
 import useChannelStore from '@/app/store/channelStore';
 import axios from 'axios';
 import useAuthStore from '@/app/store/store';
+import DummyData from '@/app/constants/Dummy';
 
 export default function Page() {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const searchParams = useSearchParams();
   const code = searchParams.get('code');
   const state = searchParams.get('state');
+  const isRehydrated = useAuthStore((state) => state.isRehydrated);
+  const role = useAuthStore((state) => state.role);
   const channelId = useChannelStore((state) => state.channelId);
   const setAccessToken = useAuthStore((state) => state.setAccessToken);
   const setLogin = useAuthStore((state) => state.setLogin);
@@ -24,17 +27,34 @@ export default function Page() {
   //2-2. 2의 경우 1. 채널id와, role을 뽑아내어 리다이렉트 시켜야함 (channelId는 이미 페이지에 접속할 때 담겨있음)
   //*channelId 가 없을경우 기본 ""
 
+  const DummyViewerLoginInfo = {
+    channelId: null,
+    authCode: null,
+  };
+
   useEffect(() => {
     const onCompleteChannelId = async (channelId?: string | string[]) => {
+      let requestData = null;
+      if (role === 'STREAMER') {
+        requestData = {
+          code: code,
+          state: state,
+          ...DummyViewerLoginInfo,
+        };
+      } else {
+        requestData = {
+          code: code,
+          state: state,
+          ...DummyViewerLoginInfo,
+        };
+      }
+      console.log('role:', role);
+      console.log('requestData:', requestData);
       try {
         const response = await axios.post(
-          'http://localhost:8080/api/v1/oauth2/login',
+          'http://localhost:8080/api/v1/auth/login',
           {
-            code: code,
-            state: state,
-
-            //todo  viewerChannelId 원래 이코드
-            channelId: '',
+            ...requestData,
           },
         );
 
@@ -54,24 +74,21 @@ export default function Page() {
         //todo 추후 api 타입 지정해줄것
         if (axios.isAxiosError(error)) {
           const { response } = error; // Axios 에러 객체에서 response 추출
-          if (response?.status === 400) {
+          if (response?.status === 500) {
             alert(
               `오류가 발생했습니다. : ${response.data?.error || '알 수 없는 오류'}`,
             );
-            router.push('error');
-          } else {
-            alert('예상치 못한 오류가 발생했습니다.');
             router.push('error');
           }
         }
       }
     };
 
-    if (code && state) {
+    if (code && state && isRehydrated) {
       setIsRedirecting(true);
       onCompleteChannelId(channelId);
     }
-  }, [code, state, channelId, setAccessToken, setLogin, router]);
+  }, [code, state, channelId, setAccessToken, setLogin, router, isRehydrated]);
 
   if (!code && state) {
     return (

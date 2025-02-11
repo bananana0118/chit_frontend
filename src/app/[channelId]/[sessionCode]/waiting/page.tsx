@@ -8,11 +8,47 @@ import useChannelStore from '@/app/store/channelStore';
 import Image from 'next/image';
 import { useEffect } from 'react';
 import useAuthStore from '@/app/store/store';
+import { useSSEStore } from '@/app/store/sseStore';
+import { getContentsSessionInfo } from '@/app/services/streamer/streamer';
+import { toast } from 'react-toastify';
 
 export default function Page() {
   const streamerInfo = useChannelStore((state) => state.streamerInfo);
   const channel = streamerInfo?.channel;
-  const accessToken = useAuthStore((state) => state.accessToken);
+  const { accessToken, isRehydrated: isTokenLoading = false } = useAuthStore();
+  const { order } = useSSEStore();
+
+  //세션인포 찾기
+
+  useEffect(() => {
+    const getSessionInfo = async () => {
+      const response = await getContentsSessionInfo(accessToken);
+      if ('error' in response) {
+        // 에러 발생 시 사용자 피드백 제공
+        toast.error(`❌에러코드 : ${response.status} 오류: ${response.error}`, {
+          position: 'top-right',
+          autoClose: 3000,
+        });
+        return;
+      } else {
+        const data = response.data;
+
+        console.log('ResponseData');
+        console.log(data);
+      }
+    };
+
+    const fetchData = async () => {
+      try {
+        const response = await getSessionInfo();
+        console.log(response);
+        //setCurrentParticipants(result);
+      } catch (error) {
+        console.error('데이터 가져오기 실패:', error);
+      }
+    };
+    if (isTokenLoading) fetchData();
+  }, [accessToken, isTokenLoading]); // 의존성 배열이 빈 배열이면, 컴포넌트 마운트 시 한 번만 실행
 
   return (
     streamerInfo && (
@@ -45,6 +81,8 @@ export default function Page() {
         {/* 나중에 1번 2번 3버 이런식으로 할 것 */}
         <section className="flex w-full flex-1 flex-col items-center justify-center">
           <p className="text-bold-large">내 순서는</p>
+
+          {/* {order <= maxGroup} */}
           <p className="flex flex-row items-center justify-center text-bold-big text-primary">
             지금 참여
           </p>

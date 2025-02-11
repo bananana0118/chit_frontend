@@ -4,7 +4,7 @@ import BtnWithChildren from './components/atoms/button/BtnWithChildren';
 import CommonLayout from './components/layout/CommonLayout';
 import useAuthStore from './store/store';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Live from './components/atoms/label/Live';
 import OFF from './components/atoms/label/Off';
 import CategoryText from './components/atoms/text/CategoryText';
@@ -13,13 +13,18 @@ import StreamerTextComment from './components/atoms/text/StreamerTextComment';
 import StreamerTextLive from './components/atoms/text/StreamerTextLive';
 import useChannelStore from './store/channelStore';
 import Image from 'next/image';
-import { postStreamerInfo } from './services/streamer/streamer';
+import { postStreamerInfo, StreamerInfo } from './services/streamer/streamer';
+import DummyData from './constants/Dummy';
 
 export default function Home() {
+  const router = useRouter();
+  const setRole = useAuthStore((state) => state.setRole);
   const accessToken = useAuthStore((state) => state.accessToken);
   const isRehydrated = useAuthStore((state) => state.isRehydrated);
-  const router = useRouter();
-  const streamerInfo = useChannelStore((state) => state.streamerInfo);
+  const [streamerInfo, setStateStreamerInfo] = useState<StreamerInfo | null>(
+    null,
+  );
+  const setChannelId = useChannelStore((state) => state.setChannelId);
   const setStreamerInfo = useChannelStore((state) => state.setStreamerInfo);
   console.log(streamerInfo);
   const onClickCreateSession = () => {
@@ -27,17 +32,20 @@ export default function Home() {
   };
 
   useEffect(() => {
-    console.log('ccess', accessToken);
+    console.log('access', accessToken);
     const fetchData = async () => {
-      const dummyChannelId = '0dad8baf12a436f722faa8e5001c5011';
+      const dummyChannelId = DummyData.channelId;
       const response = await postStreamerInfo(dummyChannelId);
       if (response) {
+        setStateStreamerInfo(response);
+        setChannelId(response.channel.channelId);
         setStreamerInfo(response);
       }
     };
 
     if (isRehydrated) {
       if (!accessToken) {
+        setRole('STREAMER');
         router.push('/login');
       } else {
         fetchData();

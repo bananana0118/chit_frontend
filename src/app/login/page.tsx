@@ -7,7 +7,7 @@ import CommonLayout from '../components/layout/CommonLayout';
 
 export default function Home() {
   const onClickLogin = async () => {
-    window.location.href = 'http://localhost:8080/api/v1/oauth2';
+    window.location.href = 'http://localhost:8080/';
   };
 
   return (
