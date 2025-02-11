@@ -1,6 +1,6 @@
 'use client';
 import Image from 'next/image';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import BtnWithChildren from '../../components/atoms/button/BtnWithChildren';
 import Live from '../../components/atoms/label/Live';
@@ -12,17 +12,19 @@ import ViewerPageLayout from '../../components/layout/ViewerPageLayout';
 import { postStreamerInfo } from '../../services/streamer/streamer';
 import useChannelStore from '../../store/channelStore';
 import useAuthStore from '../../store/store';
+import useContentsSessionStore from '@/app/store/sessionStore';
+import useParamsParser from '@/hooks/useParamsParser';
 
 export default function Home() {
-  const params = useParams();
   const router = useRouter();
-  const channelId = Array.isArray(params.channelId)
-    ? params.channelId[0]
-    : params.channelId;
+  const { channelId, sessionCode } = useParamsParser();
   const setRole = useAuthStore((state) => state.setRole);
   const streamerInfo = useChannelStore((state) => state.streamerInfo);
   const setChannelId = useChannelStore((state) => state.setChannelId);
   const setStreamerInfo = useChannelStore((state) => state.setStreamerInfo);
+  const setSessionInfo = useContentsSessionStore(
+    (state) => state.setSessionInfo,
+  );
   const accessToken = useAuthStore((state) => state.accessToken);
   //로그인 되어있는지
   useEffect(() => {
@@ -39,6 +41,11 @@ export default function Home() {
         } else {
           setChannelId(streamerInfo.channel.channelId);
           setStreamerInfo(streamerInfo);
+          if (sessionCode)
+            setSessionInfo((prev) => ({
+              ...prev,
+              sessionCode,
+            }));
           console.log(streamerInfo);
         }
       } catch (error) {
@@ -47,16 +54,12 @@ export default function Home() {
       }
     };
 
-    if (channelId) {
-      setChannelId(channelId);
-      console.log('channelId 있음', channelId);
-      fetchData(channelId as string);
-    }
+    fetchData(channelId as string);
   }, [channelId, setChannelId]);
 
   const onClickLogin = async () => {
     if (accessToken) {
-      router.push(`${channelId}/participation`);
+      router.push(`${sessionCode}/participation`);
     } else {
       window.location.href = 'http://localhost:8080/';
     }
