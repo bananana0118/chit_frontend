@@ -1,11 +1,15 @@
 'use client';
 
+import { MouseEventHandler } from 'react';
+
 type BtnWithTextType = 'alert' | 'disable' | 'default' | 'submit';
 
 type Props = {
   children: React.ReactNode;
   type?: BtnWithTextType;
-  onClickHandler?: () => void;
+  onClickHandler?: (
+    e: React.MouseEvent<HTMLButtonElement> | React.MouseEvent<HTMLDivElement>,
+  ) => void | Promise<void>;
 };
 
 export default function BtnWithChildren({
@@ -39,11 +43,7 @@ export default function BtnWithChildren({
   );
 }
 
-export const BtnSubmit = ({
-  onClickHandler,
-  children,
-  type = 'default',
-}: Props) => {
+export const BtnSubmit = ({ children, type = 'default' }: Props) => {
   const buttonStyles = {
     alert: 'alert', // 경고 버튼
     disable: 'disable', // 비활성화 버튼
@@ -54,7 +54,6 @@ export const BtnSubmit = ({
   return (
     <button
       className={`button-container flex w-full cursor-pointer flex-row items-center justify-center rounded-md text-medium-large bg-${buttonStyles[type]} p-[14px] text-white`}
-      onClick={onClickHandler}
       type="submit"
     >
       {children}

@@ -9,7 +9,7 @@ type Props = {
 export default function CopyIcon({
   width,
   height,
-  color = 'white',
+  color = '#38C958',
   className,
 }: Props) {
   return (

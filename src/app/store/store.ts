@@ -8,11 +8,11 @@ interface AuthState {
   role: RoleType;
   isRehydrated: boolean; // 상태가 로드 완료되었는지 여부 추가
   accessToken: string;
+  sessionCode: string;
 }
 
 type AuthAction = {
   setAccessToken: (authData: string) => void;
-  isRehydrated: boolean; // 상태가 로드 완료되었는지 여부 추가
   setLogin: (authData: boolean) => void;
   setRole: (role: RoleType) => void;
 };
@@ -28,6 +28,7 @@ const useAuthStore = create<AuthState & AuthAction>()(
         isLogin: false,
         isRehydrated: false,
         role: 'VIEWER',
+        sessionCode: '',
         setAccessToken: (value: string) =>
           set(() => ({
             accessToken: value,
@@ -46,6 +47,7 @@ const useAuthStore = create<AuthState & AuthAction>()(
         name: AuthStorageKey,
         storage: createJSONStorage(() => sessionStorage),
         partialize: (state) => ({
+          role: state.role,
           accessToken: state.accessToken, // accessToken만 스토리지에 저장
         }),
         onRehydrateStorage: () => (state) => {
