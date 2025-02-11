@@ -3,13 +3,13 @@ import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 import { StreamerInfo } from '../services/streamer/streamer';
 
 interface ChannelState {
-  channelId: string | undefined | string[];
+  channelId: string | undefined;
   streamerInfo: StreamerInfo | null;
   isRehydrated: boolean;
 }
 
 type ChannelAction = {
-  setChannelData: (ChannelData: string | string[]) => void;
+  setChannelId: (channelId: string) => void;
   setStreamerInfo: (streamerInfo: StreamerInfo) => void;
 };
 
@@ -22,12 +22,14 @@ const useChannelStore = create<ChannelState & ChannelAction>()(
         channelId: '',
         streamerInfo: null,
         isRehydrated: false,
-        setChannelData: (channelId) =>
-          set(() => ({
+        setChannelId: (channelId) =>
+          set((state) => ({
+            ...state,
             channelId: channelId,
           })),
         setStreamerInfo: (streamerInfo) =>
-          set(() => ({
+          set((state) => ({
+            ...state,
             streamerInfo: streamerInfo,
           })),
       }),
