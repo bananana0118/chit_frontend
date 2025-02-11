@@ -1,6 +1,8 @@
-// lib/streamerService.ts
 import axios from 'axios';
 import { ChzzkClient, PartialChannel } from 'chzzk';
+import axiosInstance from '../axios';
+import { ApiResponse, ContentsSession } from '@/app/store/sessionStore';
+import { handleApiError } from '@/app/lib/error';
 
 const client = new ChzzkClient();
 
@@ -70,4 +72,64 @@ export const postStreamerInfo = async (
     });
   if (data?.data) return data.data.streamerInfo;
   return null;
+};
+
+type CreateContentsSessionRequest = {
+  gameParticipationCode: string | null;
+  maxGroupParticipants: number;
+};
+
+// type GetContentsSessionInfoResponse = {
+//   status: number;
+//   data: ContentsSession;
+// };
+
+type ErrorResponse = {
+  status: number;
+  error: string;
+};
+
+type CreateContentsSessionResponse =
+  | ApiResponse<ContentsSession>
+  | ErrorResponse;
+
+type GetContentsSessionResponse = ApiResponse<ContentsSession> | ErrorResponse;
+
+export const getContentsSessionInfo = async (
+  accessToken: string,
+): Promise<GetContentsSessionResponse> => {
+  try {
+    const response = await axiosInstance.get('/api/v1/contents/session', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
+      },
+    });
+    return response.data; // 성공적인 응답 데이터 반환
+  } catch (error: unknown) {
+    return handleApiError(error); // 에러 핸들링 함수 사용
+  }
+};
+
+export const createContentsSession = async (
+  data: CreateContentsSessionRequest,
+  accessToken: string,
+): Promise<CreateContentsSessionResponse> => {
+  console.log(accessToken);
+  try {
+    const response = await axiosInstance.post(
+      '/api/v1/contents/session',
+      {
+        ...data,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
+        },
+      },
+    );
+
+    return response.data; // 성공적인 응답 데이터 반환
+  } catch (error: unknown) {
+    return handleApiError(error); // 에러 핸들링 함수 사용
+  }
 };
