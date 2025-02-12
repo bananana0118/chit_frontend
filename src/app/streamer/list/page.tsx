@@ -4,7 +4,9 @@ import StreamerTools from '@/app/components/molecules/StreamerTools';
 import MemberCard from '@/app/components/organisms/MemberCard';
 import { getContentsSessionInfo } from '@/app/services/streamer/streamer';
 import useChannelStore from '@/app/store/channelStore';
-import useContentsSessionStore from '@/app/store/sessionStore';
+import useContentsSessionStore, {
+  CurrentParticipants,
+} from '@/app/store/sessionStore';
 import useAuthStore from '@/app/store/store';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -14,7 +16,9 @@ export default function List() {
   const sessionInfo = useContentsSessionStore((state) => state.sessionInfo);
   const channelId = useChannelStore((state) => state.channelId);
   const isTokenLoading = useAuthStore((state) => state.isRehydrated);
-  const [currentParticipants, setCurrentParticipants] = useState([]);
+  const [currentParticipants, setCurrentParticipants] = useState<
+    CurrentParticipants[]
+  >([]);
 
   useEffect(() => {
     const getSessionInfo = async () => {
@@ -83,7 +87,10 @@ export default function List() {
               <p className="mb-5 mt-4 text-bold-middle">아직 참여자가 없어요</p>
             ) : (
               <p className="mb-5 mt-4 text-bold-middle">
-                총<span className="text-primary">{currentParticipants}명</span>
+                총{' '}
+                <span className="text-primary">
+                  {currentParticipants.length}명
+                </span>
                 이 참여중이에요
               </p>
             )}
@@ -103,7 +110,7 @@ export default function List() {
               {currentParticipants.length === 0 ? (
                 <div>유저를 기다리는 중입니다.</div>
               ) : (
-                (currentParticipants ?? []).map((participant, index) => (
+                currentParticipants.map((participant, index) => (
                   <div
                     key={index}
                     id="partyblock"
@@ -117,9 +124,9 @@ export default function List() {
                     </div>
                     <div id="partyMembers" className="flex-1">
                       <MemberCard
-                        zicName={`치지직 닉네임${index + 1}`}
-                        gameNicname="게임 닉네임"
-                        isHeart={true}
+                        zicName={`${participant.chzzkNickname}`}
+                        gameNicname={`${participant.gameNickname}`}
+                        isHeart={participant.fixedPick}
                       />
                     </div>
                   </div>

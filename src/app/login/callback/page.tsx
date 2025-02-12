@@ -6,7 +6,7 @@ import CommonLayout from '../../components/layout/CommonLayout';
 import useChannelStore from '@/app/store/channelStore';
 import axios from 'axios';
 import useAuthStore from '@/app/store/store';
-import DummyData from '@/app/constants/Dummy';
+import axiosInstance from '@/app/services/axios';
 
 export default function Page() {
   const [isRedirecting, setIsRedirecting] = useState(false);
@@ -27,11 +27,6 @@ export default function Page() {
   //2-2. 2의 경우 1. 채널id와, role을 뽑아내어 리다이렉트 시켜야함 (channelId는 이미 페이지에 접속할 때 담겨있음)
   //*channelId 가 없을경우 기본 ""
 
-  const DummyViewerLoginInfo = {
-    channelId: null,
-    authCode: null,
-  };
-
   useEffect(() => {
     const onCompleteChannelId = async (channelId?: string | string[]) => {
       let requestData = null;
@@ -39,19 +34,17 @@ export default function Page() {
         requestData = {
           code: code,
           state: state,
-          ...DummyViewerLoginInfo,
         };
       } else {
         requestData = {
           code: code,
           state: state,
-          ...DummyViewerLoginInfo,
         };
       }
       console.log('role:', role);
       console.log('requestData:', requestData);
       try {
-        const response = await axios.post(
+        const response = await axiosInstance.post(
           'http://localhost:8080/api/v1/auth/login',
           {
             ...requestData,
@@ -59,7 +52,7 @@ export default function Page() {
         );
 
         const { data, status } = response;
-
+        console.log(response);
         if (status === 200) {
           setAccessToken(data.data);
           setLogin(true);
