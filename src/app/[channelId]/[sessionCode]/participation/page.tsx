@@ -17,9 +17,8 @@ export default function Settings() {
   const [viewerNickname, setViewerNickname] = useState('');
   const { sessionCode } = useParamsParser();
   const router = useRouter();
-  const { startSSE, stopSSE, isConnected } = useSSEStore();
+  const { startSSE, isConnected, setViewerInfo } = useSSEStore();
   const streamerInfo = useChannelStore((state) => state.streamerInfo);
-  const channelId = useChannelStore((state) => state.channelId);
 
   const onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setViewerNickname(e.target.value);
@@ -30,6 +29,7 @@ export default function Settings() {
   const onCompleteViewerNickname = () => {
     if (accessToken) {
       const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/sse/session/viewer/subscribe?sessionParticipationCode=${sessionCode}&gameNickname=${viewerNickname}&accessToken=${accessToken}`;
+      setViewerInfo(viewerNickname);
 
       startSSE(url);
     }

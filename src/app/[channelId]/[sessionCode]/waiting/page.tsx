@@ -11,47 +11,72 @@ import useAuthStore from '@/app/store/store';
 import { useSSEStore } from '@/app/store/sseStore';
 import { getContentsSessionInfo } from '@/app/services/streamer/streamer';
 import { toast } from 'react-toastify';
+import useParamsParser from '@/hooks/useParamsParser';
 
 export default function Page() {
   const streamerInfo = useChannelStore((state) => state.streamerInfo);
   const channel = streamerInfo?.channel;
+  const { sessionCode } = useParamsParser();
   const { accessToken, isRehydrated: isTokenLoading = false } = useAuthStore();
   const { order } = useSSEStore();
-
+  const {
+    startSSE,
+    stopSSE,
+    isConnected,
+    viewerGameNickname,
+    isRehydrated: isViewerInfoLoading = false,
+  } = useSSEStore();
   //세션인포 찾기
 
   useEffect(() => {
-    const getSessionInfo = async () => {
-      const response = await getContentsSessionInfo(accessToken);
-      if ('error' in response) {
-        // 에러 발생 시 사용자 피드백 제공
-        toast.error(`❌에러코드 : ${response.status} 오류: ${response.error}`, {
-          position: 'top-right',
-          autoClose: 3000,
-        });
-        return;
-      } else {
-        const data = response.data;
+    if (accessToken && isViewerInfoLoading && !isConnected) {
+      console.log('🔄 SSE 자동 시작');
+      console.log(viewerGameNickname);
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/sse/session/viewer/subscribe?sessionParticipationCode=${sessionCode}&gameNickname=${viewerGameNickname}&accessToken=${accessToken}`;
 
-        console.log('ResponseData');
-        console.log(data);
-      }
-    };
+      startSSE(url);
+    }
+  }, [accessToken, isViewerInfoLoading]); // ✅ accessToken이 바뀔 때마다 SSE 연결
 
-    const fetchData = async () => {
-      try {
-        const response = await getSessionInfo();
-        console.log(response);
-        //setCurrentParticipants(result);
-      } catch (error) {
-        console.error('데이터 가져오기 실패:', error);
-      }
+  useEffect(() => {
+    return () => {
+      console.log('🛑 컴포넌트 언마운트 시 SSE 종료');
+      stopSSE();
     };
-    if (isTokenLoading) fetchData();
-  }, [accessToken, isTokenLoading]); // 의존성 배열이 빈 배열이면, 컴포넌트 마운트 시 한 번만 실행
+  }, []); // ✅ 언마운트 시 한 번만 실행
+  // useEffect(() => {
+  //   const getSessionInfo = async () => {
+  //     const response = await getContentsSessionInfo(accessToken);
+  //     if ('error' in response) {
+  //       // 에러 발생 시 사용자 피드백 제공
+  //       toast.error(`❌에러코드 : ${response.status} 오류: ${response.error}`, {
+  //         position: 'top-right',
+  //         autoClose: 3000,
+  //       });
+  //       return;
+  //     } else {
+  //       const data = response.data;
+
+  //       console.log('ResponseData');
+  //       console.log(data);
+  //     }
+  //   };
+
+  //   const fetchData = async () => {
+  //     try {
+  //       const response = await getSessionInfo();
+  //       console.log(response);
+  //       //setCurrentParticipants(result);
+  //     } catch (error) {
+  //       console.error('데이터 가져오기 실패:', error);
+  //     }
+  //   };
+  //   if (isTokenLoading) fetchData();
+  // }, [accessToken, isTokenLoading]); // 의존성 배열이 빈 배열이면, 컴포넌트 마운트 시 한 번만 실행
 
   return (
-    streamerInfo && (
+    streamerInfo &&
+    isViewerInfoLoading && (
       <ViewerPageLayout>
         <section className="flex flex-row justify-start">
           <Image
@@ -92,7 +117,9 @@ export default function Page() {
             스트리머가 당신을 찾고있어요! 🎉
           </div>
         </section>
-        <BtnWithChildren type={'alert'}>이제 시참 그만할래요</BtnWithChildren>
+        <BtnWithChildren type={'alert'} onClickHandler={() => stopSSE()}>
+          이제 시참 그만할래요
+        </BtnWithChildren>
       </ViewerPageLayout>
     )
   );
