@@ -79,14 +79,10 @@ type CreateContentsSessionRequest = {
   maxGroupParticipants: number;
 };
 
-// type GetContentsSessionInfoResponse = {
-//   status: number;
-//   data: ContentsSession;
-// };
-
-type ErrorResponse = {
+export type ErrorResponse = {
   status: number;
   error: string;
+  data: string;
 };
 
 type CreateContentsSessionResponse =
@@ -94,7 +90,7 @@ type CreateContentsSessionResponse =
   | ErrorResponse;
 
 type GetContentsSessionResponse = ApiResponse<ContentsSession> | ErrorResponse;
-
+type DeleteContentsSessionResponse = ApiResponse<string> | ErrorResponse;
 export const getContentsSessionInfo = async (
   accessToken: string,
 ): Promise<GetContentsSessionResponse> => {
@@ -127,6 +123,22 @@ export const createContentsSession = async (
         },
       },
     );
+    return response.data; // 성공적인 응답 데이터 반환
+  } catch (error: unknown) {
+    return handleApiError(error); // 에러 핸들링 함수 사용
+  }
+};
+
+export const deleteContentsSession = async (
+  accessToken: string,
+): Promise<DeleteContentsSessionResponse> => {
+  console.log(accessToken);
+  try {
+    const response = await axiosInstance.delete('/api/v1/contents/session', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
+      },
+    });
 
     return response.data; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {

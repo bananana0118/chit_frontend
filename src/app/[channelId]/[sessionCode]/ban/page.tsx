@@ -1,3 +1,4 @@
+'use client';
 import BtnWithChildren from '@/app/components/atoms/button/BtnWithChildren';
 import Live from '@/app/components/atoms/label/Live';
 import OFF from '@/app/components/atoms/label/Off';
