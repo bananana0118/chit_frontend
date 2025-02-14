@@ -5,6 +5,7 @@ import Input from '@/app/components/atoms/input/Input';
 import CategoryText from '@/app/components/atoms/text/CategoryText';
 import HintText from '@/app/components/atoms/text/HintText';
 import ViewerPageLayout from '@/app/components/layout/ViewerPageLayout';
+import makeUrl from '@/app/lib/makeUrl';
 import useChannelStore from '@/app/store/channelStore';
 import { useSSEStore } from '@/app/store/sseStore';
 import useAuthStore from '@/app/store/store';
@@ -17,7 +18,7 @@ export default function Settings() {
   const [viewerNickname, setViewerNickname] = useState('');
   const { sessionCode } = useParamsParser();
   const router = useRouter();
-  const { startSSE, isConnected, setViewerInfo } = useSSEStore();
+  const { startSSE, isConnected, setViewerInfo, error } = useSSEStore();
   const streamerInfo = useChannelStore((state) => state.streamerInfo);
 
   const onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,16 +28,22 @@ export default function Settings() {
   const accessToken = useAuthStore((state) => state.accessToken);
 
   const onCompleteViewerNickname = () => {
-    if (accessToken) {
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/sse/session/viewer/subscribe?sessionParticipationCode=${sessionCode}&gameNickname=${viewerNickname}&accessToken=${accessToken}`;
+    if (accessToken && viewerNickname) {
       setViewerInfo(viewerNickname);
 
-      startSSE(url);
+      startSSE(
+        makeUrl({
+          accessToken,
+          isStreamer: false,
+          sessionCode,
+          viewerGameNickname: viewerNickname,
+        }),
+      );
     }
   };
 
   useEffect(() => {
-    if (isConnected) {
+    if (isConnected && !error) {
       toast.success('시참에 참여했습니다. 조금만 기다려주세요!');
       router.push(`waiting`);
     }
