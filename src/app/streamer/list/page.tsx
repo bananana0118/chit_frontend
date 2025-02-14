@@ -2,24 +2,98 @@
 import CommonLayout from '@/app/components/layout/CommonLayout';
 import StreamerTools from '@/app/components/molecules/StreamerTools';
 import MemberCard from '@/app/components/organisms/MemberCard';
-import { getContentsSessionInfo } from '@/app/services/streamer/streamer';
+import makeUrl from '@/app/lib/makeUrl';
+import {
+  createContentsSession,
+  deleteContentsSession,
+  getContentsSessionInfo,
+} from '@/app/services/streamer/streamer';
 import useChannelStore from '@/app/store/channelStore';
 import useContentsSessionStore, {
   CurrentParticipants,
 } from '@/app/store/sessionStore';
+import { useSSEStore } from '@/app/store/sseStore';
 import useAuthStore from '@/app/store/store';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
+enum SessionStatus {
+  INITIAL = 1,
+  OPEN = 2,
+  CLOSED = 0,
+}
+
 export default function List() {
   const accessToken = useAuthStore((state) => state.accessToken);
   const sessionInfo = useContentsSessionStore((state) => state.sessionInfo);
+  const { startSSE, stopSSE, isConnected, contentsSessionInfo } = useSSEStore();
   const channelId = useChannelStore((state) => state.channelId);
   const isTokenLoading = useAuthStore((state) => state.isRehydrated);
+  const [isSessionOn, setIsSessionOn] = useState<SessionStatus>(
+    SessionStatus.INITIAL,
+  );
   const [currentParticipants, setCurrentParticipants] = useState<
     CurrentParticipants[]
   >([]);
 
+  //세션 생성 함수
+  const onCreateSession = async () => {
+    if (sessionInfo) {
+      const { gameParticipationCode, maxGroupParticipants } = sessionInfo;
+      const reqData = {
+        gameParticipationCode,
+        maxGroupParticipants,
+      };
+
+      const response = await createContentsSession(reqData, accessToken);
+      console.log('Res');
+      console.log(response);
+      return response.status;
+    }
+  };
+
+  //스트리머 세션 컨트롤 핸들러
+  const onClickSessionOnOff = async () => {
+    if (!accessToken) {
+      toast.warn('잠시후 다시 시도해주세요');
+      return;
+    }
+
+    // 상태변화 sessionOn=>sessionOff
+    if (isSessionOn) {
+      const response = await deleteContentsSession(accessToken);
+      if (response.status !== 200) {
+        toast.warn('에러가 발생했습니다. 나중에 다시 시도해 주세요');
+        return;
+      }
+      if (
+        isSessionOn === SessionStatus.INITIAL ||
+        isSessionOn === SessionStatus.OPEN
+      ) {
+        stopSSE();
+        setIsSessionOn(SessionStatus.CLOSED);
+        toast.success('시참이 종료되었습니다.');
+        return;
+      }
+    } else {
+      // 상태변화 sessionOff=>sessionOn
+      const status = await onCreateSession();
+      if (status !== 200) {
+        toast.warn('에러가 발생했습니다. 나중에 다시 시도해 주세요');
+        return;
+      }
+
+      const url = makeUrl({ accessToken, isStreamer: true });
+      startSSE(url);
+      setIsSessionOn(SessionStatus.OPEN);
+      toast.success('시참이 시작되었습니다.');
+      return;
+    }
+
+    toast.warn('요청에 실패했습니다. 잠시후 다시 시도해주세요');
+  };
+
+  //이벤트 발생시 참가자 정보를 불러오는 api
   useEffect(() => {
     const getSessionInfo = async () => {
       const response = await getContentsSessionInfo(accessToken);
@@ -51,25 +125,24 @@ export default function List() {
         console.error('데이터 가져오기 실패:', error);
       }
     };
-    if (isTokenLoading) fetchData();
-  }, [accessToken, isTokenLoading]); // 의존성 배열이 빈 배열이면, 컴포넌트 마운트 시 한 번만 실행
+    if (isTokenLoading && isSessionOn) fetchData();
+  }, [accessToken, isTokenLoading, isSessionOn, contentsSessionInfo]); // 의존성 배열이 빈 배열이면, 컴포넌트 마운트 시 한 번만 실행
 
   useEffect(() => {
-    if (accessToken) {
-      const eventSource = new EventSource(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/sse/session/streamer/init?accessToken=${accessToken}`,
-      );
-      eventSource.onmessage = (event: MessageEvent) => {
-        console.log('okay', event);
-        const eventData = JSON.parse(event.data);
-        console.log(eventData);
-      };
-
-      return () => {
-        eventSource.close();
-      };
+    if (accessToken && !isConnected) {
+      console.log('🔄 SSE 자동 시작');
+      const url = makeUrl({ accessToken, isStreamer: true });
+      startSSE(url);
     }
-  }, [accessToken]);
+  }, [accessToken]); // ✅ accessToken이 바뀔 때마다 SSE 연결
+
+  useEffect(() => {
+    return () => {
+      console.log('🛑 컴포넌트 언마운트 시 SSE 종료');
+      stopSSE();
+    };
+  }, []); // ✅ 언마운트 시 한 번만 실행
+
   if (!isTokenLoading) return <div>로딩중입니다.</div>;
 
   return (
@@ -79,11 +152,14 @@ export default function List() {
         <div className="flex h-full w-full flex-1 flex-col items-center justify-center">
           <section id="controlBox" className="w-full">
             <StreamerTools
+              onClickSessionHandler={onClickSessionOnOff}
+              isSessionOn={!!isSessionOn}
               sessionCode={sessionInfo?.sessionCode}
               channelId={channelId!}
             />
-
-            {currentParticipants.length === 0 ? (
+            {!isSessionOn ? (
+              <p className="mb-5 mt-4 text-bold-middle">시참을 시작해주세요</p>
+            ) : currentParticipants.length === 0 ? (
               <p className="mb-5 mt-4 text-bold-middle">아직 참여자가 없어요</p>
             ) : (
               <p className="mb-5 mt-4 text-bold-middle">
@@ -106,8 +182,10 @@ export default function List() {
                 다음 파티 호출 🔈
               </div>
             </div>
-            <div id="list" className="flex w-full flex-1">
-              {currentParticipants.length === 0 ? (
+            <div id="list" className="flex w-full flex-1 flex-col">
+              {!isSessionOn ? (
+                <div>시참을 시작해주세요.</div>
+              ) : currentParticipants.length === 0 ? (
                 <div>유저를 기다리는 중입니다.</div>
               ) : (
                 currentParticipants.map((participant, index) => (
@@ -122,7 +200,7 @@ export default function List() {
                     >
                       {index + 1}
                     </div>
-                    <div id="partyMembers" className="flex-1">
+                    <div id="partyMembers" className="flex-1 flex-col">
                       <MemberCard
                         zicName={`${participant.chzzkNickname}`}
                         gameNicname={`${participant.gameNickname}`}
