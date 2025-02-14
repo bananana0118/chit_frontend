@@ -7,10 +7,14 @@ import useChannelStore from '@/app/store/channelStore';
 import axios from 'axios';
 import useAuthStore from '@/app/store/store';
 import axiosInstance from '@/app/services/axios';
+import useContentsSessionStore from '@/app/store/sessionStore';
 
 export default function Page() {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const searchParams = useSearchParams();
+  const sessionCode = useContentsSessionStore(
+    (state) => state.sessionInfo?.sessionCode,
+  );
   const code = searchParams.get('code');
   const state = searchParams.get('state');
   const isRehydrated = useAuthStore((state) => state.isRehydrated);
@@ -57,10 +61,10 @@ export default function Page() {
           setAccessToken(data.data);
           setLogin(true);
 
-          if (channelId) {
-            router.push(`/${channelId}`); //2번 케이스 채널 id가 있을 경우
+          if (channelId && sessionCode) {
+            router.push(`/${channelId}/${sessionCode}`); //2번 케이스 채널 id가 있을 경우
           } else {
-            router.push(`/`); //1번 케이스
+            router.push('/');
           }
         }
       } catch (error) {
