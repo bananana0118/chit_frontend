@@ -1,4 +1,4 @@
-import PlusIconSVG from './Plus.svg';
+import PlusIconSVG from './plus.svg';
 
 type Props = {
   width: number;
