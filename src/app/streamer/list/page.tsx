@@ -134,13 +134,14 @@ export default function List() {
       const url = makeUrl({ accessToken, isStreamer: true });
       startSSE(url);
     }
-  }, [accessToken]); // ✅ accessToken이 바뀔 때마다 SSE 연결
+  }, [accessToken, isConnected, startSSE]); // ✅ accessToken이 바뀔 때마다 SSE 연결
 
   useEffect(() => {
     return () => {
       console.log('🛑 컴포넌트 언마운트 시 SSE 종료');
       stopSSE();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // ✅ 언마운트 시 한 번만 실행
 
   if (!isTokenLoading) return <div>로딩중입니다.</div>;

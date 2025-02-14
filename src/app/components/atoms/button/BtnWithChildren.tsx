@@ -1,7 +1,5 @@
 'use client';
 
-import { MouseEventHandler } from 'react';
-
 type BtnWithTextType = 'alert' | 'disable' | 'default' | 'submit';
 
 type Props = {

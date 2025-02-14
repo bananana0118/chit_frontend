@@ -18,7 +18,6 @@ export default function Page() {
   const code = searchParams.get('code');
   const state = searchParams.get('state');
   const isRehydrated = useAuthStore((state) => state.isRehydrated);
-  const role = useAuthStore((state) => state.role);
   const channelId = useChannelStore((state) => state.channelId);
   const setAccessToken = useAuthStore((state) => state.setAccessToken);
   const setLogin = useAuthStore((state) => state.setLogin);
@@ -34,18 +33,11 @@ export default function Page() {
   useEffect(() => {
     const onCompleteChannelId = async (channelId?: string | string[]) => {
       let requestData = null;
-      if (role === 'STREAMER') {
-        requestData = {
-          code: code,
-          state: state,
-        };
-      } else {
-        requestData = {
-          code: code,
-          state: state,
-        };
-      }
-      console.log('role:', role);
+
+      requestData = {
+        code: code,
+        state: state,
+      };
       console.log('requestData:', requestData);
       try {
         const response = await axiosInstance.post(

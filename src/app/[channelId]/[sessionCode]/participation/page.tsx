@@ -47,7 +47,7 @@ export default function Settings() {
       toast.success('시참에 참여했습니다. 조금만 기다려주세요!');
       router.push(`waiting`);
     }
-  }, [isConnected, router]);
+  }, [error, isConnected, router]);
 
   return (
     streamerInfo && (

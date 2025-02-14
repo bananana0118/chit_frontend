@@ -9,70 +9,71 @@ import Image from 'next/image';
 import { useEffect } from 'react';
 import useAuthStore from '@/app/store/store';
 import { useSSEStore } from '@/app/store/sseStore';
-import { getContentsSessionInfo } from '@/app/services/streamer/streamer';
 import { toast } from 'react-toastify';
 import useParamsParser from '@/hooks/useParamsParser';
+import { getContentsSessionGameCode } from '@/app/services/viewer/viewer';
 
 export default function Page() {
   const streamerInfo = useChannelStore((state) => state.streamerInfo);
   const channel = streamerInfo?.channel;
   const { sessionCode } = useParamsParser();
   const { accessToken, isRehydrated: isTokenLoading = false } = useAuthStore();
-  const { order } = useSSEStore();
   const {
-    startSSE,
     stopSSE,
-    isConnected,
-    viewerGameNickname,
+
     isRehydrated: isViewerInfoLoading = false,
   } = useSSEStore();
   //세션인포 찾기
 
+  const onClickSessionCloseHandler = () => {
+    console.log('🛑세션종료');
+    stopSSE();
+  };
   useEffect(() => {
-    if (accessToken && isViewerInfoLoading && !isConnected) {
-      console.log('🔄 SSE 자동 시작');
-      console.log(viewerGameNickname);
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/sse/session/viewer/subscribe?sessionParticipationCode=${sessionCode}&gameNickname=${viewerGameNickname}&accessToken=${accessToken}`;
-
-      startSSE(url);
-    }
-  }, [accessToken, isViewerInfoLoading]); // ✅ accessToken이 바뀔 때마다 SSE 연결
-
-  useEffect(() => {
+    console.log('이게 왜 실행되는겁니까?');
     return () => {
-      console.log('🛑 컴포넌트 언마운트 시 SSE 종료');
+      console.log('🛑 컴포넌트 언마운트 시 SSE 종료!!');
       stopSSE();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // ✅ 언마운트 시 한 번만 실행
-  // useEffect(() => {
-  //   const getSessionInfo = async () => {
-  //     const response = await getContentsSessionInfo(accessToken);
-  //     if ('error' in response) {
-  //       // 에러 발생 시 사용자 피드백 제공
-  //       toast.error(`❌에러코드 : ${response.status} 오류: ${response.error}`, {
-  //         position: 'top-right',
-  //         autoClose: 3000,
-  //       });
-  //       return;
-  //     } else {
-  //       const data = response.data;
+  useEffect(() => {
+    const getGameCode = async () => {
+      if (sessionCode) {
+        const response = await getContentsSessionGameCode({
+          accessToken,
+          sessionCode,
+        });
+        if ('error' in response) {
+          // 에러 발생 시 사용자 피드백 제공
+          toast.error(
+            `❌에러코드 : ${response.status} 오류: ${response.error}`,
+            {
+              position: 'top-right',
+              autoClose: 3000,
+            },
+          );
+          return;
+        } else {
+          const data = response.data;
 
-  //       console.log('ResponseData');
-  //       console.log(data);
-  //     }
-  //   };
+          console.log('ResponseData');
+          console.log(data);
+        }
+      }
+    };
 
-  //   const fetchData = async () => {
-  //     try {
-  //       const response = await getSessionInfo();
-  //       console.log(response);
-  //       //setCurrentParticipants(result);
-  //     } catch (error) {
-  //       console.error('데이터 가져오기 실패:', error);
-  //     }
-  //   };
-  //   if (isTokenLoading) fetchData();
-  // }, [accessToken, isTokenLoading]); // 의존성 배열이 빈 배열이면, 컴포넌트 마운트 시 한 번만 실행
+    const fetchData = async () => {
+      try {
+        const response = await getGameCode();
+        console.log(response);
+        //setCurrentParticipants(result);
+      } catch (error) {
+        console.error('데이터 가져오기 실패:', error);
+      }
+    };
+    if (isTokenLoading) fetchData();
+  }, [accessToken, isTokenLoading, sessionCode]); // 의존성 배열이 빈 배열이면, 컴포넌트 마운트 시 한 번만 실행
 
   return (
     streamerInfo &&
@@ -117,7 +118,10 @@ export default function Page() {
             스트리머가 당신을 찾고있어요! 🎉
           </div>
         </section>
-        <BtnWithChildren type={'alert'} onClickHandler={() => stopSSE()}>
+        <BtnWithChildren
+          type={'alert'}
+          onClickHandler={onClickSessionCloseHandler}
+        >
           이제 시참 그만할래요
         </BtnWithChildren>
       </ViewerPageLayout>
