@@ -55,6 +55,7 @@ export default function Home() {
     };
 
     fetchData(channelId as string);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [channelId, setChannelId]);
 
   const onClickLogin = async () => {

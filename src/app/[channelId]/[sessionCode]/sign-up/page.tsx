@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+//안쓰는 페이지
+
 'use client';
 import BtnWithChildren from '@/app/components/atoms/button/BtnWithChildren';
 import Input from '@/app/components/atoms/input/Input';

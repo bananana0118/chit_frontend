@@ -21,13 +21,20 @@ export type Session = {
 };
 
 export type ParticipantsInfo = {
-  content: [];
+  content: [CurrentParticipants];
   page: number;
   size: number;
   totalElements: number;
   totalPages: number;
   hasNext: boolean;
   hasPrevious: boolean;
+};
+
+export type CurrentParticipants = {
+  memberId: number;
+  chzzkNickname: string;
+  gameNickname: string;
+  fixedPick: boolean;
 };
 
 type ContentsSessionState = {

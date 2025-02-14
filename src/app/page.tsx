@@ -51,7 +51,14 @@ export default function Home() {
         fetchData();
       }
     }
-  }, [accessToken, isRehydrated]);
+  }, [
+    accessToken,
+    isRehydrated,
+    router,
+    setChannelId,
+    setRole,
+    setStreamerInfo,
+  ]);
 
   // 로드가 완료될 때까지 로딩 화면 표시
   if (!isRehydrated) {

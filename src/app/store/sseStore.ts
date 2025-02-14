@@ -1,97 +1,175 @@
 import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 type SSEState = {
+  contentsSessionInfo: SSEStateContentsSession | null;
   eventSource: EventSource | null;
   isConnected: boolean;
   order: number | null;
+  viewerGameNickname: string | null;
+  error: string | null;
+  isRehydrated: boolean; // 상태가 로드 완료되었는지 여부 추가
+  setViewerInfo: (viewerGameNickname: string) => void;
   startSSE: (url: string) => void;
   stopSSE: () => void;
 };
 
-const EVENT_TYPES = [
-  'SESSION_STATUS_UPDATED',
-  'SESSION_INFORMATION_UPDATED',
-  'PARTICIPANT_ADDED',
-  'PARTICIPANT_REMOVED',
-  'PARTICIPANT_UPDATED',
-  'SESSION_CLOSED',
-];
+type SSEStateContentsSession = {
+  sessionCode?: string;
+  maxGroupParticipants?: number;
+  currentParticipantsCount?: number;
+  gameParticipationCode?: string;
+  order?: number;
+  fixed?: boolean;
+};
 
-export const useSSEStore = create<SSEState>((set) => ({
-  eventSource: null,
-  isConnected: false,
-  order: null,
-  startSSE: (url) => {
-    set((state) => {
-      if (state.eventSource) {
-        console.log('기존sse연결 있을 시 연결 닫기');
-        state.eventSource.close();
-      }
+enum SSEEventType {
+  SESSION_STATUS_UPDATED = 'SESSION_STATUS_UPDATED',
+  SESSION_INFORMATION_UPDATED = 'SESSION_INFORMATION_UPDATED',
+  PARTICIPANT_ADDED = 'PARTICIPANT_ADDED',
+  PARTICIPANT_REMOVED = 'PARTICIPANT_REMOVED',
+  PARTICIPANT_UPDATED = 'PARTICIPANT_UPDATED',
+  SESSION_CLOSED = 'SESSION_CLOSED',
+}
+type EVENT_ParticipantAddedResponse = {
+  maxGroupParticipants: number;
+  currentParticipants?: number;
+};
 
-      console.log('새로운 SSE연결 시작');
-      const newEventSource = new EventSource(url);
+type EVENT_SessionStatusUpdateResponse = {
+  sessionCode: string;
+  maxGroupParticipants: number;
+  currentParticipants: number;
+  gameParticipationCode: string;
+};
 
-      newEventSource.onopen = (event) => {
-        console.log('SSE연결 성공~');
-        console.log('연결성공메세지 수신', event);
-      };
+type EVENT_ParticipantResponse = {
+  order: number;
+  fixed: boolean;
+};
 
-      // ✅ 모든 이벤트 리스너 등록
-      EVENT_TYPES.forEach((eventType) => {
-        newEventSource.addEventListener(eventType, (event) => {
-          console.log(`📩 ${eventType} 이벤트 수신:`, JSON.parse(event.data));
+export const SSEStorageKey = 'SSE-storage';
 
-          const eventData = JSON.parse(event.data);
-          console.log(eventData);
+export const useSSEStore = create<SSEState>()(
+  persist(
+    (set, get) => ({
+      eventSource: null,
+      isConnected: false,
+      order: null,
+      error: null,
+      viewerGameNickname: null,
+      isRehydrated: false,
+      contentsSessionInfo: null,
+      setViewerInfo: (viewerGameNickname) => {
+        set((state) => ({
+          ...state,
+          viewerGameNickname,
+        }));
+      },
+      startSSE: (url) => {
+        set((state) => {
+          if (state.isConnected) {
+            console.log('⚠️ 이미 SSE가 연결되어 있음. 중복 구독 방지');
+            return state;
+          }
 
-          // ✅ 이벤트 타입에 따라 ORDER 값 변경
-          let newOrder = 0;
-          //   switch (eventType) {
-          //     case 'SESSION_STATUS_UPDATED':
-          //       newOrder = 1;
-          //       break;
-          //     case 'SESSION_INFORMATION_UPDATED':
-          //       newOrder = 2;
-          //       break;
-          //     case 'PARTICIPANT_ADDED':
-          //       newOrder = eventData.order ?? 3;
-          //       break;
-          //     case 'PARTICIPANT_REMOVED':
-          //       newOrder = eventData.order ?? 4;
-          //       break;
-          //     case 'PARTICIPANT_UPDATED':
-          //       newOrder = eventData.order ?? 5;
-          //       break;
-          //     case 'SESSION_CLOSED':
-          //       newOrder = 99;
-          //       break;
-          //     default:
-          //       newOrder = 0;
-          //   }
+          console.log('새로운 SSE연결 시작');
+          const newEventSource = new EventSource(url);
 
-          set({ order: newOrder }); // 상태 업데이트
-          console.log(`🔄 ORDER 변경: ${newOrder}`);
+          newEventSource.onopen = (event) => {
+            console.log('SSE연결 성공~');
+            console.log('연결성공메세지 수신', event);
+            set({ isConnected: true, error: null }); // ✅ 에러 초기화
+          };
+
+          // ✅ 모든 이벤트 리스너 등록
+          Object.values(SSEEventType).forEach((eventType) => {
+            newEventSource.addEventListener(eventType, (event) => {
+              console.log(
+                `📩 ${eventType} 이벤트 수신:`,
+                JSON.parse(event.data),
+              );
+
+              const eventData = JSON.parse(event.data);
+              const newState: Partial<SSEState> = {};
+
+              // ✅ 이벤트 타입에 따라 ORDER 값 변경
+              switch (eventType) {
+                case SSEEventType.SESSION_STATUS_UPDATED:
+                  newState.contentsSessionInfo = {
+                    ...(get().contentsSessionInfo || {}),
+                    ...(eventData as EVENT_SessionStatusUpdateResponse),
+                    currentParticipantsCount:
+                      eventData.currentParticipants || 0,
+                  };
+                  break;
+
+                case SSEEventType.PARTICIPANT_ADDED:
+                  const { maxGroupParticipants, currentParticipants } =
+                    eventData as EVENT_ParticipantAddedResponse;
+
+                  newState.contentsSessionInfo = {
+                    ...(get().contentsSessionInfo || {}),
+                    maxGroupParticipants,
+                    currentParticipantsCount: currentParticipants || 0,
+                  };
+                  break;
+
+                case SSEEventType.PARTICIPANT_REMOVED:
+                  newState.order = (
+                    eventData as EVENT_ParticipantResponse
+                  ).order;
+                  break;
+
+                case SSEEventType.SESSION_CLOSED:
+                  console.log('session이 종료되었습니다.');
+                  break;
+
+                default:
+                  console.log('📩 세션 이벤트 수신:', eventData);
+              }
+
+              set(newState); // 상태 업데이트
+            });
+          });
+          newEventSource.onmessage = (event) =>
+            console.log('메세지 수신', JSON.parse(event.data));
+
+          newEventSource.onerror = (error) => {
+            console.log('SSE오류 발생~', error);
+            newEventSource.close();
+            set({ isConnected: false, eventSource: null, error: '연결실패' });
+          };
+
+          return {
+            eventSource: newEventSource,
+            isConnected: true,
+            error: null,
+          };
         });
-      });
-      newEventSource.onmessage = (event) =>
-        console.log('메세지 수신', JSON.parse(event.data));
+      },
+      stopSSE: () => {
+        set((state) => {
+          if (state.eventSource) {
+            console.log('SSE연결을 종료합니다.');
+            state.eventSource.close();
+          }
+          return { eventSource: null, isConnected: false };
+        });
+      },
+    }),
 
-      newEventSource.onerror = (error) => {
-        console.log('SSE오류 발생~', error);
-        newEventSource.close();
-        set({ isConnected: false, eventSource: null });
-      };
-
-      return { eventSource: newEventSource, isConnected: true };
-    });
-  },
-  stopSSE: () => {
-    set((state) => {
-      if (state.eventSource) {
-        console.log('SSE연결을 종료합니다.');
-        state.eventSource.close();
-      }
-      return { eventSource: null, isConnected: false };
-    });
-  },
-}));
+    {
+      name: SSEStorageKey,
+      storage: createJSONStorage(() => sessionStorage),
+      partialize: (state) => ({
+        viewerGameNickname: state.viewerGameNickname,
+      }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.isRehydrated = true; // 로드 완료 플래그 설정
+        }
+      },
+    },
+  ),
+);

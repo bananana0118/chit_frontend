@@ -1,3 +1,4 @@
+'use client';
 import Eyes from '@/app/assets/icons/Eyes';
 import React, { useState } from 'react';
 

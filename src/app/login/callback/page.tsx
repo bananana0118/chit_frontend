@@ -6,15 +6,18 @@ import CommonLayout from '../../components/layout/CommonLayout';
 import useChannelStore from '@/app/store/channelStore';
 import axios from 'axios';
 import useAuthStore from '@/app/store/store';
-import DummyData from '@/app/constants/Dummy';
+import axiosInstance from '@/app/services/axios';
+import useContentsSessionStore from '@/app/store/sessionStore';
 
 export default function Page() {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const searchParams = useSearchParams();
+  const sessionCode = useContentsSessionStore(
+    (state) => state.sessionInfo?.sessionCode,
+  );
   const code = searchParams.get('code');
   const state = searchParams.get('state');
   const isRehydrated = useAuthStore((state) => state.isRehydrated);
-  const role = useAuthStore((state) => state.role);
   const channelId = useChannelStore((state) => state.channelId);
   const setAccessToken = useAuthStore((state) => state.setAccessToken);
   const setLogin = useAuthStore((state) => state.setLogin);
@@ -27,31 +30,17 @@ export default function Page() {
   //2-2. 2의 경우 1. 채널id와, role을 뽑아내어 리다이렉트 시켜야함 (channelId는 이미 페이지에 접속할 때 담겨있음)
   //*channelId 가 없을경우 기본 ""
 
-  const DummyViewerLoginInfo = {
-    channelId: null,
-    authCode: null,
-  };
-
   useEffect(() => {
     const onCompleteChannelId = async (channelId?: string | string[]) => {
       let requestData = null;
-      if (role === 'STREAMER') {
-        requestData = {
-          code: code,
-          state: state,
-          ...DummyViewerLoginInfo,
-        };
-      } else {
-        requestData = {
-          code: code,
-          state: state,
-          ...DummyViewerLoginInfo,
-        };
-      }
-      console.log('role:', role);
+
+      requestData = {
+        code: code,
+        state: state,
+      };
       console.log('requestData:', requestData);
       try {
-        const response = await axios.post(
+        const response = await axiosInstance.post(
           'http://localhost:8080/api/v1/auth/login',
           {
             ...requestData,
@@ -59,15 +48,15 @@ export default function Page() {
         );
 
         const { data, status } = response;
-
+        console.log(response);
         if (status === 200) {
           setAccessToken(data.data);
           setLogin(true);
 
-          if (channelId) {
-            router.push(`/${channelId}`); //2번 케이스 채널 id가 있을 경우
+          if (channelId && sessionCode) {
+            router.push(`/${channelId}/${sessionCode}`); //2번 케이스 채널 id가 있을 경우
           } else {
-            router.push(`/`); //1번 케이스
+            router.push('/');
           }
         }
       } catch (error) {

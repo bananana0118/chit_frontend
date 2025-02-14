@@ -9,38 +9,63 @@ import Image from 'next/image';
 import { useEffect } from 'react';
 import useAuthStore from '@/app/store/store';
 import { useSSEStore } from '@/app/store/sseStore';
-import { getContentsSessionInfo } from '@/app/services/streamer/streamer';
 import { toast } from 'react-toastify';
+import useParamsParser from '@/hooks/useParamsParser';
+import { getContentsSessionGameCode } from '@/app/services/viewer/viewer';
 
 export default function Page() {
   const streamerInfo = useChannelStore((state) => state.streamerInfo);
   const channel = streamerInfo?.channel;
+  const { sessionCode } = useParamsParser();
   const { accessToken, isRehydrated: isTokenLoading = false } = useAuthStore();
-  const { order } = useSSEStore();
+  const {
+    stopSSE,
 
+    isRehydrated: isViewerInfoLoading = false,
+  } = useSSEStore();
   //세션인포 찾기
 
+  const onClickSessionCloseHandler = () => {
+    console.log('🛑세션종료');
+    stopSSE();
+  };
   useEffect(() => {
-    const getSessionInfo = async () => {
-      const response = await getContentsSessionInfo(accessToken);
-      if ('error' in response) {
-        // 에러 발생 시 사용자 피드백 제공
-        toast.error(`❌에러코드 : ${response.status} 오류: ${response.error}`, {
-          position: 'top-right',
-          autoClose: 3000,
+    console.log('이게 왜 실행되는겁니까?');
+    return () => {
+      console.log('🛑 컴포넌트 언마운트 시 SSE 종료!!');
+      stopSSE();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // ✅ 언마운트 시 한 번만 실행
+  useEffect(() => {
+    const getGameCode = async () => {
+      if (sessionCode) {
+        const response = await getContentsSessionGameCode({
+          accessToken,
+          sessionCode,
         });
-        return;
-      } else {
-        const data = response.data;
+        if ('error' in response) {
+          // 에러 발생 시 사용자 피드백 제공
+          toast.error(
+            `❌에러코드 : ${response.status} 오류: ${response.error}`,
+            {
+              position: 'top-right',
+              autoClose: 3000,
+            },
+          );
+          return;
+        } else {
+          const data = response.data;
 
-        console.log('ResponseData');
-        console.log(data);
+          console.log('ResponseData');
+          console.log(data);
+        }
       }
     };
 
     const fetchData = async () => {
       try {
-        const response = await getSessionInfo();
+        const response = await getGameCode();
         console.log(response);
         //setCurrentParticipants(result);
       } catch (error) {
@@ -48,10 +73,11 @@ export default function Page() {
       }
     };
     if (isTokenLoading) fetchData();
-  }, [accessToken, isTokenLoading]); // 의존성 배열이 빈 배열이면, 컴포넌트 마운트 시 한 번만 실행
+  }, [accessToken, isTokenLoading, sessionCode]); // 의존성 배열이 빈 배열이면, 컴포넌트 마운트 시 한 번만 실행
 
   return (
-    streamerInfo && (
+    streamerInfo &&
+    isViewerInfoLoading && (
       <ViewerPageLayout>
         <section className="flex flex-row justify-start">
           <Image
@@ -92,7 +118,12 @@ export default function Page() {
             스트리머가 당신을 찾고있어요! 🎉
           </div>
         </section>
-        <BtnWithChildren type={'alert'}>이제 시참 그만할래요</BtnWithChildren>
+        <BtnWithChildren
+          type={'alert'}
+          onClickHandler={onClickSessionCloseHandler}
+        >
+          이제 시참 그만할래요
+        </BtnWithChildren>
       </ViewerPageLayout>
     )
   );

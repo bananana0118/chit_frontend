@@ -1,14 +1,13 @@
-// app/dashboard/error.tsx
 'use client';
 
 import { useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
-export default function ErrorBoundary({
+export default function Error({
   error,
   reset,
 }: {
-  error: Error;
+  error: Error & { digest?: string };
   reset: () => void;
 }) {
   const router = useRouter();
@@ -21,7 +20,7 @@ export default function ErrorBoundary({
   return (
     <div>
       <h1>에러가 발생했습니다!</h1>
-      <p>{error?.message || null}</p>
+      <p>{error.message || null}</p>
       <button
         onClick={() => {
           router.push(`/${channelId}`);
