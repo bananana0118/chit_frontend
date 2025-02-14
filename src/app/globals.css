@@ -2,9 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --font-pretendard: 'Pretendard', Arial, Helvetica, sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -17,5 +21,17 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-pretendard);
+}
+
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+@media (max-width: 320px) {
+  .button-container {
+    min-width: 280px; /* 창 너비가 320px 이하일 때 최소 너비 설정 */
+  }
 }

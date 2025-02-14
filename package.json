@@ -6,13 +6,18 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "clean": "rmdir /s /q .next"
   },
   "dependencies": {
+    "@svgr/webpack": "^8.1.0",
+    "axios": "^1.7.9",
+    "chzzk": "^1.10.4",
     "next": "15.0.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "zustand": "^5.0.1"
+    "react-toastify": "^11.0.3",
+    "zustand": "^5.0.2"
   },
   "devDependencies": {
     "@types/node": "^20",
@@ -24,6 +29,7 @@
     "eslint-plugin-prettier": "^5.2.1",
     "postcss": "^8",
     "prettier": "^3.3.3",
+    "prettier-plugin-tailwindcss": "^0.6.9",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
   }
