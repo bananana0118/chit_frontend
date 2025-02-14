@@ -1,10 +1,10 @@
 import guideText from '@/app/constants/guideText';
-type Props = { isLive: number };
+type Props = { isLive: 'OPEN' | 'CLOSE' };
 
 export default function StreamerTextComment({ isLive }: Props) {
   return (
     <p className="text-bold-small">
-      {isLive ? guideText.isLiveComment : guideText.isLiveCommentNo}
+      {isLive === 'OPEN' ? guideText.isLiveComment : guideText.isLiveCommentNo}
     </p>
   );
 }
