@@ -4,7 +4,7 @@
 import BtnWithChildren from '@/app/components/atoms/button/BtnWithChildren';
 import Input from '@/app/components/atoms/input/Input';
 import CommonLayout from '@/app/components/layout/CommonLayout';
-import useAuthStore from '@/app/store/store';
+import useAuthStore from '@/store/store';
 import axios from 'axios';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';

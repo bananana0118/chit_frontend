@@ -6,8 +6,8 @@ import CategoryText from '@/app/components/atoms/text/CategoryText';
 import RefreshText from '@/app/components/atoms/text/RefreshText';
 import StreamerTextComment from '@/app/components/atoms/text/StreamerTextComment';
 import StreamerTextLive from '@/app/components/atoms/text/StreamerTextLive';
-import useChannelStore from '@/app/store/channelStore';
-import useAuthStore from '@/app/store/store';
+import useChannelStore from '@/store/channelStore';
+import useAuthStore from '@/store/store';
 import Image from 'next/image';
 
 export default function Home() {

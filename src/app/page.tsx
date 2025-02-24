@@ -2,7 +2,7 @@
 
 import BtnWithChildren from './components/atoms/button/BtnWithChildren';
 import CommonLayout from './components/layout/CommonLayout';
-import useAuthStore from './store/store';
+import useAuthStore from '../store/store';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Live from './components/atoms/label/Live';
@@ -11,7 +11,7 @@ import CategoryText from './components/atoms/text/CategoryText';
 import RefreshText from './components/atoms/text/RefreshText';
 import StreamerTextComment from './components/atoms/text/StreamerTextComment';
 import StreamerTextLive from './components/atoms/text/StreamerTextLive';
-import useChannelStore from './store/channelStore';
+import useChannelStore from '../store/channelStore';
 import Image from 'next/image';
 import { postStreamerInfo, StreamerInfo } from './services/streamer/streamer';
 import DummyData from './constants/Dummy';

@@ -10,7 +10,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import AlertIcon from '@/app/assets/icons/AlertIcon';
 import Image from 'next/image';
 import ViewerGuide from '@/app/assets/imgs/ViewerGuide.png';
-import useAuthStore from '@/app/store/store';
+import useAuthStore from '@/store/store';
 import { loginWithOAuth2 } from '@/app/services/auth/auth';
 
 export default function SignUp() {

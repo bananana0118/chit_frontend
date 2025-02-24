@@ -8,12 +8,12 @@ import {
   deleteContentsSession,
   getContentsSessionInfo,
 } from '@/app/services/streamer/streamer';
-import useChannelStore from '@/app/store/channelStore';
+import useChannelStore from '@/store/channelStore';
 import useContentsSessionStore, {
   CurrentParticipants,
-} from '@/app/store/sessionStore';
-import { useSSEStore } from '@/app/store/sseStore';
-import useAuthStore from '@/app/store/store';
+} from '@/store/sessionStore';
+import { useSSEStore } from '@/store/sseStore';
+import useAuthStore from '@/store/store';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
