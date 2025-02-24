@@ -9,6 +9,7 @@ import StreamerTextComment from '@/components/atoms/text/StreamerTextComment';
 import StreamerTextLive from '@/components/atoms/text/StreamerTextLive';
 import useChannelStore from '@/store/channelStore';
 import useAuthStore from '@/store/store';
+import Image from 'next/image';
 
 export default function Home() {
   const { setRole } = useAuthStore();

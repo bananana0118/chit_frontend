@@ -3,12 +3,12 @@
 'use client';
 
 import BtnWithChildren from '@/components/atoms/button/BtnWithChildren';
+import Input from '@/components/atoms/input/Input';
 import CommonLayout from '@/components/layout/CommonLayout';
 import useAuthStore from '@/store/store';
 import axios from 'axios';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/router';
-import { Input } from 'postcss';
 import { useState } from 'react';
 
 export default function Home() {
