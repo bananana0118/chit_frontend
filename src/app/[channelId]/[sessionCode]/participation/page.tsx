@@ -18,7 +18,7 @@ export default function Settings() {
   const [viewerNickname, setViewerNickname] = useState('');
   const { sessionCode } = useParamsParser();
   const router = useRouter();
-  const { startSSE, isConnected, setViewerInfo, error } = useSSEStore();
+  const { startSSE, isConnected, setViewerNickname, error } = useSSEStore();
   const streamerInfo = useChannelStore((state) => state.streamerInfo);
 
   const onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,14 +29,14 @@ export default function Settings() {
 
   const onCompleteViewerNickname = () => {
     if (accessToken && viewerNickname) {
-      setViewerInfo(viewerNickname);
+      setViewerNickname(viewerNickname);
 
       startSSE(
         makeUrl({
           accessToken,
           isStreamer: false,
           sessionCode,
-          viewerGameNickname: viewerNickname,
+          viewerNickname: viewerNickname,
         }),
       );
     }
