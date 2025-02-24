@@ -2,16 +2,17 @@
 //안쓰는 페이지
 
 'use client';
-import BtnWithChildren from '@/app/components/atoms/button/BtnWithChildren';
-import Input from '@/app/components/atoms/input/Input';
-import ViewerPageLayout from '@/app/components/layout/ViewerPageLayout';
+
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import AlertIcon from '@/app/assets/icons/AlertIcon';
 import Image from 'next/image';
 import ViewerGuide from '@/app/assets/imgs/ViewerGuide.png';
 import useAuthStore from '@/store/store';
-import { loginWithOAuth2 } from '@/app/services/auth/auth';
+import BtnWithChildren from '@/components/atoms/button/BtnWithChildren';
+import ViewerPageLayout from '@/components/layout/ViewerPageLayout';
+import { loginWithOAuth2 } from '@/services/auth/auth';
+import Input from '@/components/atoms/input/Input';
 
 export default function SignUp() {
   const [viewerChannelId, setViewerChannelId] = useState('');

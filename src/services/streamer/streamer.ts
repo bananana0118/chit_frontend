@@ -1,7 +1,5 @@
 import axios from 'axios';
 import { ChzzkClient } from 'chzzk';
-import axiosInstance from '../axios';
-import { handleApiError } from '@/app/lib/error';
 import {
   StreamerInfo,
   GetContentsSessionResponse,
@@ -11,6 +9,8 @@ import {
   PutContentsSessionNextGroupRequest,
   PutContentsSessionNextGroupResponse,
 } from './type';
+import { handleApiError } from '@/lib/error';
+import axiosInstance from '../axios';
 
 const client = new ChzzkClient();
 

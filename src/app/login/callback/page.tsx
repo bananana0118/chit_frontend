@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import CommonLayout from '../../components/layout/CommonLayout';
 import useChannelStore from '@/store/channelStore';
 import axios from 'axios';
 import useAuthStore from '@/store/store';
-import axiosInstance from '@/app/services/axios';
 import useContentsSessionStore from '@/store/sessionStore';
+import CommonLayout from '@/components/layout/CommonLayout';
+import axiosInstance from '@/services/axios';
 
 export default function Page() {
   const [isRedirecting, setIsRedirecting] = useState(false);

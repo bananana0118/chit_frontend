@@ -1,20 +1,21 @@
 'use client';
-import CommonLayout from '@/app/components/layout/CommonLayout';
-import StreamerTools from '@/app/components/molecules/StreamerTools';
-import MemberCard from '@/app/components/organisms/MemberCard';
-import makeUrl from '@/app/lib/makeUrl';
+
+import CommonLayout from '@/components/layout/CommonLayout';
+import StreamerTools from '@/components/molecules/StreamerTools';
+import MemberCard from '@/components/organisms/MemberCard';
+import makeUrl from '@/lib/makeUrl';
 import {
   createContentsSession,
   deleteContentsSession,
   getContentsSessionInfo,
-} from '@/app/services/streamer/streamer';
+} from '@/services/streamer/streamer';
 import useChannelStore from '@/store/channelStore';
 import useContentsSessionStore, {
   CurrentParticipants,
 } from '@/store/sessionStore';
 import { useSSEStore } from '@/store/sseStore';
 import useAuthStore from '@/store/store';
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 
 enum SessionStatus {

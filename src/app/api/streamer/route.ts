@@ -1,4 +1,4 @@
-import { getStreamerInfo } from '@/app/services/streamer/streamer';
+import { getStreamerInfo } from '@/services/streamer/streamer';
 import { NextResponse } from 'next/server';
 
 // POST 요청 처리

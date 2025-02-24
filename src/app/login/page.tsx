@@ -1,9 +1,9 @@
 'use client';
 
+import BtnWithChildren from '@/components/atoms/button/BtnWithChildren';
+import CommonLayout from '@/components/layout/CommonLayout';
 import ChitLogo from '../assets/logo/ChitLogo';
 import NaverLogo from '../assets/logo/NaverLogo';
-import BtnWithChildren from '../components/atoms/button/BtnWithChildren';
-import CommonLayout from '../components/layout/CommonLayout';
 
 export default function Home() {
   const onClickLogin = async () => {

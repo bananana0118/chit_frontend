@@ -1,8 +1,7 @@
 import ChitLogo from '@/app/assets/logo/ChitLogo';
 import NaverLogo from '@/app/assets/logo/NaverLogo';
-import BtnWithChildren from '@/app/components/atoms/button/BtnWithChildren';
-import CommonLayout from '@/app/components/layout/CommonLayout';
-
+import BtnWithChildren from '@/components/atoms/button/BtnWithChildren';
+import CommonLayout from '@/components/layout/CommonLayout';
 
 export default function Home() {
   const onClickLogin = async () => {

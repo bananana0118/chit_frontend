@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
-import PageLayout from './components/layout/PageLayout';
-import AuthProvider from './provider/AuthProvider';
+
 import { ToastContainer } from 'react-toastify';
+import PageLayout from '@/components/layout/PageLayout';
+import AuthProvider from '@/provider/AuthProvider';
 
 const pretendard = localFont({
   src: './fonts/PretendardVariable.woff2',

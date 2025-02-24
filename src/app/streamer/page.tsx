@@ -1,14 +1,14 @@
 'use client';
-import BtnWithChildren from '@/app/components/atoms/button/BtnWithChildren';
-import Live from '@/app/components/atoms/label/Live';
-import OFF from '@/app/components/atoms/label/Off';
-import CategoryText from '@/app/components/atoms/text/CategoryText';
-import RefreshText from '@/app/components/atoms/text/RefreshText';
-import StreamerTextComment from '@/app/components/atoms/text/StreamerTextComment';
-import StreamerTextLive from '@/app/components/atoms/text/StreamerTextLive';
+
+import BtnWithChildren from '@/components/atoms/button/BtnWithChildren';
+import Live from '@/components/atoms/label/Live';
+import OFF from '@/components/atoms/label/Off';
+import CategoryText from '@/components/atoms/text/CategoryText';
+import RefreshText from '@/components/atoms/text/RefreshText';
+import StreamerTextComment from '@/components/atoms/text/StreamerTextComment';
+import StreamerTextLive from '@/components/atoms/text/StreamerTextLive';
 import useChannelStore from '@/store/channelStore';
 import useAuthStore from '@/store/store';
-import Image from 'next/image';
 
 export default function Home() {
   const { setRole } = useAuthStore();

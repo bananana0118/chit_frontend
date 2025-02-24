@@ -1,6 +1,6 @@
-import Input from '@/app/components/atoms/input/Input';
-import ViewerPageLayout from '@/app/components/layout/ViewerPageLayout';
-import GameCard from '@/app/components/organisms/GameCard';
+import Input from '@/components/atoms/input/Input';
+import ViewerPageLayout from '@/components/layout/ViewerPageLayout';
+import GameCard from '@/components/organisms/GameCard';
 
 export default function page() {
   return (

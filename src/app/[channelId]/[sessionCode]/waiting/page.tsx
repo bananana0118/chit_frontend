@@ -1,9 +1,5 @@
 'use client';
 import CopyIcon from '@/app/assets/icons/CopyIcon';
-import BtnWithChildren from '@/app/components/atoms/button/BtnWithChildren';
-import Live from '@/app/components/atoms/label/Live';
-import OFF from '@/app/components/atoms/label/Off';
-import ViewerPageLayout from '@/app/components/layout/ViewerPageLayout';
 import useChannelStore from '@/store/channelStore';
 import Image from 'next/image';
 import { useEffect } from 'react';
@@ -11,7 +7,11 @@ import useAuthStore from '@/store/store';
 import { useSSEStore } from '@/store/sseStore';
 import { toast } from 'react-toastify';
 import useParamsParser from '@/hooks/useParamsParser';
-import { getContentsSessionGameCode } from '@/app/services/viewer/viewer';
+import BtnWithChildren from '@/components/atoms/button/BtnWithChildren';
+import Live from '@/components/atoms/label/Live';
+import OFF from '@/components/atoms/label/Off';
+import ViewerPageLayout from '@/components/layout/ViewerPageLayout';
+import { getContentsSessionGameCode } from '@/services/viewer/viewer';
 
 export default function Page() {
   const streamerInfo = useChannelStore((state) => state.streamerInfo);

@@ -1,11 +1,5 @@
 'use client';
 
-import BtnWithChildren from '@/app/components/atoms/button/BtnWithChildren';
-import Input from '@/app/components/atoms/input/Input';
-import CategoryText from '@/app/components/atoms/text/CategoryText';
-import HintText from '@/app/components/atoms/text/HintText';
-import ViewerPageLayout from '@/app/components/layout/ViewerPageLayout';
-import makeUrl from '@/app/lib/makeUrl';
 import useChannelStore from '@/store/channelStore';
 import { useSSEStore } from '@/store/sseStore';
 import useAuthStore from '@/store/store';
@@ -13,30 +7,36 @@ import useParamsParser from '@/hooks/useParamsParser';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
+import BtnWithChildren from '@/components/atoms/button/BtnWithChildren';
+import CategoryText from '@/components/atoms/text/CategoryText';
+import HintText from '@/components/atoms/text/HintText';
+import ViewerPageLayout from '@/components/layout/ViewerPageLayout';
+import makeUrl from '@/lib/makeUrl';
+import Input from '@/components/atoms/input/Input';
 
 export default function Settings() {
-  const [viewerNickname, setViewerNickname] = useState('');
+  const [viewerGameNickname, setGameNickname] = useState('');
   const { sessionCode } = useParamsParser();
   const router = useRouter();
   const { startSSE, isConnected, setViewerNickname, error } = useSSEStore();
   const streamerInfo = useChannelStore((state) => state.streamerInfo);
 
   const onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setViewerNickname(e.target.value);
+    setGameNickname(e.target.value);
   };
 
   const accessToken = useAuthStore((state) => state.accessToken);
 
   const onCompleteViewerNickname = () => {
-    if (accessToken && viewerNickname) {
-      setViewerNickname(viewerNickname);
+    if (accessToken && viewerGameNickname) {
+      setViewerNickname(viewerGameNickname);
 
       startSSE(
         makeUrl({
           accessToken,
           isStreamer: false,
           sessionCode,
-          viewerNickname: viewerNickname,
+          viewerNickname: viewerGameNickname,
         }),
       );
     }
@@ -83,7 +83,7 @@ export default function Settings() {
         {/* todo : state에 따라 닉네임 상태 분리하기  */}
         <BtnWithChildren
           onClickHandler={onCompleteViewerNickname}
-          type={viewerNickname.length > 0 ? 'default' : 'disable'}
+          type={viewerGameNickname.length > 0 ? 'default' : 'disable'}
         >
           닉네임 다 입력했어요
         </BtnWithChildren>

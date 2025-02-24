@@ -1,4 +1,4 @@
-import { handleApiError } from '@/app/lib/error';
+import { handleApiError } from '@/lib/error';
 import axiosInstance from '../axios';
 import {
   DeleteContentSessionLeaveRequest,
@@ -6,7 +6,7 @@ import {
   GetContentsSessionGameCodeResponse,
   GetContentsSessionViewerSubscribeRequest,
 } from './type';
-import makeUrl from '@/app/lib/makeUrl';
+import makeUrl from '@/lib/makeUrl';
 
 //시청자 구독 요청
 export const getContentsSessionViewerSubscribe = async ({

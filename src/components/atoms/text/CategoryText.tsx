@@ -1,5 +1,5 @@
 import GameIcon from '@/app/assets/icons/GameIcon';
-import guideText from '@/app/constants/guideText';
+import guideText from '@/constants/guideText';
 type Props = {
   category: string;
   isMiddle?: boolean;

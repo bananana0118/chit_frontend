@@ -1,20 +1,21 @@
 'use client';
 
-import BtnWithChildren from './components/atoms/button/BtnWithChildren';
-import CommonLayout from './components/layout/CommonLayout';
-import useAuthStore from '../store/store';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import Live from './components/atoms/label/Live';
-import OFF from './components/atoms/label/Off';
-import CategoryText from './components/atoms/text/CategoryText';
-import RefreshText from './components/atoms/text/RefreshText';
-import StreamerTextComment from './components/atoms/text/StreamerTextComment';
-import StreamerTextLive from './components/atoms/text/StreamerTextLive';
-import useChannelStore from '../store/channelStore';
+import BtnWithChildren from '@/components/atoms/button/BtnWithChildren';
+import Live from '@/components/atoms/label/Live';
+import OFF from '@/components/atoms/label/Off';
+import CategoryText from '@/components/atoms/text/CategoryText';
+import RefreshText from '@/components/atoms/text/RefreshText';
+import StreamerTextComment from '@/components/atoms/text/StreamerTextComment';
+import StreamerTextLive from '@/components/atoms/text/StreamerTextLive';
+import CommonLayout from '@/components/layout/CommonLayout';
+import DummyData from '@/constants/Dummy';
+import { postStreamerInfo } from '@/services/streamer/streamer';
+import { StreamerInfo } from '@/services/streamer/type';
+import useChannelStore from '@/store/channelStore';
+import useAuthStore from '@/store/store';
 import Image from 'next/image';
-import { postStreamerInfo, StreamerInfo } from './services/streamer/streamer';
-import DummyData from './constants/Dummy';
+import { useRouter } from 'next/router';
+import { useState, useEffect } from 'react';
 
 export default function Home() {
   const router = useRouter();
