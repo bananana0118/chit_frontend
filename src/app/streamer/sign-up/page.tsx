@@ -8,7 +8,7 @@ import CommonLayout from '@/components/layout/CommonLayout';
 import useAuthStore from '@/store/store';
 import axios from 'axios';
 import { useSearchParams } from 'next/navigation';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export default function Home() {

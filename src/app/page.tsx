@@ -14,7 +14,7 @@ import { StreamerInfo } from '@/services/streamer/type';
 import useChannelStore from '@/store/channelStore';
 import useAuthStore from '@/store/store';
 import Image from 'next/image';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
 export default function Home() {

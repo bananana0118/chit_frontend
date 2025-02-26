@@ -1,5 +1,6 @@
 'use client';
 import CopyIcon from '@/app/assets/icons/CopyIcon';
+
 import useChannelStore from '@/store/channelStore';
 import Image from 'next/image';
 import { useEffect } from 'react';
@@ -11,36 +12,51 @@ import BtnWithChildren from '@/components/atoms/button/BtnWithChildren';
 import Live from '@/components/atoms/label/Live';
 import OFF from '@/components/atoms/label/Off';
 import ViewerPageLayout from '@/components/layout/ViewerPageLayout';
-import { getContentsSessionGameCode } from '@/services/viewer/viewer';
+import {
+  deleteContentsSessionViewerLeave,
+  getContentsSessionViewerGameCode,
+} from '@/services/viewer/viewer';
+import { useRouter } from 'next/navigation';
+import useParentPath from '@/hooks/useParentPath';
 
 export default function Page() {
   const streamerInfo = useChannelStore((state) => state.streamerInfo);
   const channel = streamerInfo?.channel;
+  const router = useRouter();
+  const parentPath = useParentPath();
   const { sessionCode } = useParamsParser();
   const { accessToken, isRehydrated: isTokenLoading = false } = useAuthStore();
-  const {
-    stopSSE,
-
-    isRehydrated: isViewerInfoLoading = false,
-  } = useSSEStore();
+  const { stopSSE, isRehydrated: isViewerInfoLoading = false } = useSSEStore();
   //세션인포 찾기
 
-  const onClickSessionCloseHandler = () => {
+  const onClickSessionCloseHandler = async () => {
     console.log('🛑세션종료');
-    stopSSE();
+    if (sessionCode) {
+      const response = await deleteContentsSessionViewerLeave({
+        accessToken,
+        sessionCode,
+      });
+
+      if (response.status === 200) {
+        toast.success('세션이 종료되었습니다.');
+        router.replace(parentPath);
+      }
+    }
   };
   useEffect(() => {
     console.log('이게 왜 실행되는겁니까?');
     return () => {
-      console.log('🛑 컴포넌트 언마운트 시 SSE 종료!!');
-      stopSSE();
+      if (isViewerInfoLoading) {
+        console.log('🛑 컴포넌트 언마운트 시 SSE 종료!!');
+        stopSSE();
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // ✅ 언마운트 시 한 번만 실행
   useEffect(() => {
     const getGameCode = async () => {
       if (sessionCode) {
-        const response = await getContentsSessionGameCode({
+        const response = await getContentsSessionViewerGameCode({
           accessToken,
           sessionCode,
         });
