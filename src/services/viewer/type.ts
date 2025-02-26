@@ -13,12 +13,12 @@ export type GetContentsSessionGameCodeResponse =
   | ApiResponse<GameCodeType>
   | ErrorResponse;
 
-export type DeleteContentSessionLeaveRequest = {
+export type DeleteContentSessionViewerLeaveRequest = {
   sessionCode: string;
   accessToken: string;
 };
 
-export type DeleteContentSessionLeaveResponse =
+export type DeleteContentSessionViewerLeaveResponse =
   | ApiResponse<STATUS>
   | ErrorResponse;
 

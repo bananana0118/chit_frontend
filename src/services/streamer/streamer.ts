@@ -161,7 +161,7 @@ export const putContentsSessionParticipantPick = async (
   }
 };
 
-//세션에서 참가자 고정(Pick)
+//세션에서 다음 그룹 호출하기
 export const putContentsSessionNextGroup = async ({
   accessToken,
 }: PutContentsSessionNextGroupRequest): Promise<PutContentsSessionNextGroupResponse> => {

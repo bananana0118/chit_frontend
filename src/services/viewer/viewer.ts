@@ -1,7 +1,8 @@
 import { handleApiError } from '@/lib/error';
 import axiosInstance from '../axios';
 import {
-  DeleteContentSessionLeaveRequest,
+  DeleteContentSessionViewerLeaveRequest,
+  DeleteContentSessionViewerLeaveResponse,
   GetContentsSessionGameCodeRequest,
   GetContentsSessionGameCodeResponse,
   GetContentsSessionViewerSubscribeRequest,
@@ -34,7 +35,7 @@ export const getContentsSessionViewerSubscribe = async ({
 };
 
 //게임코드 가져오기
-export const getContentsSessionGameCode = async ({
+export const getContentsSessionViewerGameCode = async ({
   sessionCode,
   accessToken,
 }: GetContentsSessionGameCodeRequest): Promise<GetContentsSessionGameCodeResponse> => {
@@ -52,11 +53,11 @@ export const getContentsSessionGameCode = async ({
   }
 };
 
-//세션에서 참가자 추방
-export const deleteContentsSessionParticipant = async (
-  accessToken: string,
-  sessionCode: string,
-): Promise<DeleteContentSessionLeaveRequest> => {
+//viewer 세션에서 나가기
+export const deleteContentsSessionViewerLeave = async ({
+  accessToken,
+  sessionCode,
+}: DeleteContentSessionViewerLeaveRequest): Promise<DeleteContentSessionViewerLeaveResponse> => {
   console.log(accessToken);
   try {
     const response = await axiosInstance.delete(
