@@ -30,6 +30,7 @@ const nextConfig: NextConfig = {
     fileLoaderRule.exclude = /\.svg$/i;
     return config;
   },
+  reactStrictMode: false,
   images: {
     remotePatterns: [
       {

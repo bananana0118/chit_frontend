@@ -1,5 +1,5 @@
-import CommonLayout from '@/app/components/layout/CommonLayout';
-import NavBar from '../../components/layout/NavBar';
+import CommonLayout from '@/components/layout/CommonLayout';
+import NavBar from '@/components/layout/NavBar';
 
 export default function RootLayout({
   children,

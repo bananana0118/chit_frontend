@@ -1,4 +1,5 @@
-import guideText from '@/app/constants/guideText';
+import guideText from '@/constants/guideText';
+
 type Props = { isLive: 'OPEN' | 'CLOSE' };
 
 export default function StreamerTextComment({ isLive }: Props) {

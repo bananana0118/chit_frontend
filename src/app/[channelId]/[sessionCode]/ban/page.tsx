@@ -1,10 +1,11 @@
 'use client';
-import BtnWithChildren from '@/app/components/atoms/button/BtnWithChildren';
-import Live from '@/app/components/atoms/label/Live';
-import OFF from '@/app/components/atoms/label/Off';
-import HintText from '@/app/components/atoms/text/HintText';
-import ViewerPageLayout from '@/app/components/layout/ViewerPageLayout';
-import useChannelStore from '@/app/store/channelStore';
+
+import BtnWithChildren from '@/components/atoms/button/BtnWithChildren';
+import Live from '@/components/atoms/label/Live';
+import OFF from '@/components/atoms/label/Off';
+import HintText from '@/components/atoms/text/HintText';
+import ViewerPageLayout from '@/components/layout/ViewerPageLayout';
+import useChannelStore from '@/store/channelStore';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 

@@ -1,5 +1,5 @@
-import guideText from '@/app/constants/guideText';
-import { StreamerStatusType } from '@/app/services/streamer/streamer';
+import guideText from '@/constants/guideText';
+import { StreamerStatusType } from '@/services/streamer/type';
 
 type Props = {
   isLive: StreamerStatusType;
