@@ -1,16 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { AxiosResponse } from 'axios';
 import axiosInstance from '../axios';
-
-type RequestLoginWithOAuth2 = {
-  code: string;
-  state: string;
-  channelId: string;
-};
-
-type ResponseLoginWithOAuth2 = AxiosResponse & {
-  accessToken: string;
-};
+import { RequestLoginWithOAuth2, ResponseLoginWithOAuth2 } from './type';
 
 // OAuth2 로그인 요청 함수
 export const loginWithOAuth2 = async ({

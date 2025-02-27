@@ -2,18 +2,19 @@
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import BtnWithChildren from '../../components/atoms/button/BtnWithChildren';
-import Live from '../../components/atoms/label/Live';
-import OFF from '../../components/atoms/label/Off';
-import CategoryText from '../../components/atoms/text/CategoryText';
-import StreamerTextLive from '../../components/atoms/text/StreamerTextLive';
-import CommonLayout from '../../components/layout/CommonLayout';
-import ViewerPageLayout from '../../components/layout/ViewerPageLayout';
-import { postStreamerInfo } from '../../services/streamer/streamer';
-import useChannelStore from '../../store/channelStore';
-import useAuthStore from '../../store/store';
-import useContentsSessionStore from '@/app/store/sessionStore';
+
+import useChannelStore from '../../../store/channelStore';
+import useAuthStore from '../../../store/store';
+import useContentsSessionStore from '@/store/sessionStore';
 import useParamsParser from '@/hooks/useParamsParser';
+import CategoryText from '@/components/atoms/text/CategoryText';
+import BtnWithChildren from '@/components/atoms/button/BtnWithChildren';
+import Live from '@/components/atoms/label/Live';
+import OFF from '@/components/atoms/label/Off';
+import ViewerPageLayout from '@/components/layout/ViewerPageLayout';
+import { postStreamerInfo } from '@/services/streamer/streamer';
+import CommonLayout from '@/components/layout/CommonLayout';
+import StreamerTextLive from '@/components/atoms/text/StreamerTextLive';
 
 export default function Home() {
   const router = useRouter();
@@ -31,7 +32,6 @@ export default function Home() {
     const fetchData = async (channelId: string) => {
       const DummyChannelId = channelId || '0dad8baf12a436f722faa8e5001c5011';
 
-      // const response = await getStreamerInfo(channelId);
       try {
         const streamerInfo = await postStreamerInfo(DummyChannelId);
 

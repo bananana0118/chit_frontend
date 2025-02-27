@@ -1,21 +1,23 @@
 'use client';
-import CommonLayout from '@/app/components/layout/CommonLayout';
-import StreamerTools from '@/app/components/molecules/StreamerTools';
-import MemberCard from '@/app/components/organisms/MemberCard';
-import makeUrl from '@/app/lib/makeUrl';
+
+import CommonLayout from '@/components/layout/CommonLayout';
+import StreamerTools from '@/components/molecules/StreamerTools';
+import MemberCard from '@/components/organisms/MemberCard';
+import makeUrl from '@/lib/makeUrl';
 import {
   createContentsSession,
   deleteContentsSession,
   getContentsSessionInfo,
-} from '@/app/services/streamer/streamer';
-import useChannelStore from '@/app/store/channelStore';
+} from '@/services/streamer/streamer';
+import useChannelStore from '@/store/channelStore';
 import useContentsSessionStore, {
   CurrentParticipants,
-} from '@/app/store/sessionStore';
-import { useSSEStore } from '@/app/store/sseStore';
-import useAuthStore from '@/app/store/store';
-import { useEffect, useState } from 'react';
+} from '@/store/sessionStore';
+import { useSSEStore } from '@/store/sseStore';
+import useAuthStore from '@/store/store';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { toast } from 'react-toastify';
+import useThrottle from '@/hooks/useThrottle';
 
 enum SessionStatus {
   INITIAL = 1,
@@ -93,9 +95,11 @@ export default function List() {
     toast.warn('요청에 실패했습니다. 잠시후 다시 시도해주세요');
   };
 
-  //이벤트 발생시 참가자 정보를 불러오는 api
-  useEffect(() => {
-    const getSessionInfo = async () => {
+  //갱신되는 정보가 있을때 참가자 정보 받아옴
+  const fetchParticipantsData = useCallback(async () => {
+    if (!isTokenLoading || !isSessionOn) return;
+
+    try {
       const response = await getContentsSessionInfo(accessToken);
       if ('error' in response) {
         // 에러 발생 시 사용자 피드백 제공
@@ -107,27 +111,24 @@ export default function List() {
       } else {
         const data = response.data;
         const newParticipants = data?.participants?.content ?? [];
-        setCurrentParticipants((prev) => [
-          ...prev,
-          ...newParticipants, // 기존 데이터 유지하면서 새 데이터 추가
-        ]);
+        setCurrentParticipants(
+          newParticipants, // 기존 데이터 유지하면서 새 데이터 추가
+        );
         console.log('newParticipants');
         console.log(newParticipants);
       }
-    };
+    } catch (error) {
+      console.error('데이터 가져오기 실패:', error);
+    }
+  }, [accessToken, isSessionOn, isTokenLoading]);
+  const throttledFetchParticipants = useThrottle(fetchParticipantsData, 1000);
 
-    const fetchData = async () => {
-      try {
-        const response = await getSessionInfo();
-        console.log(response);
-        //setCurrentParticipants(result);
-      } catch (error) {
-        console.error('데이터 가져오기 실패:', error);
-      }
-    };
-    if (isTokenLoading && isSessionOn) fetchData();
-  }, [accessToken, isTokenLoading, isSessionOn, contentsSessionInfo]); // 의존성 배열이 빈 배열이면, 컴포넌트 마운트 시 한 번만 실행
-
+  //이벤트 발생시에만 불러오는 useEffect
+  useEffect(() => {
+    if (contentsSessionInfo) {
+      throttledFetchParticipants();
+    }
+  }, [contentsSessionInfo, throttledFetchParticipants]);
   useEffect(() => {
     if (accessToken && !isConnected) {
       console.log('🔄 SSE 자동 시작');
@@ -135,6 +136,7 @@ export default function List() {
       startSSE(url);
     }
   }, [accessToken, isConnected, startSSE]); // ✅ accessToken이 바뀔 때마다 SSE 연결
+
 
   useEffect(() => {
     return () => {

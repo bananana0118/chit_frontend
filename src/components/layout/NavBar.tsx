@@ -2,7 +2,7 @@
 
 import ChitLogo from '@/app/assets/logo/ChitLogo';
 import Image from 'next/image';
-import useAuthStore from '@/app/store/store';
+import useAuthStore from '@/store/store';
 
 const NavBar = () => {
   const isLogin = useAuthStore((state) => state.isLogin);

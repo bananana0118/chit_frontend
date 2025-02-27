@@ -1,19 +1,20 @@
 import axios from 'axios';
-import { ChzzkClient, PartialChannel } from 'chzzk';
+import { ChzzkClient } from 'chzzk';
+import {
+  StreamerInfo,
+  GetContentsSessionResponse,
+  CreateContentsSessionRequest,
+  CreateContentsSessionResponse,
+  DeleteContentsSessionResponse,
+  PutContentsSessionNextGroupRequest,
+  PutContentsSessionNextGroupResponse,
+} from './type';
+import { handleApiError } from '@/lib/error';
 import axiosInstance from '../axios';
-import { ApiResponse, ContentsSession } from '@/app/store/sessionStore';
-import { handleApiError } from '@/app/lib/error';
 
 const client = new ChzzkClient();
 
-export type StreamerStatusType = 'OPEN' | 'CLOSE';
-export type StreamerInfo = {
-  status: StreamerStatusType;
-  channel: PartialChannel;
-  liveCategory: string | undefined;
-  liveCategoryValue: string | undefined;
-};
-
+//치지직 api를 통해 클라이언트 정보 가져오기
 export const getStreamerInfo = async (
   channelId: string,
 ): Promise<StreamerInfo | null> => {
@@ -59,6 +60,7 @@ const handleFetchError = (error: unknown) => {
   // 추가: 로그를 서버로 전송하거나 콘솔에 기록
 };
 
+//치지직 api에 직접 스트리머 정보 가져오는 api
 export const postStreamerInfo = async (
   channelId: string,
 ): Promise<StreamerInfo | null> => {
@@ -74,38 +76,28 @@ export const postStreamerInfo = async (
   return null;
 };
 
-type CreateContentsSessionRequest = {
-  gameParticipationCode: string | null;
-  maxGroupParticipants: number;
-};
-
-export type ErrorResponse = {
-  status: number;
-  error: string;
-  data: string;
-};
-
-type CreateContentsSessionResponse =
-  | ApiResponse<ContentsSession>
-  | ErrorResponse;
-
-type GetContentsSessionResponse = ApiResponse<ContentsSession> | ErrorResponse;
-type DeleteContentsSessionResponse = ApiResponse<string> | ErrorResponse;
+//현재 세션 조회
 export const getContentsSessionInfo = async (
   accessToken: string,
+  page: number = 0,
+  size: number = 20,
 ): Promise<GetContentsSessionResponse> => {
   try {
-    const response = await axiosInstance.get('/api/v1/contents/session', {
-      headers: {
-        Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
+    const response = await axiosInstance.get(
+      `/api/v1/contents/session?page=${page}&size=${size}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
+        },
       },
-    });
+    );
     return response.data; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {
     return handleApiError(error); // 에러 핸들링 함수 사용
   }
 };
 
+//세션 생성
 export const createContentsSession = async (
   data: CreateContentsSessionRequest,
   accessToken: string,
@@ -129,6 +121,7 @@ export const createContentsSession = async (
   }
 };
 
+//세션 삭제
 export const deleteContentsSession = async (
   accessToken: string,
 ): Promise<DeleteContentsSessionResponse> => {
@@ -139,6 +132,71 @@ export const deleteContentsSession = async (
         Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
       },
     });
+
+    return response.data; // 성공적인 응답 데이터 반환
+  } catch (error: unknown) {
+    return handleApiError(error); // 에러 핸들링 함수 사용
+  }
+};
+
+//세션에서 참가자 고정(Pick)
+export const putContentsSessionParticipantPick = async (
+  accessToken: string,
+  viewerId: number,
+): Promise<DeleteContentsSessionResponse> => {
+  console.log(accessToken);
+  try {
+    const response = await axiosInstance.put(
+      `/api/v1/contents/participants/${viewerId}/pick`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
+        },
+      },
+    );
+
+    return response.data; // 성공적인 응답 데이터 반환
+  } catch (error: unknown) {
+    return handleApiError(error); // 에러 핸들링 함수 사용
+  }
+};
+
+//세션에서 다음 그룹 호출하기
+export const putContentsSessionNextGroup = async ({
+  accessToken,
+}: PutContentsSessionNextGroupRequest): Promise<PutContentsSessionNextGroupResponse> => {
+  console.log(accessToken);
+  try {
+    const response = await axiosInstance.put(
+      `/api/v1/contents/session/next-group`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
+        },
+      },
+    );
+
+    return response.data; // 성공적인 응답 데이터 반환
+  } catch (error: unknown) {
+    return handleApiError(error); // 에러 핸들링 함수 사용
+  }
+};
+
+//세션에서 참가자 추방
+export const deleteContentsSessionParticipant = async (
+  accessToken: string,
+  viewerId: number,
+): Promise<DeleteContentsSessionResponse> => {
+  console.log(accessToken);
+  try {
+    const response = await axiosInstance.delete(
+      `/api/v1/contents/participants/${viewerId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
+        },
+      },
+    );
 
     return response.data; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {

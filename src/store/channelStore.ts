@@ -1,6 +1,6 @@
+import { StreamerInfo } from '@/services/streamer/type';
 import { create } from 'zustand';
 import { createJSONStorage, devtools, persist } from 'zustand/middleware';
-import { StreamerInfo } from '../services/streamer/streamer';
 
 interface ChannelState {
   channelId: string | undefined;
