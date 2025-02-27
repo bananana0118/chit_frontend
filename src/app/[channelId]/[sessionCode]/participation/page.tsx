@@ -45,7 +45,7 @@ export default function Settings() {
   useEffect(() => {
     if (isConnected && !error) {
       toast.success('시참에 참여했습니다. 조금만 기다려주세요!');
-      router.push(`waiting`);
+      router.replace(`waiting`);
     }
   }, [error, isConnected, router]);
 

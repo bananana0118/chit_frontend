@@ -16,6 +16,7 @@ import { deleteContentsSessionViewerLeave } from '@/services/viewer/viewer';
 import { useRouter } from 'next/navigation';
 import useParentPath from '@/hooks/useParentPath';
 import copyClipBoard from '@/lib/copyClipBoard';
+import useBeforeUnload from '@/hooks/useBeforeUnload';
 
 export default function Page() {
   const streamerInfo = useChannelStore((state) => state.streamerInfo);
@@ -30,7 +31,7 @@ export default function Page() {
     isRehydrated: isViewerInfoLoading = false,
   } = useSSEStore();
   //세션인포 찾기
-
+  useBeforeUnload();
   const onClickSessionCloseHandler = async () => {
     console.log('🛑세션종료');
     if (sessionCode) {
