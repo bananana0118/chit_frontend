@@ -1,5 +1,5 @@
 import { handleApiError } from '@/lib/error';
-import axiosInstance from '../axios';
+import apiViewer from '../axios/apiViewer';
 import {
   DeleteContentSessionViewerLeaveRequest,
   DeleteContentSessionViewerLeaveResponse,
@@ -22,7 +22,7 @@ export const getContentsSessionViewerSubscribe = async ({
       sessionCode,
       viewerNickname: gameNickname,
     });
-    const response = await axiosInstance.get(URL, {
+    const response = await apiViewer.get(URL, {
       headers: {
         Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
       },
@@ -41,7 +41,7 @@ export const getContentsSessionViewerGameCode = async ({
 }: GetContentsSessionGameCodeRequest): Promise<GetContentsSessionGameCodeResponse> => {
   try {
     const url = `/api/v1/contents/session/${sessionCode}/gameCode`;
-    const response = await axiosInstance.get(url, {
+    const response = await apiViewer.get(url, {
       headers: {
         Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
       },
@@ -60,7 +60,7 @@ export const deleteContentsSessionViewerLeave = async ({
 }: DeleteContentSessionViewerLeaveRequest): Promise<DeleteContentSessionViewerLeaveResponse> => {
   console.log(accessToken);
   try {
-    const response = await axiosInstance.delete(
+    const response = await apiViewer.delete(
       `/api/v1/contents/session/${sessionCode}/leave`,
       {
         headers: {
