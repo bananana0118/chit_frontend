@@ -1,5 +1,5 @@
-import { handleApiError } from '@/lib/error';
-import apiViewer from '../axios/apiViewer';
+import { handleSessionError } from '@/lib/handleErrors';
+import apiSession from '../axios/apiSession';
 import {
   DeleteContentSessionViewerLeaveRequest,
   DeleteContentSessionViewerLeaveResponse,
@@ -22,7 +22,7 @@ export const getContentsSessionViewerSubscribe = async ({
       sessionCode,
       viewerNickname: gameNickname,
     });
-    const response = await apiViewer.get(URL, {
+    const response = await apiSession.get(URL, {
       headers: {
         Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
       },
@@ -30,7 +30,7 @@ export const getContentsSessionViewerSubscribe = async ({
 
     return response.data; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {
-    return handleApiError(error); // 에러 핸들링 함수 사용
+    return handleSessionError(error); // 에러 핸들링 함수 사용
   }
 };
 
@@ -41,7 +41,7 @@ export const getContentsSessionViewerGameCode = async ({
 }: GetContentsSessionGameCodeRequest): Promise<GetContentsSessionGameCodeResponse> => {
   try {
     const url = `/api/v1/contents/session/${sessionCode}/gameCode`;
-    const response = await apiViewer.get(url, {
+    const response = await apiSession.get(url, {
       headers: {
         Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
       },
@@ -49,7 +49,7 @@ export const getContentsSessionViewerGameCode = async ({
 
     return response.data; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {
-    return handleApiError(error); // 에러 핸들링 함수 사용
+    return handleSessionError(error); // 에러 핸들링 함수 사용
   }
 };
 
@@ -60,7 +60,7 @@ export const deleteContentsSessionViewerLeave = async ({
 }: DeleteContentSessionViewerLeaveRequest): Promise<DeleteContentSessionViewerLeaveResponse> => {
   console.log(accessToken);
   try {
-    const response = await apiViewer.delete(
+    const response = await apiSession.delete(
       `/api/v1/contents/session/${sessionCode}/leave`,
       {
         headers: {
@@ -71,6 +71,6 @@ export const deleteContentsSessionViewerLeave = async ({
 
     return response.data; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {
-    return handleApiError(error); // 에러 핸들링 함수 사용
+    return handleSessionError(error); // 에러 핸들링 함수 사용
   }
 };

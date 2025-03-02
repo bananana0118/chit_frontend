@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { handleAuthError } from '@/lib/handleErrors';
 import apiAuth from '../axios/apiAuth';
 import { RequestLoginWithOAuth2, ResponseLoginWithOAuth2 } from './type';
 
@@ -17,9 +18,6 @@ export const loginWithOAuth2 = async ({
 
     return response.data; // 성공적인 응답 데이터 반환
   } catch (error: any) {
-    if (error.response?.status === 400) {
-      throw new Error(`오류가 발생했습니다: ${error.response.data.error}`);
-    }
-    throw new Error('알 수 없는 오류가 발생했습니다.');
+    return handleAuthError(error);
   }
 };

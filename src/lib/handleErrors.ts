@@ -7,7 +7,7 @@ import { ErrorResponse } from '@/services/streamer/type';
 // 서버 에러 형식 정의
 
 // API 에러 핸들링 함수
-export const handleApiError = (error: unknown): ErrorResponse => {
+export const handleAuthError = (error: unknown): ErrorResponse => {
   if (axios.isAxiosError(error)) {
     if (error.response) {
       // 서버에서 응답한 에러
@@ -36,7 +36,7 @@ export const handleApiError = (error: unknown): ErrorResponse => {
   };
 };
 
-export const handleStreamerApiError = (error: unknown): ErrorResponse => {
+export const handleSessionError = (error: unknown): ErrorResponse => {
   if (error instanceof SessionError) {
     toast.warn(`에러코드:${error.code}\n ${error.name}:${error.message}`);
     return {

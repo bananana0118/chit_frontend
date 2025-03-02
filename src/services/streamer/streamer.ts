@@ -9,8 +9,8 @@ import {
   PutContentsSessionNextGroupRequest,
   PutContentsSessionNextGroupResponse,
 } from './type';
-import { handleApiError, handleStreamerApiError } from '@/lib/error';
-import apiStreamer from '../axios/apiStreamer';
+import { handleSessionError } from '@/lib/handleErrors';
+import apiSession from '../axios/apiSession';
 
 const client = new ChzzkClient();
 
@@ -83,7 +83,7 @@ export const getContentsSessionInfo = async (
   size: number = 20,
 ): Promise<GetContentsSessionResponse> => {
   try {
-    const response = await apiStreamer.get(
+    const response = await apiSession.get(
       `/api/v1/contents/session?page=${page}&size=${size}`,
       {
         headers: {
@@ -93,7 +93,7 @@ export const getContentsSessionInfo = async (
     );
     return response.data; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {
-    return handleApiError(error); // 에러 핸들링 함수 사용
+    return handleSessionError(error); // 에러 핸들링 함수 사용
   }
 };
 
@@ -104,7 +104,7 @@ export const createContentsSession = async (
 ): Promise<CreateContentsSessionResponse> => {
   console.log(accessToken);
   try {
-    const response = await apiStreamer.post(
+    const response = await apiSession.post(
       '/api/v1/contents/session',
       {
         ...data,
@@ -117,7 +117,7 @@ export const createContentsSession = async (
     );
     return response.data; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {
-    return Promise.reject(handleStreamerApiError(error)); // 에러 핸들링 함수 사용
+    return Promise.reject(handleSessionError(error)); // 에러 핸들링 함수 사용
   }
 };
 
@@ -127,7 +127,7 @@ export const deleteContentsSession = async (
 ): Promise<DeleteContentsSessionResponse> => {
   console.log(accessToken);
   try {
-    const response = await apiStreamer.delete('/api/v1/contents/session', {
+    const response = await apiSession.delete('/api/v1/contents/session', {
       headers: {
         Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
       },
@@ -135,7 +135,7 @@ export const deleteContentsSession = async (
 
     return response.data; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {
-    return handleApiError(error); // 에러 핸들링 함수 사용
+    return handleSessionError(error); // 에러 핸들링 함수 사용
   }
 };
 
@@ -146,7 +146,7 @@ export const putContentsSessionParticipantPick = async (
 ): Promise<DeleteContentsSessionResponse> => {
   console.log(accessToken);
   try {
-    const response = await apiStreamer.put(
+    const response = await apiSession.put(
       `/api/v1/contents/participants/${viewerId}/pick`,
       {
         headers: {
@@ -157,7 +157,7 @@ export const putContentsSessionParticipantPick = async (
 
     return response.data; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {
-    return handleApiError(error); // 에러 핸들링 함수 사용
+    return handleSessionError(error); // 에러 핸들링 함수 사용
   }
 };
 
@@ -167,7 +167,7 @@ export const putContentsSessionNextGroup = async ({
 }: PutContentsSessionNextGroupRequest): Promise<PutContentsSessionNextGroupResponse> => {
   console.log(accessToken);
   try {
-    const response = await apiStreamer.put(
+    const response = await apiSession.put(
       `/api/v1/contents/session/next-group`,
       {
         headers: {
@@ -178,7 +178,7 @@ export const putContentsSessionNextGroup = async ({
 
     return response.data; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {
-    return handleApiError(error); // 에러 핸들링 함수 사용
+    return handleSessionError(error); // 에러 핸들링 함수 사용
   }
 };
 
@@ -189,7 +189,7 @@ export const deleteContentsSessionParticipant = async (
 ): Promise<DeleteContentsSessionResponse> => {
   console.log(accessToken);
   try {
-    const response = await apiStreamer.delete(
+    const response = await apiSession.delete(
       `/api/v1/contents/participants/${viewerId}`,
       {
         headers: {
@@ -200,6 +200,6 @@ export const deleteContentsSessionParticipant = async (
 
     return response.data; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {
-    return handleApiError(error); // 에러 핸들링 함수 사용
+    return handleSessionError(error); // 에러 핸들링 함수 사용
   }
 };

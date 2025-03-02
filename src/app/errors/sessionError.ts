@@ -29,7 +29,7 @@ export const SessionErrorCode = {
   },
 };
 
-// 3. SessionError 정의 (고유 코드값 지정)
+// viewerAPI와 streamerAPI에 사용됩니다.
 class SessionError extends CustomError {
   constructor(errorCode = SessionErrorCode.LIVE_STREAM_INACTIVE) {
     super({ ...errorCode });

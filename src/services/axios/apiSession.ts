@@ -7,7 +7,7 @@ import axios, {
 import { ErrorResponse } from '../streamer/type';
 import SessionError, { SessionErrorCode } from '@/app/errors/sessionError';
 
-const apiStreamer: AxiosInstance = axios.create({
+const apiSession: AxiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL, // API의 기본 URL
   timeout: 1000000,
   headers: {
@@ -15,7 +15,7 @@ const apiStreamer: AxiosInstance = axios.create({
   },
 });
 // 요청 인터셉터
-apiStreamer.interceptors.request.use(
+apiSession.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     // 요청 전 처리 (예: 토큰 추가)
     const accessToken = sessionStorage.getItem('accessToken');
@@ -36,7 +36,7 @@ apiStreamer.interceptors.request.use(
 );
 
 // 응답 인터셉터
-apiStreamer.interceptors.response.use(
+apiSession.interceptors.response.use(
   (response: AxiosResponse) => {
     return response;
   },
@@ -49,7 +49,7 @@ apiStreamer.interceptors.response.use(
           message ===
           '현재 진행중인 라이브 방송을 찾을 수 없습니다. 다시 확인해 주세요.'
         ) {
-          throw new SessionError(SessionErrorCode.NOT_LIVE);
+          throw new SessionError(SessionErrorCode.LIVE_SESSION_NOT_FOUND);
         }
       }
     } else if (axios.isAxiosError(error)) {
@@ -82,4 +82,4 @@ apiStreamer.interceptors.response.use(
   // 응답 데이터 가공
 );
 
-export default apiStreamer;
+export default apiSession;
