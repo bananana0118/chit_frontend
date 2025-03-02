@@ -11,6 +11,7 @@ import {
 } from './type';
 import { handleSessionError } from '@/lib/handleErrors';
 import apiSession from '../axios/apiSession';
+import { SESSION_URLS } from '@/constants/urls';
 
 const client = new ChzzkClient();
 
@@ -84,7 +85,7 @@ export const getContentsSessionInfo = async (
 ): Promise<GetContentsSessionResponse> => {
   try {
     const response = await apiSession.get(
-      `/api/v1/contents/session?page=${page}&size=${size}`,
+      `${SESSION_URLS.contentsSession}?page=${page}&size=${size}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
@@ -105,7 +106,7 @@ export const createContentsSession = async (
   console.log(accessToken);
   try {
     const response = await apiSession.post(
-      '/api/v1/contents/session',
+      SESSION_URLS.contentsSession,
       {
         ...data,
       },
@@ -127,7 +128,7 @@ export const deleteContentsSession = async (
 ): Promise<DeleteContentsSessionResponse> => {
   console.log(accessToken);
   try {
-    const response = await apiSession.delete('/api/v1/contents/session', {
+    const response = await apiSession.delete(SESSION_URLS.contentsSession, {
       headers: {
         Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
       },
@@ -147,7 +148,7 @@ export const putContentsSessionParticipantPick = async (
   console.log(accessToken);
   try {
     const response = await apiSession.put(
-      `/api/v1/contents/participants/${viewerId}/pick`,
+      `${SESSION_URLS.contentsParticipants}${viewerId}/pick`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
@@ -168,7 +169,7 @@ export const putContentsSessionNextGroup = async ({
   console.log(accessToken);
   try {
     const response = await apiSession.put(
-      `/api/v1/contents/session/next-group`,
+      `${SESSION_URLS.contentsSession}/next-group`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
@@ -190,7 +191,7 @@ export const deleteContentsSessionParticipant = async (
   console.log(accessToken);
   try {
     const response = await apiSession.delete(
-      `/api/v1/contents/participants/${viewerId}`,
+      `${SESSION_URLS.contentsParticipants}/${viewerId}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가

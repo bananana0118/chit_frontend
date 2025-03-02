@@ -8,6 +8,7 @@ import {
   GetContentsSessionViewerSubscribeRequest,
 } from './type';
 import makeUrl from '@/lib/makeUrl';
+import { SESSION_URLS } from '@/constants/urls';
 
 //시청자 구독 요청
 export const getContentsSessionViewerSubscribe = async ({
@@ -40,7 +41,7 @@ export const getContentsSessionViewerGameCode = async ({
   accessToken,
 }: GetContentsSessionGameCodeRequest): Promise<GetContentsSessionGameCodeResponse> => {
   try {
-    const url = `/api/v1/contents/session/${sessionCode}/gameCode`;
+    const url = `${SESSION_URLS.contentsSession}/${sessionCode}/gameCode`;
     const response = await apiSession.get(url, {
       headers: {
         Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
@@ -61,7 +62,7 @@ export const deleteContentsSessionViewerLeave = async ({
   console.log(accessToken);
   try {
     const response = await apiSession.delete(
-      `/api/v1/contents/session/${sessionCode}/leave`,
+      `${SESSION_URLS.contentsSession}/${sessionCode}/leave`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
