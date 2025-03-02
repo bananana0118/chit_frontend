@@ -1,5 +1,10 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+export enum ViewerStatus {
+  JOINED = 'JOINED', // 시청자가 세션에 참여 중
+  LIVE_CLOSED = 'LIVE_CLOSED', // 스트리머가 세션 종료함
+  DISCONNECTED = 'DISCONNECTED', // 연결이 끊긴 상태
+}
 
 type SSEState = {
   contentsSessionInfo: SSEStateContentsSession | null;
@@ -8,6 +13,7 @@ type SSEState = {
   viewerSessionInfo: viewerSessionInfo | null;
   viewerNickname?: string | null;
   error: string | null;
+  viewerStatus: ViewerStatus | null;
   isRehydrated: boolean; // 상태가 로드 완료되었는지 여부 추가
   setViewerNickname: (viewerNickname: string) => void;
   startSSE: (url: string) => void;
@@ -30,6 +36,7 @@ enum SSEEventType {
   STREAMER_SESSION_UPDATED = 'STREAMER_SESSION_UPDATED',
   PARTICIPANT_ORDER_UPDATED = 'PARTICIPANT_ORDER_UPDATED',
   PARTICIPANT_SESSION_UPDATED = 'PARTICIPANT_SESSION_UPDATED', //스트리머가 업데이트시
+  PARTICIPANT_SESSION_CLOSED = 'PARTICIPANT_SESSION_CLOSED',
 }
 type EVENT_ParticipantAddedResponse = {
   maxGroupParticipants: number;
@@ -67,6 +74,7 @@ export const useSSEStore = create<SSEState>()(
       eventSource: null,
       isConnected: false,
       viewerSessionInfo: null,
+      viewerStatus: null,
       error: null,
       viewerNickname: null,
       isRehydrated: false,
@@ -76,6 +84,23 @@ export const useSSEStore = create<SSEState>()(
           ...state,
           viewerNickname,
         }));
+      },
+      stopSSE: () => {
+        set((state) => {
+          if (state.eventSource) {
+            console.log('SSE연결을 종료합니다.');
+            try {
+              state.eventSource.close();
+            } catch (error) {
+              console.error('SSE 종료 중 오류 발생:', error);
+            }
+          }
+          return {
+            eventSource: null,
+            isConnected: false,
+            viewerSessionInfo: null,
+          };
+        });
       },
       startSSE: (url) => {
         set((state) => {
@@ -90,7 +115,11 @@ export const useSSEStore = create<SSEState>()(
           newEventSource.onopen = (event) => {
             console.log('SSE연결 성공~');
             console.log('연결성공메세지 수신', event);
-            set({ isConnected: true, error: null }); // ✅ 에러 초기화
+            set({
+              isConnected: true,
+              error: null,
+              viewerStatus: ViewerStatus.JOINED,
+            }); // ✅ 에러 초기화
           };
 
           // ✅ 모든 이벤트 리스너 등록
@@ -147,6 +176,15 @@ export const useSSEStore = create<SSEState>()(
                   };
                   break;
 
+                case SSEEventType.PARTICIPANT_SESSION_CLOSED:
+                  console.log('📩 참가자 세션 종료 이벤트 발생');
+                  get().stopSSE(); // 기존 stopSSE 함수 호출하여 안전하게 종료
+                  set({
+                    viewerSessionInfo: null,
+                    viewerStatus: ViewerStatus.LIVE_CLOSED,
+                  }); // viewer 세션 정보 초기화
+                  break;
+
                 default:
                   console.log('📩 세션 이벤트 수신:', eventData);
               }
@@ -168,15 +206,6 @@ export const useSSEStore = create<SSEState>()(
             isConnected: true,
             error: null,
           };
-        });
-      },
-      stopSSE: () => {
-        set((state) => {
-          if (state.eventSource) {
-            console.log('SSE연결을 종료합니다.');
-            state.eventSource.close();
-          }
-          return { eventSource: null, isConnected: false };
         });
       },
     }),
