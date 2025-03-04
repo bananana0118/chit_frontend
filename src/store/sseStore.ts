@@ -55,11 +55,11 @@ type EVENT_ParticipantAddedResponse = {
   maxGroupParticipants: number;
   currentParticipants?: number;
 };
-type EVENT_StreamerParticipantFixed = {
-  maxGroupParticipants: number;
-  currentParticipants?: number;
-  participant: ParticipantResponseType;
-};
+// type EVENT_StreamerParticipantFixed = {
+//   maxGroupParticipants: number;
+//   currentParticipants?: number;
+//   participant: ParticipantResponseType;
+// };
 
 interface EVENT_ParticipantRemovededResponse
   extends EVENT_ParticipantAddedResponse {
