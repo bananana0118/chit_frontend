@@ -145,7 +145,6 @@ export const putContentsSessionParticipantPick = async (
   accessToken: string,
   viewerId: number,
 ): Promise<DeleteContentsSessionResponse> => {
-  console.log(accessToken);
   try {
     const response = await apiSession.put(
       `${SESSION_URLS.contentsParticipants}${viewerId}/pick`,

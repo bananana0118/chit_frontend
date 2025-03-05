@@ -152,6 +152,7 @@ export const useSSEStore = create<SSEState>()(
               );
 
               const eventData = JSON.parse(event.data);
+              if (!eventData) return;
               const newState: Partial<SSEState> = {};
 
               // ✅ 이벤트 타입에 따라 ORDER 값 변경
