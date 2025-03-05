@@ -10,7 +10,7 @@ type Props = {
   accessToken: string;
   refreshUsers: () => void;
   memberId: number;
-  zicName: string;
+  chzzkNickname: string;
   gameNicname: string;
   isHeart: boolean;
 };
@@ -19,7 +19,7 @@ export default function MemberCard({
   accessToken,
   refreshUsers,
   memberId,
-  zicName,
+  chzzkNickname,
   gameNicname,
   isHeart,
 }: Props) {
@@ -59,7 +59,9 @@ export default function MemberCard({
     >
       <div className="mb-2 flex flex-row items-center justify-start">
         <ZzzicIcon width={20} height={20} />
-        <div className="mx-2 flex-1 text-bold-small text-black">{zicName}</div>
+        <div className="mx-2 flex-1 text-bold-small text-black">
+          {chzzkNickname}
+        </div>
         <div
           className="absolute right-[10px] top-[10px] cursor-pointer"
           onClick={onClickBanHandler}

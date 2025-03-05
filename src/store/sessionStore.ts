@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, devtools, persist } from 'zustand/middleware';
+import { ParticipantResponseType } from './sseStore';
 
 export type ApiResponse<T> = {
   status: number;
@@ -21,20 +22,13 @@ export type Session = {
 };
 
 export type ParticipantsInfo = {
-  content: [CurrentParticipants];
+  content: ParticipantResponseType[];
   page: number;
   size: number;
   totalElements: number;
   totalPages: number;
   hasNext: boolean;
   hasPrevious: boolean;
-};
-
-export type CurrentParticipants = {
-  viewerId: number;
-  chzzkNickname: string;
-  gameNickname: string;
-  fixedPick: boolean;
 };
 
 type ContentsSessionState = {

@@ -8,6 +8,7 @@ import './globals.css';
 import { ToastContainer } from 'react-toastify';
 import PageLayout from '@/components/layout/PageLayout';
 import AuthProvider from '@/provider/AuthProvider';
+import Providers from '@/provider/Providers';
 
 const pretendard = localFont({
   src: './fonts/PretendardVariable.woff2',
@@ -31,14 +32,16 @@ export default function RootLayout({
       <body
         className={`${pretendard.variable} h-screen w-screen cursor-default bg-background text-white antialiased`}
       >
-        <AuthProvider>
-          <PageLayout>{children}</PageLayout>
-        </AuthProvider>
-        <ToastContainer
-          className="custom-toast"
-          position="top-right"
-          autoClose={3000}
-        ></ToastContainer>
+        <Providers>
+          <AuthProvider>
+            <PageLayout>{children}</PageLayout>
+          </AuthProvider>
+          <ToastContainer
+            className="custom-toast"
+            position="top-right"
+            autoClose={3000}
+          ></ToastContainer>
+        </Providers>
       </body>
     </html>
   );

@@ -43,11 +43,12 @@ enum SSEEventType {
   PARTICIPANT_SESSION_KICKED = 'PARTICIPANT_SESSION_KICKED',
 }
 
-type ParticipantResponseType = {
+export type ParticipantResponseType = {
   viewerId: number;
   round: number;
   fixedPick: boolean;
   gameNickname: string;
+  chzzkNickname: string;
   order: number;
 };
 

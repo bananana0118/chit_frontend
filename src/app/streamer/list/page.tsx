@@ -1,3 +1,5 @@
+//todo 임시적용, 추후 삭제
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import CommonLayout from '@/components/layout/CommonLayout';
@@ -10,33 +12,62 @@ import {
   getContentsSessionInfo,
 } from '@/services/streamer/streamer';
 import useChannelStore from '@/store/channelStore';
-import useContentsSessionStore, {
-  CurrentParticipants,
-} from '@/store/sessionStore';
-import { useSSEStore } from '@/store/sseStore';
+import useContentsSessionStore from '@/store/sessionStore';
+import { ParticipantResponseType, useSSEStore } from '@/store/sseStore';
 import useAuthStore from '@/store/store';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'react-toastify';
 import useThrottle from '@/hooks/useThrottle';
+import InfiniteLoader from 'react-window-infinite-loader';
+import { FixedSizeList } from 'react-window';
+import { generagtionViewers } from '@/constants/Dummy';
 
 enum SessionStatus {
   INITIAL = 1,
   OPEN = 2,
   CLOSED = 0,
 }
-
+const LIMIT = 5;
 export default function List() {
   const accessToken = useAuthStore((state) => state.accessToken);
   const sessionInfo = useContentsSessionStore((state) => state.sessionInfo);
+  const [pages, setPages] = useState(1);
   const { startSSE, stopSSE, isConnected, contentsSessionInfo } = useSSEStore();
   const channelId = useChannelStore((state) => state.channelId);
   const isTokenLoading = useAuthStore((state) => state.isRehydrated);
   const [isSessionOn, setIsSessionOn] = useState<SessionStatus>(
     SessionStatus.INITIAL,
   );
-  const [currentParticipants, setCurrentParticipants] = useState<
-    CurrentParticipants[]
+  const [currentParticipants, setParticipantResponseType] = useState<
+    ParticipantResponseType[]
   >([]);
+  const observerTarget = useRef<HTMLDivElement | null>(null); // 감지할 마지막 요소
+  // 스크롤이 바닥에 닿을 때 감지하는 함수
+  useEffect(() => {
+    fetchParticipants();
+    console.log('page:' + pages);
+  }, [pages]); // pages가 바뀔 때마다 호출
+
+  const fetchParticipants = useCallback(() => {
+    const newParticipants = generagtionViewers(pages, LIMIT);
+    setParticipantResponseType((prev) => [...prev, ...newParticipants]);
+  }, [pages]);
+
+  useEffect(() => {
+    if (!observerTarget.current) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          console.log('마지막 요소 감지됨');
+          setPages((prev) => prev + 1);
+        }
+      },
+      { threshold: 1.0 }, //요소가 완전히 보일때 실행
+    );
+    observer.observe(observerTarget.current);
+    return () => observer.disconnect();
+  }, [currentParticipants]);
 
   //세션 생성 함수
   const onCreateSession = async () => {
@@ -111,7 +142,7 @@ export default function List() {
       } else {
         const data = response.data;
         const newParticipants = data?.participants?.content ?? [];
-        setCurrentParticipants(
+        setParticipantResponseType(
           newParticipants, // 기존 데이터 유지하면서 새 데이터 추가
         );
         console.log('newParticipants');
@@ -123,15 +154,16 @@ export default function List() {
   }, [accessToken, isSessionOn, isTokenLoading]);
   const throttledFetchParticipants = useThrottle(fetchParticipantsData, 1000);
 
-  //이벤트 발생시에만 불러오는 useEffect
-  useEffect(() => {
-    console.log('hit2');
+  //todo 테스트 동안만 잠가놓는 최초 데이터 불러오는 api
+  // //이벤트 발생시에만 불러오는 useEffect
+  // useEffect(() => {
+  //   console.log('hit2');
 
-    if (contentsSessionInfo) {
-      console.log('hit');
-      throttledFetchParticipants();
-    }
-  }, [contentsSessionInfo, throttledFetchParticipants]);
+  //   if (contentsSessionInfo) {
+  //     console.log('hit');
+  //     throttledFetchParticipants();
+  //   }
+  // }, [contentsSessionInfo, throttledFetchParticipants]);
   useEffect(() => {
     if (accessToken && !isConnected) {
       console.log('🔄 SSE 자동 시작');
@@ -162,6 +194,8 @@ export default function List() {
               sessionCode={sessionInfo?.sessionCode}
               channelId={channelId!}
             />
+          </section>
+          <section id="infoBox" className="w-full">
             {!isSessionOn ? (
               <p className="mb-5 mt-4 text-bold-middle">시참을 시작해주세요</p>
             ) : currentParticipants.length === 0 ? (
@@ -176,8 +210,8 @@ export default function List() {
               </p>
             )}
           </section>
-          <section className="w-full flex-1">
-            <div id="listNav " className="mb-3 flex flex-row justify-between">
+          <section className="mb-3 flex min-h-[34px] w-full">
+            <div id="listNav " className="flex w-full flex-row justify-between">
               <ul className="flex flex-row items-center text-medium-large">
                 <li className="menutab mr-3 last:mr-0">전체 인원</li>
                 <li className="menutab mr-3 last:mr-0">고정 인원</li>
@@ -187,13 +221,20 @@ export default function List() {
                 다음 파티 호출 🔈
               </div>
             </div>
-            <div id="list" className="flex w-full flex-1 flex-col">
-              {!isSessionOn ? (
-                <div>시참을 시작해주세요.</div>
-              ) : currentParticipants.length === 0 ? (
-                <div>유저를 기다리는 중입니다.</div>
-              ) : (
-                currentParticipants.map((participant, index) => (
+          </section>
+          {!isSessionOn ? (
+            <div>시참을 시작해주세요.</div>
+          ) : currentParticipants.length === 0 ? (
+            <div>유저를 기다리는 중입니다.</div>
+          ) : (
+            // <InfiniteLoader loadMoreItems={(prev) => setPages(prev + 1)}>
+            //   {({ onItemsRendered, ref }) => (
+            <section className="w-full flex-1 overflow-y-auto">
+              <div
+                id="list"
+                className="flex w-full flex-1 flex-col overflow-y-auto"
+              >
+                {currentParticipants.map((participant, index) => (
                   <div
                     key={index}
                     id="partyblock"
@@ -209,17 +250,21 @@ export default function List() {
                       <MemberCard
                         accessToken={accessToken}
                         refreshUsers={throttledFetchParticipants}
-                        memberId={participant.memberId}
-                        zicName={`${participant.chzzkNickname}`}
+                        memberId={participant.viewerId}
+                        chzzkNickname={`${participant.chzzkNickname}`}
                         gameNicname={`${participant.gameNickname}`}
                         isHeart={participant.fixedPick}
                       />
                     </div>
                   </div>
-                ))
-              )}
-            </div>
-          </section>
+                ))}
+                {/* /마지막//마지막 요소 감지용 idv? */}
+                <div ref={observerTarget} className="h-10" />
+              </div>
+            </section>
+            //   )}
+            // </InfiniteLoader>
+          )}
         </div>
       </CommonLayout>
     )

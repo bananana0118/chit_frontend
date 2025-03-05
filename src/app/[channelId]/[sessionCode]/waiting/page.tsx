@@ -86,7 +86,7 @@ export default function Page() {
   //     try {
   //       const response = await getGameCode();
   //       console.log(response);
-  //       //setCurrentParticipants(result);
+  //       //setParticipantResponseType(result);
   //     } catch (error) {
   //       console.error('데이터 가져오기 실패:', error);
   //     }
