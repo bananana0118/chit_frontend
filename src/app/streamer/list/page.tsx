@@ -84,7 +84,7 @@ export default function List() {
         if (!group) break;
         grouped.push(group);
       }
-      setParticipantResponseType((prev) => [...prev, ...grouped]); // ✅ 상태 업데이트 → React가 렌더링 감지
+      setParticipantResponseType(grouped); // ✅ 상태 업데이트 → React가 렌더링 감지
     }
   }, [pages, currentParticipants]);
 
@@ -199,7 +199,7 @@ export default function List() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // ✅ 언마운트 시 한 번만 실행
   if (!isTokenLoading) return <div>로딩중입니다.</div>;
-  const maxGroupParticipants = sessionInfo.maxGroupParticipants ?? 1
+  const maxGroupParticipants = sessionInfo.maxGroupParticipants ?? 1;
   return (
     isTokenLoading &&
     sessionInfo && (
