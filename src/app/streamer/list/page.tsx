@@ -19,6 +19,7 @@ import { toast } from 'react-toastify';
 
 import { generagtionViewers } from '@/constants/Dummy';
 import ViewerList from '@/components/molecules/ViewerList';
+import useThrottle from '@/hooks/useThrottle';
 
 enum SessionStatus {
   INITIAL = 1,
@@ -37,45 +38,30 @@ export default function List() {
     SessionStatus.INITIAL,
   );
   const [currentParticipants, setParticipantResponseType] = useState<
-    ParticipantResponseType[][]
+    ParticipantResponseType[]
   >([]);
 
-  // 스크롤이 바닥에 닿을 때 감지하는 함수
+  // todo : 테스트용 함수
   useEffect(() => {
     console.log('hit');
-    fetchParticipants();
+    testfetchParticipants();
     console.log('page:' + pages);
   }, [pages]); // pages가 바뀔 때마다 호출
 
-  const fetchParticipants = useCallback(() => {
+  const testfetchParticipants = useCallback(() => {
     if (sessionInfo) {
       const { maxGroupParticipants } = sessionInfo;
       if (!maxGroupParticipants) {
         console.log('값없음');
         return;
       }
-
+      console.log(maxGroupParticipants);
       const newParticipants = [
-        ...currentParticipants.flatMap((p) => p),
+        ...currentParticipants,
         ...generagtionViewers(pages, LIMIT),
       ];
-
-      // ✅ 중복 제거 (viewerId 기준)
-      const uniqueParticipants: ParticipantResponseType[] = Array.from(
-        new Map(newParticipants.map((p) => [p.viewerId, p])).values(),
-      );
-
-      const grouped: ParticipantResponseType[][] = [];
-      for (
-        let i = 0;
-        i < uniqueParticipants.length;
-        i += maxGroupParticipants!
-      ) {
-        const group = uniqueParticipants.slice(i, i + maxGroupParticipants!);
-        if (!group) break;
-        grouped.push(group);
-      }
-      setParticipantResponseType(grouped); // ✅ 상태 업데이트 → React가 렌더링 감지
+      setParticipantResponseType(newParticipants);
+      return newParticipants;
     }
   }, [sessionInfo, currentParticipants, pages]);
 
@@ -136,44 +122,44 @@ export default function List() {
     toast.warn('요청에 실패했습니다. 잠시후 다시 시도해주세요');
   };
 
-  // //갱신되는 정보가 있을때 참가자 정보 받아옴
-  // const fetchParticipantsData = useCallback(async () => {
-  //   if (!isTokenLoading || !isSessionOn) return;
+  //갱신되는 정보가 있을때 참가자 정보 받아옴
+  const fetchParticipantsData = useCallback(async () => {
+    if (!isTokenLoading || !isSessionOn) return;
 
-  //   try {
-  //     const response = await getContentsSessionInfo(accessToken);
-  //     if ('error' in response) {
-  //       // 에러 발생 시 사용자 피드백 제공
-  //       toast.error(`❌에러코드 : ${response.status} 오류: ${response.error}`, {
-  //         position: 'top-right',
-  //         autoClose: 3000,
-  //       });
-  //       return;
-  //     } else {
-  //       const data = response.data;
-  //       const newParticipants = data?.participants?.content ?? [];
-  //       setParticipantResponseType(
-  //         newParticipants, // 기존 데이터 유지하면서 새 데이터 추가
-  //       );
-  //       console.log('newParticipants');
-  //       console.log(newParticipants);
-  //     }
-  //   } catch (error) {
-  //     console.error('데이터 가져오기 실패:', error);
-  //   }
-  // }, [accessToken, isSessionOn, isTokenLoading]);
-  // const throttledFetchParticipants = useThrottle(fetchParticipantsData, 1000);
+    try {
+      const response = await getContentsSessionInfo(accessToken);
+      if ('error' in response) {
+        // 에러 발생 시 사용자 피드백 제공
+        toast.error(`❌에러코드 : ${response.status} 오류: ${response.error}`, {
+          position: 'top-right',
+          autoClose: 3000,
+        });
+        return;
+      } else {
+        const data = response.data;
+        const newParticipants = data?.participants?.content ?? [];
+        setParticipantResponseType(
+          newParticipants, // 기존 데이터 유지하면서 새 데이터 추가
+        );
+        console.log('newParticipants');
+        console.log(newParticipants);
+      }
+    } catch (error) {
+      console.error('데이터 가져오기 실패:', error);
+    }
+  }, [accessToken, isSessionOn, isTokenLoading]);
+  const throttledFetchParticipants = useThrottle(fetchParticipantsData, 1000);
 
-  // //todo 테스트 동안만 잠가놓는 최초 데이터 불러오는 api
-  // //이벤트 발생시에만 불러오는 useEffect
-  // useEffect(() => {
-  //   console.log('hit2');
+  //todo 테스트 동안만 잠가놓는 최초 데이터 불러오는 api
+  //이벤트 발생시에만 불러오는 useEffect
+  useEffect(() => {
+    console.log('hit2');
 
-  //   if (contentsSessionInfo) {
-  //     console.log('hit');
-  //     throttledFetchParticipants();
-  //   }
-  // }, [contentsSessionInfo, throttledFetchParticipants]);
+    if (contentsSessionInfo) {
+      console.log('hit');
+      throttledFetchParticipants();
+    }
+  }, [contentsSessionInfo, throttledFetchParticipants]);
   useEffect(() => {
     if (accessToken && !isConnected) {
       console.log('🔄 SSE 자동 시작');
@@ -231,19 +217,21 @@ export default function List() {
               </div>
             </div>
           </section>
-          {!isSessionOn ? (
-            <div>시참을 시작해주세요.</div>
-          ) : currentParticipants.length === 0 ? (
-            <div>유저를 기다리는 중입니다.</div>
-          ) : (
-            <ViewerList
-              accessToken={accessToken}
-              groupedParticipant={currentParticipants}
-              loadMoreItems={() => {}}
-              maxGroupParticipants={maxGroupParticipants}
-              key={'viewerList'}
-            ></ViewerList>
-          )}
+          <section className="w-full flex-1 overflow-y-auto">
+            {!isSessionOn ? (
+              <div>시참을 시작해주세요.</div>
+            ) : currentParticipants.length === 0 ? (
+              <div>유저를 기다리는 중입니다.</div>
+            ) : (
+              <ViewerList
+                accessToken={accessToken}
+                currentParticipants={currentParticipants}
+                loadMoreItems={() => setPages((prev) => prev + 1)}
+                maxGroupParticipants={maxGroupParticipants}
+                key={'viewerList'}
+              ></ViewerList>
+            )}
+          </section>
         </div>
       </CommonLayout>
     )

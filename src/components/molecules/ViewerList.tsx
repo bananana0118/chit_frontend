@@ -4,32 +4,64 @@ import InfiniteLoader from 'react-window-infinite-loader';
 import { FixedSizeList as List } from 'react-window';
 import { ParticipantResponseType } from '../../store/sseStore';
 import PartyText from '../atoms/text/PartyText';
-
-type Props = {
-  groupedParticipant: ParticipantResponseType[][];
-  maxGroupParticipants: number;
-  loadMoreItems: () => void;
-  accessToken: string;
-};
+import { useCallback } from 'react';
 
 const CARD_SIZE = 69;
 const FONT_SIZE = 14;
 const SPACE = 4;
 const PADDING = 8;
+
+type Props = {
+  currentParticipants: ParticipantResponseType[];
+  maxGroupParticipants: number;
+  loadMoreItems: () => void;
+  accessToken: string;
+};
+
 export default function ViewerList({
   accessToken,
-  groupedParticipant,
+  currentParticipants,
   maxGroupParticipants,
   loadMoreItems,
 }: Props) {
+  const createGroupedUser = useCallback(
+    (currentParticipants: ParticipantResponseType[]) => {
+      if (!maxGroupParticipants) {
+        console.log('값없음');
+        return;
+      }
+
+      // ✅ 중복 제거 (viewerId 기준)
+      const uniqueParticipants: ParticipantResponseType[] = Array.from(
+        new Map(currentParticipants.map((p) => [p.viewerId, p])).values(),
+      );
+
+      const grouped: ParticipantResponseType[][] = [];
+      for (
+        let i = 0;
+        i < uniqueParticipants.length;
+        i += maxGroupParticipants!
+      ) {
+        const group = uniqueParticipants.slice(i, i + maxGroupParticipants!);
+        if (!group) break;
+        grouped.push(group);
+      }
+
+      return grouped;
+    },
+    [maxGroupParticipants],
+  );
+
+  const groupedParticipants = createGroupedUser(currentParticipants);
+
   return (
-    <InfiniteLoader
-      isItemLoaded={(index) => index >= groupedParticipant.length}
-      itemCount={groupedParticipant.length}
-      loadMoreItems={loadMoreItems}
-    >
-      {({ onItemsRendered, ref }) => (
-        <section className="w-full flex-1 overflow-y-auto">
+    groupedParticipants && (
+      <InfiniteLoader
+        isItemLoaded={(index) => index >= groupedParticipants.length}
+        itemCount={groupedParticipants.length}
+        loadMoreItems={loadMoreItems}
+      >
+        {({ onItemsRendered, ref }) => (
           <AutoSizer>
             {({ height, width }) => (
               <List
@@ -44,12 +76,11 @@ export default function ViewerList({
                 }
                 height={height}
                 onItemsRendered={onItemsRendered}
-                itemCount={groupedParticipant.length}
+                itemCount={groupedParticipants.length}
                 width={width}
               >
                 {({ index, style }) => {
-                  const group = groupedParticipant[index];
-                  console.log(group);
+                  const group = groupedParticipants[index];
                   return (
                     <div
                       key={index}
@@ -62,7 +93,7 @@ export default function ViewerList({
                       className="flex h-full w-[inherit] flex-row"
                     >
                       <div id="partyMembers" className="flex-1 flex-col">
-                        <PartyText index={index + 1} />
+                        <PartyText index={index} />
                         {group.map((viewer) => {
                           return (
                             <MemberCard
@@ -86,8 +117,8 @@ export default function ViewerList({
             )}
             {/* //List */}
           </AutoSizer>
-        </section>
-      )}
-    </InfiniteLoader>
+        )}
+      </InfiniteLoader>
+    )
   );
 }
