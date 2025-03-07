@@ -6,7 +6,7 @@ const DummyData = {
 
 export const generagtionViewers = (
   page: number,
-  limit: number = 5,
+  limit: number = 7,
 ): ParticipantResponseType[] => {
   const start = (page - 1) * limit;
   return Array.from({ length: limit }, (_, i) => ({

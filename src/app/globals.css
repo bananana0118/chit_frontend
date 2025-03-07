@@ -1,8 +1,22 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 @layer utilities {
+  .scroll-container::-webkit-scrollbar {
+    @apply h-5 w-2;
+  }
+
+  .scroll-container::-webkit-scrollbar-track {
+    @apply rounded-full dark:bg-slate-700;
+  }
+
+  .scroll-container::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-slate-300 dark:bg-slate-600;
+  }
+
+  .scroll-container::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary;
+  }
 }
 
 :root {

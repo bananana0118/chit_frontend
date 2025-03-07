@@ -229,7 +229,7 @@ export default function List() {
           ) : (
             // <InfiniteLoader loadMoreItems={(prev) => setPages(prev + 1)}>
             //   {({ onItemsRendered, ref }) => (
-            <section className="w-full flex-1 overflow-y-auto">
+            <section className="scroll-container w-full flex-1 overflow-y-auto pr-2">
               <div
                 id="list"
                 className="flex w-full flex-1 flex-col overflow-y-auto"
@@ -238,7 +238,7 @@ export default function List() {
                   <div
                     key={index}
                     id="partyblock"
-                    className="flex h-full w-full flex-row"
+                    className="mb-2 flex h-full w-full flex-row"
                   >
                     <div
                       id="partyOrder"
