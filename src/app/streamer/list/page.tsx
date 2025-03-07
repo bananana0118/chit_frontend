@@ -14,7 +14,7 @@ import useChannelStore from '@/store/channelStore';
 import useContentsSessionStore from '@/store/sessionStore';
 import { ParticipantResponseType, useSSEStore } from '@/store/sseStore';
 import useAuthStore from '@/store/store';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
 
 import { generagtionViewers } from '@/constants/Dummy';
@@ -29,7 +29,8 @@ enum SessionStatus {
 const LIMIT = 7;
 export default function List() {
   const accessToken = useAuthStore((state) => state.accessToken);
-  const sessionInfo = useContentsSessionStore((state) => state.sessionInfo);
+  const { isRehydrated: isLoadingContentsSessionInfo, sessionInfo } =
+    useContentsSessionStore((state) => state);
   const [pages, setPages] = useState(1);
   const { startSSE, stopSSE, isConnected, contentsSessionInfo } = useSSEStore();
   const channelId = useChannelStore((state) => state.channelId);
@@ -42,11 +43,6 @@ export default function List() {
   >([]);
 
   // todo : 테스트용 함수
-  useEffect(() => {
-    console.log('hit');
-    testfetchParticipants();
-    console.log('page:' + pages);
-  }, [pages]); // pages가 바뀔 때마다 호출
 
   const testfetchParticipants = useCallback(() => {
     if (sessionInfo) {
@@ -63,7 +59,13 @@ export default function List() {
       setParticipantResponseType(newParticipants);
       return newParticipants;
     }
-  }, [sessionInfo, currentParticipants, pages]);
+  }, [sessionInfo, currentParticipants, pages, isLoadingContentsSessionInfo]);
+
+  useEffect(() => {
+    console.log('hit');
+    testfetchParticipants();
+    console.log('page:' + pages);
+  }, [pages, isLoadingContentsSessionInfo]); // pages가 바뀔 때마다 호출
 
   //세션 생성 함수
   const onCreateSession = async () => {
@@ -75,8 +77,7 @@ export default function List() {
       };
 
       const response = await createContentsSession(reqData, accessToken);
-      console.log('Res');
-      console.log(response);
+
       return response.status;
     }
   };
@@ -91,13 +92,11 @@ export default function List() {
     // 상태변화 sessionOn=>sessionOff
     if (isSessionOn) {
       const response = await deleteContentsSession(accessToken);
-      if (response.status !== 200) {
-        toast.warn('에러가 발생했습니다. 나중에 다시 시도해 주세요');
-        return;
-      }
+
       if (
-        isSessionOn === SessionStatus.INITIAL ||
-        isSessionOn === SessionStatus.OPEN
+        response.status === 200 &&
+        (isSessionOn === SessionStatus.INITIAL ||
+          isSessionOn === SessionStatus.OPEN)
       ) {
         stopSSE();
         setIsSessionOn(SessionStatus.CLOSED);

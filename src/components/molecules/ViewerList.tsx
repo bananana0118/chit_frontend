@@ -24,6 +24,7 @@ export default function ViewerList({
   maxGroupParticipants,
   loadMoreItems,
 }: Props) {
+  //유저 그룹 생성
   const createGroupedUser = useCallback(
     (currentParticipants: ParticipantResponseType[]) => {
       if (!maxGroupParticipants) {
@@ -112,10 +113,8 @@ export default function ViewerList({
                     </div>
                   );
                 }}
-                {/* //list */}
               </List>
             )}
-            {/* //List */}
           </AutoSizer>
         )}
       </InfiniteLoader>
