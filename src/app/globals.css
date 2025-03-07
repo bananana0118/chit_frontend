@@ -3,7 +3,7 @@
 @tailwind utilities;
 @layer utilities {
   .scroll-container::-webkit-scrollbar {
-    @apply h-5 w-2;
+    @apply ml-2 h-5 w-2;
   }
 
   .scroll-container::-webkit-scrollbar-track {

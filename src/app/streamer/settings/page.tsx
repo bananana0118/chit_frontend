@@ -68,7 +68,7 @@ export default function Settings() {
         console.log(response.data);
         setSessionInfo(response.data);
         toast.success('✅ 세션이 성공적으로 생성되었습니다!');
-        router.push('/streamer/list');
+        router.push(`/streamer/list?max=${maxGroupParticipants}`);
       }
     } catch (error) {
       console.log('settings error');

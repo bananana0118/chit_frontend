@@ -19,15 +19,17 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'react-toastify';
 import useThrottle from '@/hooks/useThrottle';
 import InfiniteLoader from 'react-window-infinite-loader';
-import { FixedSizeList } from 'react-window';
+import { FixedSizeList as ViewerList } from 'react-window';
 import { generagtionViewers } from '@/constants/Dummy';
+import AutoSizer from 'react-virtualized-auto-sizer';
+import { useSearchParams } from 'next/navigation';
 
 enum SessionStatus {
   INITIAL = 1,
   OPEN = 2,
   CLOSED = 0,
 }
-const LIMIT = 5;
+const LIMIT = 7;
 export default function List() {
   const accessToken = useAuthStore((state) => state.accessToken);
   const sessionInfo = useContentsSessionStore((state) => state.sessionInfo);
@@ -39,35 +41,52 @@ export default function List() {
     SessionStatus.INITIAL,
   );
   const [currentParticipants, setParticipantResponseType] = useState<
-    ParticipantResponseType[]
+    ParticipantResponseType[][]
   >([]);
-  const observerTarget = useRef<HTMLDivElement | null>(null); // 감지할 마지막 요소
+
   // 스크롤이 바닥에 닿을 때 감지하는 함수
   useEffect(() => {
+    console.log('hit');
     fetchParticipants();
     console.log('page:' + pages);
   }, [pages]); // pages가 바뀔 때마다 호출
 
   const fetchParticipants = useCallback(() => {
-    const newParticipants = generagtionViewers(pages, LIMIT);
-    setParticipantResponseType((prev) => [...prev, ...newParticipants]);
-  }, [pages]);
+    if (sessionInfo) {
+      const { maxGroupParticipants } = sessionInfo;
+      if (!maxGroupParticipants) {
+        console.log('값없음');
+        return;
+      }
 
-  useEffect(() => {
-    if (!observerTarget.current) return;
+      if (!maxGroupParticipants) {
+        console.log('값없음');
+        return;
+      }
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          console.log('마지막 요소 감지됨');
-          setPages((prev) => prev + 1);
-        }
-      },
-      { threshold: 1.0 }, //요소가 완전히 보일때 실행
-    );
-    observer.observe(observerTarget.current);
-    return () => observer.disconnect();
-  }, [currentParticipants]);
+      const newParticipants = [
+        ...currentParticipants.flatMap((p) => p),
+        ...generagtionViewers(pages, LIMIT),
+      ];
+
+      // ✅ 중복 제거 (viewerId 기준)
+      const uniqueParticipants: ParticipantResponseType[] = Array.from(
+        new Map(newParticipants.map((p) => [p.viewerId, p])).values(),
+      );
+
+      const grouped: ParticipantResponseType[][] = [];
+      for (
+        let i = 0;
+        i < uniqueParticipants.length;
+        i += maxGroupParticipants!
+      ) {
+        const group = uniqueParticipants.slice(i, i + maxGroupParticipants!);
+        if (!group) break;
+        grouped.push(group);
+      }
+      setParticipantResponseType((prev) => [...prev, ...grouped]); // ✅ 상태 업데이트 → React가 렌더링 감지
+    }
+  }, [pages, currentParticipants]);
 
   //세션 생성 함수
   const onCreateSession = async () => {
@@ -126,33 +145,33 @@ export default function List() {
     toast.warn('요청에 실패했습니다. 잠시후 다시 시도해주세요');
   };
 
-  //갱신되는 정보가 있을때 참가자 정보 받아옴
-  const fetchParticipantsData = useCallback(async () => {
-    if (!isTokenLoading || !isSessionOn) return;
+  // //갱신되는 정보가 있을때 참가자 정보 받아옴
+  // const fetchParticipantsData = useCallback(async () => {
+  //   if (!isTokenLoading || !isSessionOn) return;
 
-    try {
-      const response = await getContentsSessionInfo(accessToken);
-      if ('error' in response) {
-        // 에러 발생 시 사용자 피드백 제공
-        toast.error(`❌에러코드 : ${response.status} 오류: ${response.error}`, {
-          position: 'top-right',
-          autoClose: 3000,
-        });
-        return;
-      } else {
-        const data = response.data;
-        const newParticipants = data?.participants?.content ?? [];
-        setParticipantResponseType(
-          newParticipants, // 기존 데이터 유지하면서 새 데이터 추가
-        );
-        console.log('newParticipants');
-        console.log(newParticipants);
-      }
-    } catch (error) {
-      console.error('데이터 가져오기 실패:', error);
-    }
-  }, [accessToken, isSessionOn, isTokenLoading]);
-  const throttledFetchParticipants = useThrottle(fetchParticipantsData, 1000);
+  //   try {
+  //     const response = await getContentsSessionInfo(accessToken);
+  //     if ('error' in response) {
+  //       // 에러 발생 시 사용자 피드백 제공
+  //       toast.error(`❌에러코드 : ${response.status} 오류: ${response.error}`, {
+  //         position: 'top-right',
+  //         autoClose: 3000,
+  //       });
+  //       return;
+  //     } else {
+  //       const data = response.data;
+  //       const newParticipants = data?.participants?.content ?? [];
+  //       setParticipantResponseType(
+  //         newParticipants, // 기존 데이터 유지하면서 새 데이터 추가
+  //       );
+  //       console.log('newParticipants');
+  //       console.log(newParticipants);
+  //     }
+  //   } catch (error) {
+  //     console.error('데이터 가져오기 실패:', error);
+  //   }
+  // }, [accessToken, isSessionOn, isTokenLoading]);
+  // const throttledFetchParticipants = useThrottle(fetchParticipantsData, 1000);
 
   //todo 테스트 동안만 잠가놓는 최초 데이터 불러오는 api
   // //이벤트 발생시에만 불러오는 useEffect
@@ -179,9 +198,8 @@ export default function List() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // ✅ 언마운트 시 한 번만 실행
-
   if (!isTokenLoading) return <div>로딩중입니다.</div>;
-
+  const maxGroupParticipants = sessionInfo.maxGroupParticipants ?? 1
   return (
     isTokenLoading &&
     sessionInfo && (
@@ -227,43 +245,80 @@ export default function List() {
           ) : currentParticipants.length === 0 ? (
             <div>유저를 기다리는 중입니다.</div>
           ) : (
-            // <InfiniteLoader loadMoreItems={(prev) => setPages(prev + 1)}>
-            //   {({ onItemsRendered, ref }) => (
-            <section className="scroll-container w-full flex-1 overflow-y-auto pr-2">
-              <div
-                id="list"
-                className="flex w-full flex-1 flex-col overflow-y-auto"
-              >
-                {currentParticipants.map((participant, index) => (
-                  <div
-                    key={index}
-                    id="partyblock"
-                    className="mb-2 flex h-full w-full flex-row"
-                  >
-                    <div
-                      id="partyOrder"
-                      className="mr-[6px] flex w-7 items-center justify-center rounded-md bg-background-sub text-bold-small text-secondary"
-                    >
-                      {index + 1}
-                    </div>
-                    <div id="partyMembers" className="flex-1 flex-col">
-                      <MemberCard
-                        accessToken={accessToken}
-                        refreshUsers={throttledFetchParticipants}
-                        memberId={participant.viewerId}
-                        chzzkNickname={`${participant.chzzkNickname}`}
-                        gameNicname={`${participant.gameNickname}`}
-                        isHeart={participant.fixedPick}
-                      />
-                    </div>
-                  </div>
-                ))}
-                {/* /마지막//마지막 요소 감지용 idv? */}
-                <div ref={observerTarget} className="h-10" />
-              </div>
-            </section>
-            //   )}
-            // </InfiniteLoader>
+            <InfiniteLoader
+              isItemLoaded={(index) => index >= currentParticipants.length}
+              itemCount={currentParticipants.length}
+              loadMoreItems={() => setPages((prev) => prev + 1)}
+            >
+              {({ onItemsRendered, ref }) => (
+                <section className="w-full flex-1 overflow-y-auto">
+                  <AutoSizer>
+                    {({ height, width }) => (
+                      <ViewerList
+                        ref={ref}
+                        className="scroll-container flex w-full flex-1 flex-col pr-2"
+                        itemSize={
+                          14 + //폰트사이즈
+                          69 * maxGroupParticipants! + //카드크기
+                          4 * (maxGroupParticipants! - 1) + // 카드사이간격
+                          16 + //폰트 마진top 8 , bottom 8
+                          8 //마지막 블록 padding8
+                        }
+                        height={height}
+                        onItemsRendered={onItemsRendered}
+                        itemCount={currentParticipants.length}
+                        width={width}
+                      >
+                        {({ index, style }) => {
+                          const group = currentParticipants[index];
+                          console.log(group);
+                          return (
+                            <div
+                              key={index}
+                              id="partyblock"
+                              style={{
+                                ...style,
+                                height: Number(style.height!) - 8,
+                                paddingBottom: 8,
+                              }}
+                              className="flex h-full w-[inherit] flex-row"
+                            >
+                              <div
+                                id="partyMembers"
+                                className="flex-1 flex-col"
+                              >
+                                <p className="mb-2 mt-2 text-sm">
+                                  <span className="text-bold-small text-secondary">
+                                    {index + 1}번
+                                  </span>{' '}
+                                  파티
+                                </p>
+                                {group.map((viewer, index) => {
+                                  return (
+                                    <MemberCard
+                                      key={viewer.viewerId}
+                                      accessToken={accessToken}
+                                      // refreshUsers={throttledFetchParticipants}
+                                      refreshUsers={() => {}}
+                                      memberId={viewer.viewerId}
+                                      chzzkNickname={`${viewer.chzzkNickname}`}
+                                      gameNicname={`${viewer.gameNickname}`}
+                                      isHeart={viewer.fixedPick}
+                                    />
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        }}
+                        {/* //list */}
+                      </ViewerList>
+                    )}
+                    {/* //List */}
+                  </AutoSizer>
+                </section>
+              )}
+            </InfiniteLoader>
           )}
         </div>
       </CommonLayout>

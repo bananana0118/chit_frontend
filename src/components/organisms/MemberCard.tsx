@@ -55,7 +55,7 @@ export default function MemberCard({
   return (
     <div
       id="member"
-      className="member relative mb-1 flex-col rounded-md bg-background-sub p-[10px] last:mb-0"
+      className="member relative mb-1 mr-2 flex-col rounded-md bg-background-sub p-[10px] last:mb-0"
     >
       <div className="mb-2 flex flex-row items-center justify-start">
         <ZzzicIcon width={20} height={20} />
