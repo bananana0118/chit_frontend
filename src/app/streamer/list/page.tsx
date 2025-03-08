@@ -1,5 +1,4 @@
 //todo 임시적용, 추후 삭제
-/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import CommonLayout from '@/components/layout/CommonLayout';
@@ -21,7 +20,7 @@ import { generagtionViewers } from '@/constants/Dummy';
 import ViewerList from '@/components/molecules/ViewerList';
 import useThrottle from '@/hooks/useThrottle';
 
-enum SessionStatus {
+export enum SessionStatus {
   INITIAL = 1,
   OPEN = 2,
   CLOSED = 0,

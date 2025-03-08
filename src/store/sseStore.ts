@@ -44,12 +44,13 @@ enum SSEEventType {
 }
 
 export type ParticipantResponseType = {
-  viewerId: number;
+  order: number;
   round: number;
   fixedPick: boolean;
+  viewerId: number;
+  participantId: number;
   gameNickname: string;
   chzzkNickname: string;
-  order: number;
 };
 
 type EVENT_ParticipantAddedResponse = {
