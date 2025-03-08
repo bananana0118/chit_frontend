@@ -36,16 +36,17 @@ enum SSEEventType {
   STREAMER_PARTICIPANT_ADDED = 'STREAMER_PARTICIPANT_ADDED',
   STREAMER_PARTICIPANT_REMOVED = 'STREAMER_PARTICIPANT_REMOVED',
   STREAMER_SESSION_UPDATED = 'STREAMER_SESSION_UPDATED',
+  STREAMER_PARTICIPANT_FIXED = 'STREAMER_PARTICIPANT_FIXED',
   PARTICIPANT_ORDER_UPDATED = 'PARTICIPANT_ORDER_UPDATED',
   PARTICIPANT_SESSION_UPDATED = 'PARTICIPANT_SESSION_UPDATED', //스트리머가 업데이트시
   PARTICIPANT_SESSION_CLOSED = 'PARTICIPANT_SESSION_CLOSED',
-  STREAMER_PARTICIPANT_FIXED = 'STREAMER_PARTICIPANT_FIXED',
   PARTICIPANT_SESSION_KICKED = 'PARTICIPANT_SESSION_KICKED',
 }
 
 export type ParticipantResponseType = {
   order: number;
   round: number;
+  status: ViewerStatus;
   fixedPick: boolean;
   viewerId: number;
   participantId: number;
@@ -56,6 +57,7 @@ export type ParticipantResponseType = {
 type EVENT_ParticipantAddedResponse = {
   maxGroupParticipants: number;
   currentParticipants?: number;
+  participant: ParticipantResponseType;
 };
 // type EVENT_StreamerParticipantFixed = {
 //   maxGroupParticipants: number;
@@ -63,10 +65,9 @@ type EVENT_ParticipantAddedResponse = {
 //   participant: ParticipantResponseType;
 // };
 
-interface EVENT_ParticipantRemovededResponse
-  extends EVENT_ParticipantAddedResponse {
-  participant: ParticipantResponseType;
-}
+type EVENT_ParticipantRemovededResponse = EVENT_ParticipantAddedResponse;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type EVENT_ParticipantFixedResponse = EVENT_ParticipantAddedResponse;
 
 interface EVENT_SessionStatusUpdateResponse
   extends EVENT_ParticipantAddedResponse {
@@ -76,17 +77,9 @@ interface EVENT_SessionStatusUpdateResponse
   gameParticipationCode: string;
 }
 
-interface EVENT_ParticipantOrderUpdated extends EVENT_ParticipantResponse {
-  status: string;
-  viewerId: number;
-  participantId: number;
-  gameParticipationCode?: string;
+interface EVENT_ParticipantOrderUpdated extends ParticipantResponseType {
+  gameParticipationCode?: string | null;
 }
-
-type EVENT_ParticipantResponse = {
-  order: number;
-  fixed: boolean;
-};
 
 type viewerSessionInfo = EVENT_ParticipantOrderUpdated;
 export const SSEStorageKey = 'SSE-storage';
