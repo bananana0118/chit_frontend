@@ -16,7 +16,6 @@ import useAuthStore from '@/store/store';
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
 
-import { generagtionViewers } from '@/constants/Dummy';
 import ViewerList from '@/components/molecules/ViewerList';
 import useThrottle from '@/hooks/useThrottle';
 
@@ -25,7 +24,6 @@ export enum SessionStatus {
   OPEN = 2,
   CLOSED = 0,
 }
-const LIMIT = 7;
 export default function List() {
   const accessToken = useAuthStore((state) => state.accessToken);
   const { isRehydrated: isLoadingContentsSessionInfo, sessionInfo } =
@@ -43,28 +41,28 @@ export default function List() {
 
   // todo : 테스트용 함수
 
-  const testfetchParticipants = useCallback(() => {
-    if (sessionInfo) {
-      const { maxGroupParticipants } = sessionInfo;
-      if (!maxGroupParticipants) {
-        console.log('값없음');
-        return;
-      }
-      console.log(maxGroupParticipants);
-      const newParticipants = [
-        ...currentParticipants,
-        ...generagtionViewers(pages, LIMIT),
-      ];
-      setParticipantResponseType(newParticipants);
-      return newParticipants;
-    }
-  }, [sessionInfo, currentParticipants, pages, isLoadingContentsSessionInfo]);
+  // const testfetchParticipants = useCallback(() => {
+  //   if (sessionInfo) {
+  //     const { maxGroupParticipants } = sessionInfo;
+  //     if (!maxGroupParticipants) {
+  //       console.log('값없음');
+  //       return;
+  //     }
+  //     console.log(maxGroupParticipants);
+  //     const newParticipants = [
+  //       ...currentParticipants,
+  //       ...generagtionViewers(pages, LIMIT),
+  //     ];
+  //     setParticipantResponseType(newParticipants);
+  //     return newParticipants;
+  //   }
+  // }, [sessionInfo, currentParticipants, pages, isLoadingContentsSessionInfo]);
 
-  useEffect(() => {
-    console.log('hit');
-    testfetchParticipants();
-    console.log('page:' + pages);
-  }, [pages, isLoadingContentsSessionInfo]); // pages가 바뀔 때마다 호출
+  // useEffect(() => {
+  //   console.log('hit');
+  //   testfetchParticipants();
+  //   console.log('page:' + pages);
+  // }, [pages, isLoadingContentsSessionInfo]); // pages가 바뀔 때마다 호출
 
   //세션 생성 함수
   const onCreateSession = async () => {
@@ -122,6 +120,9 @@ export default function List() {
 
   //갱신되는 정보가 있을때 참가자 정보 받아옴
   const fetchParticipantsData = useCallback(async () => {
+    console.log(isTokenLoading);
+    console.log('session');
+    console.log(isSessionOn);
     if (!isTokenLoading || !isSessionOn) return;
 
     try {
@@ -136,6 +137,8 @@ export default function List() {
       } else {
         const data = response.data;
         const newParticipants = data?.participants?.content ?? [];
+        console.log('data');
+        console.log(data);
         setParticipantResponseType(
           newParticipants, // 기존 데이터 유지하면서 새 데이터 추가
         );
@@ -146,18 +149,19 @@ export default function List() {
       console.error('데이터 가져오기 실패:', error);
     }
   }, [accessToken, isSessionOn, isTokenLoading]);
-  const throttledFetchParticipants = useThrottle(fetchParticipantsData, 1000);
+
+  const throttledFetchParticipants = useThrottle(fetchParticipantsData, 10);
 
   //todo 테스트 동안만 잠가놓는 최초 데이터 불러오는 api
   //이벤트 발생시에만 불러오는 useEffect
   useEffect(() => {
     console.log('hit2');
-
+    console.log(contentsSessionInfo);
     if (contentsSessionInfo) {
       console.log('hit');
       throttledFetchParticipants();
     }
-  }, [contentsSessionInfo, throttledFetchParticipants]);
+  }, [contentsSessionInfo, throttledFetchParticipants, isTokenLoading]);
   useEffect(() => {
     if (accessToken && !isConnected) {
       console.log('🔄 SSE 자동 시작');
@@ -166,13 +170,6 @@ export default function List() {
     }
   }, [accessToken, isConnected, startSSE]); // ✅ accessToken이 바뀔 때마다 SSE 연결
 
-  useEffect(() => {
-    return () => {
-      console.log('🛑 컴포넌트 언마운트 시 SSE 종료');
-      stopSSE();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // ✅ 언마운트 시 한 번만 실행
   if (!isTokenLoading) return <div>로딩중입니다.</div>;
   const maxGroupParticipants = sessionInfo?.maxGroupParticipants ?? 1;
   return (
