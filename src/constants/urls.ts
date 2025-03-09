@@ -13,5 +13,5 @@ export const AUTH_URLS = {
 
 export const SESSION_URLS = {
   contentsSession: DEFAULT_URL + '/contents/session',
-  contentsParticipants: DEFAULT_URL + '/contents/participants',
+  contentsParticipants: DEFAULT_URL + '/contents/session/participants',
 };

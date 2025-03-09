@@ -51,6 +51,12 @@ apiSession.interceptors.response.use(
         ) {
           throw new SessionError(SessionErrorCode.LIVE_SESSION_NOT_FOUND);
         }
+        if (
+          message ===
+          '이미 진행 중인 컨텐츠 세션이 존재합니다. 중복 생성을 할 수 없습니다.'
+        ) {
+          throw new SessionError(SessionErrorCode.LIVE_SESSION_EXISTS);
+        }
       }
     } else if (axios.isAxiosError(error)) {
       if (error.response) {
