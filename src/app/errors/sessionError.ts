@@ -27,6 +27,14 @@ export const SessionErrorCode = {
     code: 304,
     message: '해당 참여자가 존재하지 않습니다.',
   },
+  LIVE_SESSION_EXISTS: {
+    //진행중인 세션이 없을 경우
+    name: 'LiveSessionNotFoundError',
+    status: 400,
+    code: 305,
+    message:
+      '이미 진행 중인 컨텐츠 세션이 존재합니다. 중복 생성을 할 수 없습니다.',
+  },
 };
 
 // viewerAPI와 streamerAPI에 사용됩니다.

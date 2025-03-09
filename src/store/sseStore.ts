@@ -245,6 +245,7 @@ export const useSSEStore = create<SSEState>()(
       partialize: (state) => ({
         viewerNickname: state.viewerNickname,
         viewerSessionInfo: state.viewerSessionInfo,
+        contentsSessionInfo: state.contentsSessionInfo,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {

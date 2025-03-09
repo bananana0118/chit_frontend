@@ -1,6 +1,8 @@
+import useParentPath from '@/hooks/useParentPath';
 import BtnCopyLink from '../atoms/button/BtnCopyLink';
 import BtnOnOffParticiation from '../atoms/button/BtnOnOffParticiation';
 import BtnSetting from '../atoms/button/BtnSetting';
+import { useRouter } from 'next/navigation';
 
 //추후 데이터 넘기기
 
@@ -15,6 +17,12 @@ export default function StreamerTools({
   isSessionOn: boolean;
   onClickSessionHandler: () => void;
 }) {
+  const router = useRouter();
+  const parentPath = useParentPath();
+  const onClickSettingHandler = () => {
+    router.push(parentPath + '/settings');
+  };
+
   return (
     <div className="flex justify-between">
       <BtnOnOffParticiation
@@ -25,7 +33,7 @@ export default function StreamerTools({
         <BtnCopyLink
           link={`${process.env.NEXT_PUBLIC_FRONT_API_URL}/${channelId}/${sessionCode}`}
         />
-        <BtnSetting />
+        <BtnSetting onClickHandler={onClickSettingHandler} />
       </div>
     </div>
   );

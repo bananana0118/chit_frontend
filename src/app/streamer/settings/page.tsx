@@ -6,7 +6,10 @@ import { BtnSubmit } from '@/components/atoms/button/BtnWithChildren';
 import { InputPassword } from '@/components/atoms/input/Input';
 import CategoryText from '@/components/atoms/text/CategoryText';
 import CommonLayout from '@/components/layout/CommonLayout';
-import { createContentsSession } from '@/services/streamer/streamer';
+import {
+  createContentsSession,
+  updateContentsSession,
+} from '@/services/streamer/streamer';
 import useChannelStore from '@/store/channelStore';
 import useContentsSessionStore from '@/store/sessionStore';
 import useAuthStore from '@/store/store';
@@ -19,8 +22,8 @@ export default function Settings() {
   const router = useRouter();
   const accessToken = useAuthStore((state) => state.accessToken);
   const streamerInfo = useChannelStore((state) => state.streamerInfo);
-  const setSessionInfo = useContentsSessionStore(
-    (state) => state.setSessionInfo,
+  const { sessionInfo, setSessionInfo } = useContentsSessionStore(
+    (state) => state,
   );
   const onClickPlusMinusHandler = (e: React.MouseEvent<HTMLButtonElement>) => {
     const eventName = e.currentTarget.name;
@@ -60,15 +63,25 @@ export default function Settings() {
       maxGroupParticipants: Number(maxGroupParticipants),
     };
     try {
-      const response = await createContentsSession(reqData, accessToken);
-      console.log('Res');
-      console.log(response);
+      if (!sessionInfo?.sessionCode) {
+        const response = await createContentsSession(reqData, accessToken);
+        console.log('Res');
+        console.log(response);
 
-      if (response && response.data) {
-        console.log(response.data);
-        setSessionInfo(response.data);
-        toast.success('✅ 세션이 성공적으로 생성되었습니다!');
-        router.push(`/streamer/list?max=${maxGroupParticipants}`);
+        if (response && response.data) {
+          console.log(response.data);
+          setSessionInfo(response.data);
+          toast.success('✅ 세션이 성공적으로 생성되었습니다!');
+          router.push(`/streamer/list?max=${maxGroupParticipants}`);
+        }
+      } else {
+        const response = await updateContentsSession(reqData, accessToken);
+        if (response && response.data) {
+          console.log(response.data);
+          setSessionInfo(response.data);
+          toast.success('✅ 세션이 성공적으로 업데이트 되었습니다!');
+          router.push(`/streamer/list?max=${maxGroupParticipants}`);
+        }
       }
     } catch (error) {
       console.log('settings error');
@@ -141,7 +154,7 @@ export default function Settings() {
                 </div>
               </div>
             </section>
-            <BtnSubmit>시참 목록 완성 🎉 </BtnSubmit>
+            <BtnSubmit>시참 설정 완료 🎉 </BtnSubmit>
           </form>
         </div>
       </CommonLayout>

@@ -116,6 +116,32 @@ export const createContentsSession = async (
         },
       },
     );
+
+    return response.data; // 성공적인 응답 데이터 반환
+  } catch (error: unknown) {
+    return Promise.reject(handleSessionError(error)); // 에러 핸들링 함수 사용
+  }
+};
+
+//세션 수정 : 세션생성과 구조는 동일하고 put메소드만 다름
+export const updateContentsSession = async (
+  data: CreateContentsSessionRequest,
+  accessToken: string,
+): Promise<CreateContentsSessionResponse> => {
+  console.log(accessToken);
+  try {
+    const response = await apiSession.put(
+      SESSION_URLS.contentsSession,
+      {
+        ...data,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
+        },
+      },
+    );
+
     return response.data; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {
     return Promise.reject(handleSessionError(error)); // 에러 핸들링 함수 사용
@@ -147,7 +173,8 @@ export const putContentsSessionParticipantPick = async (
 ): Promise<DeleteContentsSessionResponse> => {
   try {
     const response = await apiSession.put(
-      `${SESSION_URLS.contentsParticipants}${viewerId}/pick`,
+      `${SESSION_URLS.contentsParticipants}/${viewerId}/pick`,
+      {},
       {
         headers: {
           Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
