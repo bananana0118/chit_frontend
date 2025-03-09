@@ -5,7 +5,7 @@ import useChannelStore from '@/store/channelStore';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import useAuthStore from '@/store/store';
-import { useSSEStore } from '@/store/sseStore';
+import { useSSEStore, ViewerStatus } from '@/store/sseStore';
 import { toast } from 'react-toastify';
 import useParamsParser from '@/hooks/useParamsParser';
 import BtnWithChildren from '@/components/atoms/button/BtnWithChildren';
@@ -28,10 +28,13 @@ export default function Page() {
   const {
     stopSSE,
     viewerSessionInfo,
+    viewerStatus,
     isRehydrated: isViewerInfoLoading = false,
   } = useSSEStore();
   //세션인포 찾기
   useBeforeUnload();
+
+  //시참 종료 버튼 클릭 시
   const onClickSessionCloseHandler = async () => {
     console.log('🛑세션종료');
     if (sessionCode) {
@@ -46,6 +49,16 @@ export default function Page() {
       }
     }
   };
+
+  useEffect(() => {
+    console.log(viewerStatus);
+    if (viewerStatus === ViewerStatus.KICKED) {
+      toast.success('시참에서 강퇴처리되었습니다.');
+      router.replace(parentPath + '/ban');
+    }
+  }, [parentPath, router, viewerStatus]);
+
+  //viewer 새로고침 / 화면 나갈시 종료
   useEffect(() => {
     console.log('이게 왜 실행되는겁니까?');
     return () => {
@@ -56,44 +69,10 @@ export default function Page() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // ✅ 언마운트 시 한 번만 실행
-  // useEffect(() => {
-  //   const getGameCode = async () => {
-  //     if (sessionCode) {
-  //       const response = await getContentsSessionViewerGameCode({
-  //         accessToken,
-  //         sessionCode,
-  //       });
-  //       if ('error' in response) {
-  //         // 에러 발생 시 사용자 피드백 제공
-  //         toast.error(
-  //           `❌에러코드 : ${response.status} 오류: ${response.error}`,
-  //           {
-  //             position: 'top-right',
-  //             autoClose: 3000,
-  //           },
-  //         );
-  //         return;
-  //       } else {
-  //         const data = response.data;
 
-  //         console.log('ResponseData');
-  //         console.log(data);
-  //       }
-  //     }
-  //   };
-
-  //   const fetchData = async () => {
-  //     try {
-  //       const response = await getGameCode();
-  //       console.log(response);
-  //       //setParticipantResponseType(result);
-  //     } catch (error) {
-  //       console.error('데이터 가져오기 실패:', error);
-  //     }
-  //   };
-  //   if (isTokenLoading) fetchData();
-  // }, [accessToken, isTokenLoading, sessionCode]); // 의존성 배열이 빈 배열이면, 컴포넌트 마운트 시 한 번만 실행
   const [gameCode, setGameCode] = useState('아직 순서가 되지 않았습니다.');
+
+  //gameCode event처리
   useEffect(() => {
     console.log(viewerSessionInfo?.gameParticipationCode);
     setGameCode(
