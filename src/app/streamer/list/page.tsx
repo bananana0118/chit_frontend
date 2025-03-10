@@ -13,33 +13,81 @@ import useChannelStore from '@/store/channelStore';
 import useContentsSessionStore from '@/store/sessionStore';
 import { ParticipantResponseType, useSSEStore } from '@/store/sseStore';
 import useAuthStore from '@/store/store';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 
 import ViewerList from '@/components/molecules/ViewerList';
-import useThrottle from '@/hooks/useThrottle';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
+import { isErrorResponse } from '@/lib/handleErrors';
 
 export enum SessionStatus {
   INITIAL = 1,
   OPEN = 2,
   CLOSED = 0,
 }
+
+interface getFetchParticipantsDataResponse {
+  participants: ParticipantResponseType[];
+  nextPage?: number;
+}
+
+const fetchParticipantsData = async ({
+  pageParam = 1,
+  accessToken,
+  size = 20,
+}: {
+  pageParam?: unknown;
+  accessToken: string;
+  size?: number;
+}): Promise<getFetchParticipantsDataResponse> => {
+  const page = pageParam as number;
+  const response = await getContentsSessionInfo({ page, accessToken, size });
+  if (isErrorResponse(response)) {
+    console.error(`api error 발생: ${response.error}`);
+    return Promise.reject(new Error(response.error));
+  }
+
+  console.log('fetchParticipantsdata 정보', response.data);
+
+  return {
+    participants: response.data.participants?.content ?? [],
+    nextPage: response.data.participants?.hasNext ? pageParams + 1 : undefined,
+  };
+};
+
 export default function List() {
   const accessToken = useAuthStore((state) => state.accessToken);
-  const { isRehydrated: isLoadingContentsSessionInfo, sessionInfo } =
-    useContentsSessionStore((state) => state);
-  const [pages, setPages] = useState(1);
+  const { isRehydrated: isLoadingContentsSessionInfo, sessionInfo } = useContentsSessionStore(
+    (state) => state,
+  );
   const { startSSE, stopSSE, isConnected, contentsSessionInfo } = useSSEStore();
   const channelId = useChannelStore((state) => state.channelId);
   const isTokenLoading = useAuthStore((state) => state.isRehydrated);
-  const [isSessionOn, setIsSessionOn] = useState<SessionStatus>(
-    SessionStatus.INITIAL,
-  );
-  const [currentParticipants, setParticipantResponseType] = useState<
-    ParticipantResponseType[]
-  >([]);
+  const [isSessionOn, setIsSessionOn] = useState<SessionStatus>(SessionStatus.INITIAL);
+  const [currentParticipants, setCurrentParticipants] = useState<ParticipantResponseType[]>([]);
 
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteQuery<getFetchParticipantsDataResponse>({
+      queryKey: ['participants'],
+      queryFn: async ({ pageParam = 1 }) => {
+        return await fetchParticipantsData({ pageParam, accessToken, size: 10 });
+      },
+      initialPageParam: 0,
+      getNextPageParam: (lastPage) => lastPage.nextPage ?? undefined, // 다음 페이지 정보
+      enabled: !!accessToken,
+    });
   // todo : 테스트용 함수
+
+  useEffect(() => {
+    if (data) {
+      setCurrentParticipants(data.pages.flatMap((page) => page.participants || []));
+    }
+  }, [data]);
+
+  const loadMoreData = async () => {
+    if (!hasNextPage || isFetchingNextPage) return;
+    await fetchNextPage();
+  };
 
   // const testfetchParticipants = useCallback(() => {
   //   if (sessionInfo) {
@@ -92,8 +140,7 @@ export default function List() {
 
       if (
         response.status === 200 &&
-        (isSessionOn === SessionStatus.INITIAL ||
-          isSessionOn === SessionStatus.OPEN)
+        (isSessionOn === SessionStatus.INITIAL || isSessionOn === SessionStatus.OPEN)
       ) {
         stopSSE();
         setIsSessionOn(SessionStatus.CLOSED);
@@ -118,50 +165,15 @@ export default function List() {
     toast.warn('요청에 실패했습니다. 잠시후 다시 시도해주세요');
   };
 
-  //갱신되는 정보가 있을때 참가자 정보 받아옴
-  const fetchParticipantsData = useCallback(async () => {
-    console.log(isTokenLoading);
-    console.log('session');
-    console.log(isSessionOn);
-    if (!isTokenLoading || !isSessionOn) return;
-
-    try {
-      const response = await getContentsSessionInfo(accessToken);
-      if ('error' in response) {
-        // 에러 발생 시 사용자 피드백 제공
-        toast.error(`❌에러코드 : ${response.status} 오류: ${response.error}`, {
-          position: 'top-right',
-          autoClose: 3000,
-        });
-        return;
-      } else {
-        const data = response.data;
-        const newParticipants = data?.participants?.content ?? [];
-        console.log('data');
-        console.log(data);
-        setParticipantResponseType(
-          newParticipants, // 기존 데이터 유지하면서 새 데이터 추가
-        );
-        console.log('newParticipants');
-        console.log(newParticipants);
-      }
-    } catch (error) {
-      console.error('데이터 가져오기 실패:', error);
-    }
-  }, [accessToken, isSessionOn, isTokenLoading]);
-
-  const throttledFetchParticipants = useThrottle(fetchParticipantsData, 10);
-
   //todo 테스트 동안만 잠가놓는 최초 데이터 불러오는 api
-  //이벤트 발생시에만 불러오는 useEffect
+
+  const queryClient = useQueryClient();
   useEffect(() => {
-    console.log('hit2');
-    console.log(contentsSessionInfo);
-    if (contentsSessionInfo) {
-      console.log('hit');
-      throttledFetchParticipants();
+    if (accessToken) {
+      queryClient.invalidateQueries({ queryKey: ['participants'], refetchType: 'none' }); // ✅ accessToken이 변경될 때 데이터 갱신
     }
-  }, [contentsSessionInfo, throttledFetchParticipants, isTokenLoading]);
+  }, [accessToken, queryClient]);
+
   useEffect(() => {
     if (accessToken && !isConnected) {
       console.log('🔄 SSE 자동 시작');
@@ -192,11 +204,8 @@ export default function List() {
               <p className="mb-5 mt-4 text-bold-middle">아직 참여자가 없어요</p>
             ) : (
               <p className="mb-5 mt-4 text-bold-middle">
-                총{' '}
-                <span className="text-primary">
-                  {currentParticipants.length}명
-                </span>
-                이 참여중이에요
+                총 <span className="text-primary">{currentParticipants.length}명</span>이
+                참여중이에요
               </p>
             )}
           </section>
@@ -221,7 +230,7 @@ export default function List() {
               <ViewerList
                 accessToken={accessToken}
                 currentParticipants={currentParticipants}
-                loadMoreItems={() => setPages((prev) => prev + 1)}
+                loadMoreItems={loadMoreData}
                 maxGroupParticipants={maxGroupParticipants}
                 key={'viewerList'}
               ></ViewerList>

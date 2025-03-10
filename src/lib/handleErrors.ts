@@ -52,3 +52,7 @@ export const handleSessionError = (error: unknown): ErrorResponse => {
     data: 'null',
   };
 };
+
+export const isErrorResponse = (response: any): response is ErrorResponse => {
+  return response && typeof response === 'object' && 'error' in response;
+};

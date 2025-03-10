@@ -12,13 +12,12 @@ import {
 import { handleSessionError } from '@/lib/handleErrors';
 import apiSession from '../axios/apiSession';
 import { SESSION_URLS } from '@/constants/urls';
+import { ApiResponse, ContentsSession } from '@/store/sessionStore';
 
 const client = new ChzzkClient();
 
 //치지직 api를 통해 클라이언트 정보 가져오기
-export const getStreamerInfo = async (
-  channelId: string,
-): Promise<StreamerInfo | null> => {
+export const getStreamerInfo = async (channelId: string): Promise<StreamerInfo | null> => {
   try {
     const liveDetail = await client.live.detail(channelId);
     const { status, channel, liveCategory, liveCategoryValue } = liveDetail;
@@ -45,9 +44,7 @@ const handleFetchError = (error: unknown) => {
         `서버 오류: ${error.response.status} - ${error.response.data.message || '알 수 없는 오류'}`,
       );
     } else if (error.request) {
-      throw new Error(
-        '요청이 전송되었지만 응답이 없습니다. 네트워크 상태를 확인하세요.',
-      );
+      throw new Error('요청이 전송되었지만 응답이 없습니다. 네트워크 상태를 확인하세요.');
       // 요청이 만들어졌지만 응답이 없을 경우
     } else {
       throw new Error(`요청 중 오류가 발생했습니다: ${error.message}`);
@@ -62,9 +59,7 @@ const handleFetchError = (error: unknown) => {
 };
 
 //치지직 api에 직접 스트리머 정보 가져오는 api
-export const postStreamerInfo = async (
-  channelId: string,
-): Promise<StreamerInfo | null> => {
+export const postStreamerInfo = async (channelId: string): Promise<StreamerInfo | null> => {
   const data = await axios
     .post(`${process.env.NEXT_PUBLIC_FRONT_API_URL}/api/streamer`, {
       channelId: channelId,
@@ -78,11 +73,15 @@ export const postStreamerInfo = async (
 };
 
 //현재 세션 조회
-export const getContentsSessionInfo = async (
-  accessToken: string,
-  page: number = 0,
-  size: number = 20,
-): Promise<GetContentsSessionResponse> => {
+export const getContentsSessionInfo = async ({
+  page = 0,
+  accessToken,
+  size = 20,
+}: {
+  accessToken: string;
+  page: number;
+  size: number;
+}): Promise<GetContentsSessionResponse> => {
   try {
     const response = await apiSession.get(
       `${SESSION_URLS.contentsSession}?page=${page}&size=${size}`,
@@ -92,7 +91,7 @@ export const getContentsSessionInfo = async (
         },
       },
     );
-    return response.data; // 성공적인 응답 데이터 반환
+    return response.data as ApiResponse<ContentsSession>; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {
     return handleSessionError(error); // 에러 핸들링 함수 사용
   }
@@ -194,14 +193,11 @@ export const putContentsSessionNextGroup = async ({
 }: PutContentsSessionNextGroupRequest): Promise<PutContentsSessionNextGroupResponse> => {
   console.log(accessToken);
   try {
-    const response = await apiSession.put(
-      `${SESSION_URLS.contentsSession}/next-group`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
-        },
+    const response = await apiSession.put(`${SESSION_URLS.contentsSession}/next-group`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
       },
-    );
+    });
 
     return response.data; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {
@@ -216,14 +212,11 @@ export const deleteContentsSessionParticipant = async (
 ): Promise<DeleteContentsSessionResponse> => {
   console.log(accessToken);
   try {
-    const response = await apiSession.delete(
-      `${SESSION_URLS.contentsParticipants}/${viewerId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
-        },
+    const response = await apiSession.delete(`${SESSION_URLS.contentsParticipants}/${viewerId}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
       },
-    );
+    });
 
     return response.data; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {
