@@ -9,6 +9,7 @@ export enum ViewerStatus {
 
 type SSEState = {
   contentsSessionInfo: SSEStateContentsSession | null;
+  currentParticipants: ParticipantResponseType[] | null;
   eventSource: EventSource | null;
   isConnected: boolean;
   viewerSessionInfo: viewerSessionInfo | null;
@@ -16,6 +17,7 @@ type SSEState = {
   error: string | null;
   viewerStatus: ViewerStatus | null;
   isRehydrated: boolean; // 상태가 로드 완료되었는지 여부 추가
+  setCurrentParticipants: (newCurrentParticipants: ParticipantResponseType[]) => void;
   setViewerNickname: (viewerNickname: string) => void;
   startSSE: (url: string) => void;
   stopSSE: () => void;
@@ -24,7 +26,7 @@ type SSEState = {
 type SSEStateContentsSession = {
   sessionCode?: string;
   maxGroupParticipants?: number;
-  currentParticipants?: number;
+  totalParticipants?: number;
   gameParticipationCode?: string;
   order?: number;
   fixed?: boolean;
@@ -69,8 +71,7 @@ type EVENT_ParticipantRemovededResponse = EVENT_ParticipantAddedResponse;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type EVENT_ParticipantFixedResponse = EVENT_ParticipantAddedResponse;
 
-interface EVENT_SessionStatusUpdateResponse
-  extends EVENT_ParticipantAddedResponse {
+interface EVENT_SessionStatusUpdateResponse extends EVENT_ParticipantAddedResponse {
   sessionCode: string;
   maxGroupParticipants: number;
   currentParticipants: number;
@@ -90,11 +91,15 @@ export const useSSEStore = create<SSEState>()(
       eventSource: null,
       isConnected: false,
       viewerSessionInfo: null,
+      currentParticipants: null,
       viewerStatus: null,
       error: null,
       viewerNickname: null,
       isRehydrated: false,
       contentsSessionInfo: null,
+      setCurrentParticipants: (newParticipants) => {
+        set((state) => ({ ...state, currentParticipants: newParticipants }));
+      },
       setViewerNickname: (viewerNickname) => {
         set((state) => ({
           ...state,
@@ -141,10 +146,7 @@ export const useSSEStore = create<SSEState>()(
           // ✅ 모든 이벤트 리스너 등록
           Object.values(SSEEventType).forEach((eventType) => {
             newEventSource.addEventListener(eventType, (event) => {
-              console.log(
-                `📩 ${eventType} 이벤트 수신:`,
-                JSON.parse(event.data),
-              );
+              console.log(`📩 ${eventType} 이벤트 수신:`, JSON.parse(event.data));
 
               const eventData = JSON.parse(event.data);
               if (!eventData) return;
@@ -163,23 +165,33 @@ export const useSSEStore = create<SSEState>()(
                   newState.contentsSessionInfo = {
                     ...(get().contentsSessionInfo || {}),
                     maxGroupParticipants,
-                    currentParticipants: currentParticipants || 0,
+                    totalParticipants: currentParticipants || 0,
                   };
                   break;
 
                 case SSEEventType.STREAMER_PARTICIPANT_REMOVED:
-                case SSEEventType.STREAMER_PARTICIPANT_FIXED:
-                  const removedData =
-                    eventData as EVENT_ParticipantRemovededResponse;
+                case SSEEventType.STREAMER_PARTICIPANT_FIXED: {
+                  const removedData = eventData as EVENT_ParticipantRemovededResponse;
+                  const previoustParticipants = newState.currentParticipants ?? [];
+                  const {
+                    participant: removedParticipant,
+                    maxGroupParticipants,
+                    currentParticipants,
+                  } = removedData;
+                  const newParticipants = previoustParticipants.filter(
+                    (participant: ParticipantResponseType) =>
+                      participant.viewerId !== removedParticipant.viewerId,
+                  );
+
                   newState.contentsSessionInfo = {
                     ...(get().contentsSessionInfo || {}),
-                    maxGroupParticipants: removedData.maxGroupParticipants,
-                    currentParticipants: removedData.currentParticipants || 0,
-                    participant: removedData.participant,
+                    maxGroupParticipants,
+                    totalParticipants: currentParticipants,
                   };
+                  newState.currentParticipants = newParticipants;
 
                   break;
-
+                }
                 case SSEEventType.STREAMER_SESSION_UPDATED:
                   newState.contentsSessionInfo = {
                     ...(get().contentsSessionInfo || {}),
@@ -221,8 +233,7 @@ export const useSSEStore = create<SSEState>()(
               set(newState); // 상태 업데이트
             });
           });
-          newEventSource.onmessage = (event) =>
-            console.log('메세지 수신', JSON.parse(event.data));
+          newEventSource.onmessage = (event) => console.log('메세지 수신', JSON.parse(event.data));
 
           newEventSource.onerror = (error) => {
             console.log('SSE오류 발생~', error);
@@ -245,6 +256,7 @@ export const useSSEStore = create<SSEState>()(
       partialize: (state) => ({
         viewerNickname: state.viewerNickname,
         viewerSessionInfo: state.viewerSessionInfo,
+        currentParticipants: state.currentParticipants,
         contentsSessionInfo: state.contentsSessionInfo,
       }),
       onRehydrateStorage: () => (state) => {
