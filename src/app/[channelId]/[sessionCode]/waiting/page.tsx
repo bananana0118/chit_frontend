@@ -68,6 +68,7 @@ export default function Page() {
   return (
     isTokenLoading &&
     streamerInfo &&
+    viewerSessionInfo &&
     isViewerInfoLoading && (
       <ViewerPageLayout>
         <section className="flex flex-row justify-start">
@@ -108,13 +109,13 @@ export default function Page() {
         {/* 나중에 1번 2번 3버 이런식으로 할 것 */}
         <section className="flex w-full flex-1 flex-col items-center justify-center">
           <p className="text-bold-large">내 순서는</p>
-          {viewerSessionInfo?.order === 1 ? (
+          {viewerSessionInfo?.round === 1 ? (
             <p className="flex flex-row items-center justify-center text-bold-big text-primary">
               지금 참여
             </p>
           ) : (
             <p className="flex flex-row items-center justify-center text-bold-big text-primary">
-              {`${viewerSessionInfo!.order! - 1}`}번
+              {`${viewerSessionInfo!.round! - 1}`}번
             </p>
           )}
         </section>
