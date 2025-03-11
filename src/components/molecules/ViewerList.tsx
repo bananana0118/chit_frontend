@@ -12,7 +12,7 @@ const SPACE = 4;
 const PADDING = 8;
 
 type Props = {
-  currentParticipants: ParticipantResponseType[];
+  participants: ParticipantResponseType[];
   maxGroupParticipants: number;
   loadMoreItems: () => void;
   accessToken: string;
@@ -20,13 +20,13 @@ type Props = {
 
 export default function ViewerList({
   accessToken,
-  currentParticipants,
+  participants,
   maxGroupParticipants,
   loadMoreItems,
 }: Props) {
   //유저 그룹 생성
   const createGroupedUser = useCallback(
-    (currentParticipants: ParticipantResponseType[]) => {
+    (participants: ParticipantResponseType[]) => {
       if (!maxGroupParticipants) {
         console.log('값없음');
         return;
@@ -34,15 +34,11 @@ export default function ViewerList({
 
       // ✅ 중복 제거 (viewerId 기준)
       const uniqueParticipants: ParticipantResponseType[] = Array.from(
-        new Map(currentParticipants.map((p) => [p.viewerId, p])).values(),
+        new Map(participants.map((p) => [p.viewerId, p])).values(),
       );
 
       const grouped: ParticipantResponseType[][] = [];
-      for (
-        let i = 0;
-        i < uniqueParticipants.length;
-        i += maxGroupParticipants!
-      ) {
+      for (let i = 0; i < uniqueParticipants.length; i += maxGroupParticipants!) {
         const group = uniqueParticipants.slice(i, i + maxGroupParticipants!);
         if (!group) break;
         grouped.push(group);
@@ -53,7 +49,7 @@ export default function ViewerList({
     [maxGroupParticipants],
   );
 
-  const groupedParticipants = createGroupedUser(currentParticipants);
+  const groupedParticipants = createGroupedUser(participants);
 
   return (
     groupedParticipants && (

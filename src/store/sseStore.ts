@@ -131,8 +131,13 @@ export const useSSEStore = create<SSEState>()(
           }
 
           console.log('새로운 SSE연결 시작');
+          set({
+            isConnected: false,
+            error: null,
+            viewerStatus: ViewerStatus.JOINED,
+          }); // ✅ 에러 초기화
           const newEventSource = new EventSource(url);
-
+          console.log(newEventSource);
           newEventSource.onopen = (event) => {
             console.log('SSE연결 성공~');
             console.log('연결성공메세지 수신', event);
@@ -159,7 +164,7 @@ export const useSSEStore = create<SSEState>()(
                   break;
 
                 case SSEEventType.STREAMER_PARTICIPANT_ADDED:
-                  const { maxGroupParticipants, currentParticipants } =
+                  const { maxGroupParticipants, currentParticipants, participant } =
                     eventData as EVENT_ParticipantAddedResponse;
 
                   newState.contentsSessionInfo = {
@@ -167,12 +172,19 @@ export const useSSEStore = create<SSEState>()(
                     maxGroupParticipants,
                     totalParticipants: currentParticipants || 0,
                   };
+                  console.log(newState.currentParticipants);
+                  const newCurrentParticipants = [
+                    ...(get().currentParticipants ?? []),
+                    participant,
+                  ];
+
+                  newState.currentParticipants = newCurrentParticipants;
                   break;
 
                 case SSEEventType.STREAMER_PARTICIPANT_REMOVED:
                 case SSEEventType.STREAMER_PARTICIPANT_FIXED: {
                   const removedData = eventData as EVENT_ParticipantRemovededResponse;
-                  const previoustParticipants = newState.currentParticipants ?? [];
+                  const previoustParticipants = get().currentParticipants ?? [];
                   const {
                     participant: removedParticipant,
                     maxGroupParticipants,
@@ -212,7 +224,7 @@ export const useSSEStore = create<SSEState>()(
                   get().stopSSE(); // 기존 stopSSE 함수 호출하여 안전하게 종료
                   set({
                     viewerSessionInfo: null,
-                    viewerStatus: ViewerStatus.LIVE_CLOSED,
+                    viewerStatus: ViewerStatus.DISCONNECTED,
                   }); // viewer 세션 정보 초기화
                   break;
 

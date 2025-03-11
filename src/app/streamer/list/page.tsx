@@ -60,11 +60,12 @@ export default function List() {
   const { isRehydrated: isLoadingContentsSessionInfo, sessionInfo } = useContentsSessionStore(
     (state) => state,
   );
-  const { startSSE, stopSSE, isConnected, contentsSessionInfo } = useSSEStore();
+  const { startSSE, stopSSE, isConnected, contentsSessionInfo, currentParticipants } =
+    useSSEStore();
   const channelId = useChannelStore((state) => state.channelId);
   const isTokenLoading = useAuthStore((state) => state.isRehydrated);
   const [isSessionOn, setIsSessionOn] = useState<SessionStatus>(SessionStatus.INITIAL);
-  const [currentParticipants, setCurrentParticipants] = useState<ParticipantResponseType[]>([]);
+  const [participants, setparticipants] = useState<ParticipantResponseType[]>([]);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery<getFetchParticipantsDataResponse>({
@@ -80,7 +81,7 @@ export default function List() {
 
   useEffect(() => {
     if (data) {
-      setCurrentParticipants(data.pages.flatMap((page) => page.participants || []));
+      setparticipants(data.pages.flatMap((page) => page.participants || []));
     }
   }, [data]);
 
@@ -88,6 +89,12 @@ export default function List() {
     if (!hasNextPage || isFetchingNextPage) return;
     await fetchNextPage();
   };
+
+  //이벤트 동작시 데이터
+
+  useEffect(() => {
+    if (currentParticipants) setparticipants(currentParticipants);
+  }, [currentParticipants]);
 
   // const testfetchParticipants = useCallback(() => {
   //   if (sessionInfo) {
@@ -98,13 +105,13 @@ export default function List() {
   //     }
   //     console.log(maxGroupParticipants);
   //     const newParticipants = [
-  //       ...currentParticipants,
+  //       ...participants,
   //       ...generagtionViewers(pages, LIMIT),
   //     ];
   //     setParticipantResponseType(newParticipants);
   //     return newParticipants;
   //   }
-  // }, [sessionInfo, currentParticipants, pages, isLoadingContentsSessionInfo]);
+  // }, [sessionInfo, participants, pages, isLoadingContentsSessionInfo]);
 
   // useEffect(() => {
   //   console.log('hit');
@@ -200,12 +207,11 @@ export default function List() {
           <section id="infoBox" className="w-full">
             {!isSessionOn ? (
               <p className="mb-5 mt-4 text-bold-middle">시참을 시작해주세요</p>
-            ) : currentParticipants.length === 0 ? (
+            ) : participants.length === 0 ? (
               <p className="mb-5 mt-4 text-bold-middle">아직 참여자가 없어요</p>
             ) : (
               <p className="mb-5 mt-4 text-bold-middle">
-                총 <span className="text-primary">{currentParticipants.length}명</span>이
-                참여중이에요
+                총 <span className="text-primary">{participants.length}명</span>이 참여중이에요
               </p>
             )}
           </section>
@@ -224,12 +230,12 @@ export default function List() {
           <section className="w-full flex-1 overflow-y-auto">
             {!isSessionOn ? (
               <div>시참을 시작해주세요.</div>
-            ) : currentParticipants.length === 0 ? (
+            ) : participants.length === 0 ? (
               <div>유저를 기다리는 중입니다.</div>
             ) : (
               <ViewerList
                 accessToken={accessToken}
-                currentParticipants={currentParticipants}
+                participants={participants}
                 loadMoreItems={loadMoreData}
                 maxGroupParticipants={maxGroupParticipants}
                 key={'viewerList'}
