@@ -1,5 +1,6 @@
 import { AxiosResponse } from 'axios';
 import { ErrorResponse } from '../streamer/type';
+import { accessToken } from 'chzzk/dist/api/chat';
 
 export type RequestLoginWithOAuth2 = {
   code: string;
@@ -12,3 +13,7 @@ export type ResponseLoginWithOAuth2 =
       accessToken: string;
     })
   | ErrorResponse;
+
+export type RequestLogout = {
+  accessToken: string;
+};

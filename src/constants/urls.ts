@@ -9,6 +9,7 @@ export const STREAMER_URLS = {
 };
 export const AUTH_URLS = {
   login: DEFAULT_URL + '/oauth2/login',
+  logout: DEFAULT_URL + '/auth/logout',
 };
 
 export const SESSION_URLS = {

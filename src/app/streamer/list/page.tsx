@@ -8,6 +8,7 @@ import {
   createContentsSession,
   deleteContentsSession,
   getContentsSessionInfo,
+  putContentsSessionNextGroup,
 } from '@/services/streamer/streamer';
 import useChannelStore from '@/store/channelStore';
 import useContentsSessionStore from '@/store/sessionStore';
@@ -19,6 +20,8 @@ import { toast } from 'react-toastify';
 import ViewerList from '@/components/molecules/ViewerList';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { isErrorResponse } from '@/lib/handleErrors';
+import useDetectExit from '@/hooks/useDetectExit';
+import { logout } from '@/services/auth/auth';
 
 export enum SessionStatus {
   INITIAL = 1,
@@ -51,7 +54,7 @@ const fetchParticipantsData = async ({
 
   return {
     participants: response.data.participants?.content ?? [],
-    nextPage: response.data.participants?.hasNext ? pageParams + 1 : undefined,
+    nextPage: response.data.participants?.hasNext ? pageParam + 1 : undefined,
   };
 };
 
@@ -77,8 +80,35 @@ export default function List() {
       getNextPageParam: (lastPage) => lastPage.nextPage ?? undefined, // 다음 페이지 정보
       enabled: !!accessToken,
     });
-  // todo : 테스트용 함수
 
+  //브라우저 종료시 실행되는 콜백 함수
+  const handleExit = async () => {
+    alert('⚠️ 로그아웃 되었습니다.');
+    await logout({ accessToken });
+    //로그아웃 api 쓰기
+  };
+
+  useDetectExit(handleExit);
+
+  //다음 파티 호출 버튼 클릭시 Handler
+  const nextPartyCallHandler = async () => {
+    try {
+      const response = await putContentsSessionNextGroup({ accessToken });
+      if (response.status === 200) {
+        toast.success('다음 파티를 호출 했습습니다.');
+        queryClient.setQueryData(['participants'], () => ({
+          pages: [],
+          pageParams: [0],
+        })); // participants 호출
+        queryClient.refetchQueries({ queryKey: ['participants'] }); // 쿼리 재요청 (첫 페이지부터)
+      }
+      console.log(response);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  // todo : 테스트용 함수
   useEffect(() => {
     if (data) {
       setparticipants(data.pages.flatMap((page) => page.participants || []));
@@ -222,7 +252,11 @@ export default function List() {
                 <li className="menutab mr-3 last:mr-0">고정 인원</li>
                 <li className="menutab mr-3 last:mr-0">현재 인원</li>
               </ul>
-              <div className="rounded-md bg-background-sub p-2 text-semi-bold text-secondary">
+              <div
+                // onClick={nextPartyCallHandler}
+                onClick={handleExit}
+                className="cursor-pointer rounded-md bg-background-sub p-2 text-semi-bold text-secondary"
+              >
                 다음 파티 호출 🔈
               </div>
             </div>

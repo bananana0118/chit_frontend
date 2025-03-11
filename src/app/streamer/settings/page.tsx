@@ -6,12 +6,12 @@ import { BtnSubmit } from '@/components/atoms/button/BtnWithChildren';
 import { InputPassword } from '@/components/atoms/input/Input';
 import CategoryText from '@/components/atoms/text/CategoryText';
 import CommonLayout from '@/components/layout/CommonLayout';
-import {
-  createContentsSession,
-  updateContentsSession,
-} from '@/services/streamer/streamer';
+import useDetectExit from '@/hooks/useDetectExit';
+import { logout } from '@/services/auth/auth';
+import { createContentsSession, updateContentsSession } from '@/services/streamer/streamer';
 import useChannelStore from '@/store/channelStore';
 import useContentsSessionStore from '@/store/sessionStore';
+import { useSSEStore } from '@/store/sseStore';
 import useAuthStore from '@/store/store';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -20,11 +20,21 @@ import { toast } from 'react-toastify';
 export default function Settings() {
   const [maxGroupParticipants, setmaxGroupParticipants] = useState(1);
   const router = useRouter();
+  const { eventSource } = useSSEStore((state) => state);
   const accessToken = useAuthStore((state) => state.accessToken);
   const streamerInfo = useChannelStore((state) => state.streamerInfo);
-  const { sessionInfo, setSessionInfo } = useContentsSessionStore(
-    (state) => state,
-  );
+  const { sessionInfo, setSessionInfo } = useContentsSessionStore((state) => state);
+
+  //브라우저 종료시 실행되는 콜백 함수
+  const handleExit = async () => {
+    if (eventSource) {
+      await logout({ accessToken });
+      //로그아웃 api 쓰기
+    }
+  };
+
+  useDetectExit(handleExit);
+
   const onClickPlusMinusHandler = (e: React.MouseEvent<HTMLButtonElement>) => {
     const eventName = e.currentTarget.name;
 
@@ -54,9 +64,7 @@ export default function Settings() {
   const onClickCreateSession = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); // 기본 제출 동작 방지
     const formData = new FormData(e.currentTarget); // 현재 폼의 데이터 수집
-    const { gameParticipationCode, maxGroupParticipants } = Object.fromEntries(
-      formData.entries(),
-    ); // 객체로 변환
+    const { gameParticipationCode, maxGroupParticipants } = Object.fromEntries(formData.entries()); // 객체로 변환
     const strGameParticipationCode = gameParticipationCode as string;
     const reqData = {
       gameParticipationCode: strGameParticipationCode || null,
@@ -93,24 +101,17 @@ export default function Settings() {
     streamerInfo && (
       <CommonLayout>
         <div className="flex w-full flex-1 flex-col items-center justify-center">
-          <form
-            className="flex h-full w-full flex-col"
-            onSubmit={onClickCreateSession}
-          >
+          <form className="flex h-full w-full flex-col" onSubmit={onClickCreateSession}>
             <section className="flex w-full flex-1 flex-col items-start">
               <div className="mb-8">
-                <CategoryText
-                  isMiddle={true}
-                  category={streamerInfo.liveCategoryValue || ''}
-                />
+                <CategoryText isMiddle={true} category={streamerInfo.liveCategoryValue || ''} />
                 <div className="w-fit cursor-pointer border-b border-disable text-medium-small text-disable">
                   카테고리 정보 다시 불러오기
                 </div>
               </div>
               <div className="mb-11 w-full text-bold-small">
                 <p className="pb-2">
-                  <span className="text-secondary">참여 코드</span>가
-                  필요할까요?
+                  <span className="text-secondary">참여 코드</span>가 필요할까요?
                 </p>
                 <div className="h-11">
                   <InputPassword
@@ -123,8 +124,7 @@ export default function Settings() {
               <div>
                 <p className="text-bold-small">한 파티에 몇 명이 필요한가요?</p>
                 <p className="mb-5 mt-[6px] w-fit text-medium text-hint">
-                  다음 파티 호출 버튼을 클릭했을 때 설정할 인원 수 만큼 목록이
-                  돌아가요.
+                  다음 파티 호출 버튼을 클릭했을 때 설정할 인원 수 만큼 목록이 돌아가요.
                 </p>
                 <div className="flex items-center">
                   <button
