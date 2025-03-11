@@ -26,7 +26,6 @@ export default function Page() {
   const { sessionCode } = useParamsParser();
   const { accessToken, isRehydrated: isTokenLoading = false } = useAuthStore();
   const {
-    stopSSE,
     viewerSessionInfo,
     viewerStatus,
     isRehydrated: isViewerInfoLoading = false,
@@ -58,27 +57,12 @@ export default function Page() {
     }
   }, [parentPath, router, viewerStatus]);
 
-  //viewer 새로고침 / 화면 나갈시 종료
-  useEffect(() => {
-    console.log('이게 왜 실행되는겁니까?');
-    return () => {
-      if (isViewerInfoLoading) {
-        console.log('🛑 컴포넌트 언마운트 시 SSE 종료!!');
-        stopSSE();
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // ✅ 언마운트 시 한 번만 실행
-
   const [gameCode, setGameCode] = useState('아직 순서가 되지 않았습니다.');
 
   //gameCode event처리
   useEffect(() => {
     console.log(viewerSessionInfo?.gameParticipationCode);
-    setGameCode(
-      viewerSessionInfo?.gameParticipationCode ??
-        '아직 순서가 되지 않았습니다.',
-    );
+    setGameCode(viewerSessionInfo?.gameParticipationCode ?? '아직 순서가 되지 않았습니다.');
   }, [isViewerInfoLoading, viewerSessionInfo]);
 
   return (
@@ -96,17 +80,14 @@ export default function Page() {
           />
           <div className="ml-2 flex flex-col items-start justify-center">
             {streamerInfo.status === 'OPEN' ? <Live /> : <OFF />}
-            <div className="text-bold-large">
-              {streamerInfo.channel.channelName}
-            </div>
+            <div className="text-bold-large">{streamerInfo.channel.channelName}</div>
           </div>
         </section>
         <section className="mt-5 flex w-full flex-col items-start">
           {gameCode ? (
             <>
               <div className="text-bold-small">
-                <span className="text-secondary">참여 코드</span>를 입력해서
-                게임에 참여해주세요
+                <span className="text-secondary">참여 코드</span>를 입력해서 게임에 참여해주세요
               </div>
               <div className="mt-1 flex flex-row items-center justify-center text-bold-large">
                 {gameCode}
@@ -127,21 +108,20 @@ export default function Page() {
         {/* 나중에 1번 2번 3버 이런식으로 할 것 */}
         <section className="flex w-full flex-1 flex-col items-center justify-center">
           <p className="text-bold-large">내 순서는</p>
-
-          {/* {order <= maxGroup} */}
-          <p className="flex flex-row items-center justify-center text-bold-big text-primary">
-            지금 참여
-          </p>
+          {viewerSessionInfo?.order === 1 ? (
+            <p className="flex flex-row items-center justify-center text-bold-big text-primary">
+              지금 참여
+            </p>
+          ) : (
+            <p className="flex flex-row items-center justify-center text-bold-big text-primary">
+              {`${viewerSessionInfo!.order! - 1}`}번
+            </p>
+          )}
         </section>
         <section className="flex w-full items-center justify-center">
-          <div className="m-5 text-bold-middle">
-            스트리머가 당신을 찾고있어요! 🎉
-          </div>
+          <div className="m-5 text-bold-middle">스트리머가 당신을 찾고있어요! 🎉</div>
         </section>
-        <BtnWithChildren
-          type={'alert'}
-          onClickHandler={onClickSessionCloseHandler}
-        >
+        <BtnWithChildren type={'alert'} onClickHandler={onClickSessionCloseHandler}>
           이제 시참 그만할래요
         </BtnWithChildren>
       </ViewerPageLayout>
