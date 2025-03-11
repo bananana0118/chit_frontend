@@ -193,11 +193,15 @@ export const putContentsSessionNextGroup = async ({
 }: PutContentsSessionNextGroupRequest): Promise<PutContentsSessionNextGroupResponse> => {
   console.log(accessToken);
   try {
-    const response = await apiSession.put(`${SESSION_URLS.contentsSession}/next-group`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
+    const response = await apiSession.put(
+      `${SESSION_URLS.contentsSession}/next-group`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
+        },
       },
-    });
+    );
 
     return response.data; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {
