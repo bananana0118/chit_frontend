@@ -71,6 +71,7 @@ export default function Settings() {
       maxGroupParticipants: Number(maxGroupParticipants),
     };
     try {
+      console.log(sessionInfo);
       if (!sessionInfo?.sessionCode) {
         const response = await createContentsSession(reqData, accessToken);
         console.log('Res');

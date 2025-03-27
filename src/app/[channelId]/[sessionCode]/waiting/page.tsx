@@ -12,7 +12,7 @@ import BtnWithChildren from '@/components/atoms/button/BtnWithChildren';
 import Live from '@/components/atoms/label/Live';
 import OFF from '@/components/atoms/label/Off';
 import ViewerPageLayout from '@/components/layout/ViewerPageLayout';
-import { deleteContentsSessionViewerLeave } from '@/services/viewer/viewer';
+import { deleteContentsSessionViewerLeave, heartBeatViewer } from '@/services/viewer/viewer';
 import { useRouter } from 'next/navigation';
 import useParentPath from '@/hooks/useParentPath';
 import copyClipBoard from '@/lib/copyClipBoard';
@@ -64,6 +64,31 @@ export default function Page() {
     console.log(viewerSessionInfo?.gameParticipationCode);
     setGameCode(viewerSessionInfo?.gameParticipationCode ?? '아직 순서가 되지 않았습니다.');
   }, [isViewerInfoLoading, viewerSessionInfo]);
+
+  //rerender
+  useEffect(() => {
+    console.log(isTokenLoading);
+    console.log(streamerInfo);
+    console.log(viewerSessionInfo);
+    console.log(isViewerInfoLoading);
+  }, [isTokenLoading, streamerInfo, viewerSessionInfo, isViewerInfoLoading]);
+
+  useEffect(() => {
+    // 처음 한 번 실행
+    if (sessionCode) heartBeatViewer(accessToken, sessionCode);
+
+    // 인터벌 시작
+
+    const intervalId = setInterval(() => {
+      if (sessionCode) heartBeatViewer(accessToken, sessionCode);
+      console.log('ping');
+    }, 10000); // 10초
+
+    // 언마운트될 때 인터벌 정리
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [accessToken, isTokenLoading, sessionCode]);
 
   return (
     isTokenLoading &&

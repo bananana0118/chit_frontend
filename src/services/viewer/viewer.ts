@@ -8,7 +8,7 @@ import {
   GetContentsSessionViewerSubscribeRequest,
 } from './type';
 import makeUrl from '@/lib/makeUrl';
-import { SESSION_URLS } from '@/constants/urls';
+import { SESSION_URLS, SSE_URLS } from '@/constants/urls';
 
 //시청자 구독 요청
 export const getContentsSessionViewerSubscribe = async ({
@@ -70,6 +70,24 @@ export const deleteContentsSessionViewerLeave = async ({
       },
     );
 
+    return response.data; // 성공적인 응답 데이터 반환
+  } catch (error: unknown) {
+    return handleSessionError(error); // 에러 핸들링 함수 사용
+  }
+};
+
+//시청자 하트비트
+export const heartBeatViewer = async (accessToken: string, sessionCode: string) => {
+  try {
+    const response = await apiSession.get(
+      `${SSE_URLS.viewerHeartBeat}?sessionCode=${sessionCode}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
+        },
+      },
+    );
+    console.log('heartBeat');
     return response.data; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {
     return handleSessionError(error); // 에러 핸들링 함수 사용

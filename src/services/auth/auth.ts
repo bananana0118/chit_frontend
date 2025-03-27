@@ -33,7 +33,7 @@ export const logout = async ({ accessToken }: RequestLogout) => {
       { headers: { Authorization: `Bearer ${accessToken}` } },
     );
 
-    sessionStorage.clear();
+    // sessionStorage.clear();
   } catch (error: any) {
     return handleAuthError(error);
   }

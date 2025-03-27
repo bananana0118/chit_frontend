@@ -16,3 +16,8 @@ export const SESSION_URLS = {
   contentsSession: DEFAULT_URL + '/contents/session',
   contentsParticipants: DEFAULT_URL + '/contents/session/participants',
 };
+
+export const SSE_URLS = {
+  streamerHeartBeat: DEFAULT_URL + '/sse/streamer/heartbeat',
+  viewerHeartBeat: DEFAULT_URL + '/sse/streamer/heartbeat',
+};

@@ -8,6 +8,7 @@ import {
   createContentsSession,
   deleteContentsSession,
   getContentsSessionInfo,
+  heartBeatStreamer,
   putContentsSessionNextGroup,
 } from '@/services/streamer/streamer';
 import useChannelStore from '@/store/channelStore';
@@ -95,7 +96,7 @@ export default function List() {
     try {
       const response = await putContentsSessionNextGroup({ accessToken });
       if (response.status === 200) {
-        toast.success('다음 파티를 호출 했습습니다.');
+        toast.success('다음 파티를 호출 했습니다.');
         queryClient.setQueryData(['participants'], () => ({
           pages: [],
           pageParams: [0],
@@ -148,6 +149,22 @@ export default function List() {
   //   testfetchParticipants();
   //   console.log('page:' + pages);
   // }, [pages, isLoadingContentsSessionInfo]); // pages가 바뀔 때마다 호출
+
+  useEffect(() => {
+    // 처음 한 번 실행
+    heartBeatStreamer(accessToken);
+
+    // 인터벌 시작
+    const intervalId = setInterval(() => {
+      heartBeatStreamer(accessToken);
+      console.log('ping');
+    }, 10000); // 10초
+
+    // 언마운트될 때 인터벌 정리
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [accessToken, isTokenLoading]);
 
   //세션 생성 함수
   const onCreateSession = async () => {
