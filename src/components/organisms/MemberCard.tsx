@@ -5,6 +5,7 @@ import {
   deleteContentsSessionParticipant,
   putContentsSessionParticipantPick,
 } from '@/services/streamer/streamer';
+import { useQueryClient } from '@tanstack/react-query';
 
 type Props = {
   accessToken: string;
@@ -24,6 +25,8 @@ export default function MemberCard({
   isHeart,
 }: Props) {
   //하트 클릭하면 변경
+  const queryClient = useQueryClient();
+
   const onClickPickHandler = async () => {
     console.log('pick! <3');
     console.log(refreshUsers);
@@ -32,7 +35,7 @@ export default function MemberCard({
       memberId,
     );
     if (response.status === 200) {
-      refreshUsers();
+      queryClient.refetchQueries({ queryKey: ['participants'] });
       console.log('유저를 선택했습니다.');
     } else {
       console.log('문제 발생');
@@ -40,7 +43,8 @@ export default function MemberCard({
   };
   const onClickBanHandler = async () => {
     console.log('delete! <3');
-    console.log(refreshUsers);
+    console.log('asd');
+    queryClient.refetchQueries({ queryKey: ['participants'] });
     const response = await deleteContentsSessionParticipant(
       accessToken,
       memberId,
