@@ -67,25 +67,36 @@ const fetchParticipantsData = async ({
 export default function List() {
   const queryClient = useQueryClient();
   const accessToken = useAuthStore((state) => state.accessToken);
-  const { isRehydrated: isLoadingContentsSessionInfo, sessionInfo } = useContentsSessionStore(
-    (state) => state,
-  );
-  const { startSSE, stopSSE, isConnected, contentsSessionInfo, currentParticipants } =
-    useSSEStore();
+  const { isRehydrated: isLoadingContentsSessionInfo, sessionInfo } =
+    useContentsSessionStore((state) => state);
+  const {
+    startSSE,
+    stopSSE,
+    isConnected,
+    setCurrentParticipants,
+    currentParticipants,
+  } = useSSEStore();
   const channelId = useChannelStore((state) => state.channelId);
   const isTokenLoading = useAuthStore((state) => state.isRehydrated);
-  const [isSessionOn, setIsSessionOn] = useState<SessionStatus>(SessionStatus.INITIAL);
-  // const [participants, setParticipants] = useState<ParticipantResponseType[]>([]);
+  const [isSessionOn, setIsSessionOn] = useState<SessionStatus>(
+    SessionStatus.INITIAL,
+  );
+  const [menu, setMenu] = useState(0); // 0 전체인원 1/고정인원/2현재인원
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery<getFetchParticipantsDataResponse>({
       queryKey: ['participants'],
       queryFn: async ({ pageParam = 1 }) => {
-        return await fetchParticipantsData({ pageParam, accessToken, size: 10 });
+        return await fetchParticipantsData({
+          pageParam,
+          accessToken,
+          size: 10,
+        });
       },
       initialPageParam: 0,
       getNextPageParam: (lastPage) => lastPage.nextPage ?? undefined, // 다음 페이지 정보
       enabled: !!accessToken,
+      staleTime: 3000,
     });
 
   //브라우저 종료시 실행되는 콜백 함수
@@ -115,7 +126,9 @@ export default function List() {
     }
   };
 
-  const filterParticipantsData = (participants: ParticipantResponseType[]) => {
+  const filterParticipantsData = (
+    participants: ParticipantResponseType[],
+  ): ParticipantResponseType[] => {
     const filtered = participants.filter(
       (participant, index, self) =>
         index === self.findIndex((p) => p.viewerId === participant.viewerId),
@@ -133,12 +146,31 @@ export default function List() {
           if (!oldData) return;
 
           //이벤트로 발생한 데이터와 페이지네이션으로 데이터 발생시 통합 관리
-          const unionData = [
-            ...oldData.pages.flatMap((page: any) => page.participants || []),
-            ...currentParticipants,
-          ];
+          let newParticipants: ParticipantResponseType[] = [];
+          if (
+            Array.isArray(currentParticipants) &&
+            currentParticipants.length > 0
+          ) {
+            // 기존 + 새 participants 통합 후 필터링
 
-          const newParticipants = filterParticipantsData(unionData);
+            const currentIds = new Set(
+              currentParticipants.map((p) => p.viewerId),
+            );
+
+            // 기존 참가자 중 current에 아직 남아 있는 유저만 유지 (나간 유저 제거)
+            const filteredOldParticipants = oldData.pages
+              .flatMap((page: any) => page.participants || [])
+              .filter((p) => currentIds.has(p.viewerId) === false); // current에 없는 유저만 유지해서 중복 제거
+
+            // current에는 최신 유저 상태가 들어있으므로 우선순위로 맨 앞에 붙인다
+            const combinedParticipants = [
+              ...filteredOldParticipants, // current에 포함되지 않은 나머지 기존 유저 (즉, 중복 제거된 old)
+              ...currentParticipants,
+            ];
+            console.log('combined');
+            console.log(combinedParticipants);
+            newParticipants = combinedParticipants;
+          }
 
           return {
             ...oldData,
@@ -153,8 +185,25 @@ export default function List() {
   }, [currentParticipants, queryClient]);
 
   const participants = useMemo(() => {
-    return data?.pages.flatMap((p) => p.participants || []) ?? [];
-  }, [data]);
+    console.log('참가자');
+
+    let filteredParticipants =
+      data?.pages.flatMap((p) => p.participants || []) ?? [];
+    if (filteredParticipants.length > 0) {
+      if (menu === 1) {
+        //고정인원만 출력
+        filteredParticipants = filteredParticipants.filter(
+          (participant) => participant.fixedPick === true,
+        );
+      } else if (menu === 2) {
+        filteredParticipants = filteredParticipants.filter(
+          (participant) => participant.round === 1, //현재 순서인 사람만 추가
+        );
+      }
+    }
+
+    return filteredParticipants;
+  }, [data?.pages, menu]);
 
   const loadMoreData = async () => {
     if (!hasNextPage || isFetchingNextPage) return;
@@ -174,7 +223,7 @@ export default function List() {
       clearInterval(intervalId);
     };
   }, [accessToken, isTokenLoading]);
-  console.log(data);
+
   //세션 생성 함수
   const onCreateSession = async () => {
     if (sessionInfo) {
@@ -203,7 +252,8 @@ export default function List() {
 
       if (
         response.status === 200 &&
-        (isSessionOn === SessionStatus.INITIAL || isSessionOn === SessionStatus.OPEN)
+        (isSessionOn === SessionStatus.INITIAL ||
+          isSessionOn === SessionStatus.OPEN)
       ) {
         stopSSE();
         setIsSessionOn(SessionStatus.CLOSED);
@@ -232,7 +282,10 @@ export default function List() {
 
   useEffect(() => {
     if (accessToken) {
-      queryClient.invalidateQueries({ queryKey: ['participants'], refetchType: 'none' }); // ✅ accessToken이 변경될 때 데이터 갱신
+      queryClient.invalidateQueries({
+        queryKey: ['participants'],
+        refetchType: 'none',
+      }); // ✅ accessToken이 변경될 때 데이터 갱신
     }
   }, [accessToken, queryClient]);
 
@@ -241,6 +294,8 @@ export default function List() {
       console.log('🔄 SSE 자동 시작');
       const url = makeUrl({ accessToken, isStreamer: true });
       startSSE(url);
+      //todo test시에만 컨텐츠 세션의 currentStatus를 날리기
+      setCurrentParticipants([]);
     }
   }, [accessToken, isConnected, startSSE]); // ✅ accessToken이 바뀔 때마다 SSE 연결
 
@@ -268,16 +323,32 @@ export default function List() {
               <p className="mb-5 mt-4 text-bold-middle">아직 참여자가 없어요</p>
             ) : (
               <p className="mb-5 mt-4 text-bold-middle">
-                총 <span className="text-primary">{participants.length}명</span>이 참여중이에요
+                총 <span className="text-primary">{participants.length}명</span>
+                이 참여중이에요
               </p>
             )}
           </section>
           <section className="mb-3 flex min-h-[34px] w-full">
             <div id="listNav " className="flex w-full flex-row justify-between">
               <ul className="flex flex-row items-center text-medium-large">
-                <li className="menutab mr-3 last:mr-0">전체 인원</li>
-                <li className="menutab mr-3 last:mr-0">고정 인원</li>
-                <li className="menutab mr-3 last:mr-0">현재 인원</li>
+                <li
+                  className={`menutab cursor mr-3 cursor-pointer last:mr-0 ${menu === 0 ? 'text-bold-small text-primary underline underline-offset-4' : ''}`}
+                  onClick={() => setMenu(0)}
+                >
+                  전체 인원
+                </li>
+                <li
+                  className={`menutab cursor mr-3 cursor-pointer last:mr-0 ${menu === 1 ? 'text-bold-small text-primary underline underline-offset-4' : ''}`}
+                  onClick={() => setMenu(1)}
+                >
+                  고정 인원
+                </li>
+                <li
+                  className={`menutab cursor mr-3 cursor-pointer last:mr-0 ${menu === 2 ? 'text-bold-small text-primary underline underline-offset-4' : ''}`}
+                  onClick={() => setMenu(2)}
+                >
+                  현재 인원
+                </li>
               </ul>
               <div
                 // onClick={nextPartyCallHandler}
