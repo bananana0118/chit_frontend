@@ -1,40 +1,228 @@
+//todo 임시적용, 추후 삭제
 'use client';
-import CommonLayout from '@/app/components/layout/CommonLayout';
-import StreamerTools from '@/app/components/molecules/StreamerTools';
-import MemberCard from '@/app/components/organisms/MemberCard';
-import makeUrl from '@/app/lib/makeUrl';
+
+import CommonLayout from '@/components/layout/CommonLayout';
+import StreamerTools from '@/components/molecules/StreamerTools';
+import makeUrl from '@/lib/makeUrl';
 import {
   createContentsSession,
   deleteContentsSession,
   getContentsSessionInfo,
-} from '@/app/services/streamer/streamer';
-import useChannelStore from '@/app/store/channelStore';
-import useContentsSessionStore, {
-  CurrentParticipants,
-} from '@/app/store/sessionStore';
-import { useSSEStore } from '@/app/store/sseStore';
-import useAuthStore from '@/app/store/store';
-import { useEffect, useState } from 'react';
+  heartBeatStreamer,
+  putContentsSessionNextGroup,
+} from '@/services/streamer/streamer';
+import useChannelStore from '@/store/channelStore';
+import useContentsSessionStore from '@/store/sessionStore';
+import { ParticipantResponseType, useSSEStore } from '@/store/sseStore';
+import useAuthStore from '@/store/store';
+import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'react-toastify';
 
-enum SessionStatus {
+import ViewerList from '@/components/molecules/ViewerList';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
+import { isErrorResponse } from '@/lib/handleErrors';
+import useDetectExit from '@/hooks/useDetectExit';
+import { logout } from '@/services/auth/auth';
+
+export enum SessionStatus {
   INITIAL = 1,
   OPEN = 2,
   CLOSED = 0,
 }
 
+interface getFetchParticipantsDataResponse {
+  participants: ParticipantResponseType[];
+  nextPage?: number;
+}
+
+type InfiniteParticipantsData = {
+  pages: getFetchParticipantsDataResponse[];
+  pageParams: unknown[];
+};
+
+const fetchParticipantsData = async ({
+  pageParam = 1,
+  accessToken,
+  size = 20,
+}: {
+  pageParam?: unknown;
+  accessToken: string;
+  size?: number;
+}): Promise<getFetchParticipantsDataResponse> => {
+  const page = pageParam as number;
+  const response = await getContentsSessionInfo({ page, accessToken, size });
+  if (isErrorResponse(response)) {
+    console.error(`api error 발생: ${response.error}`);
+    return Promise.reject(new Error(response.error));
+  }
+
+  console.log('fetchParticipantsdata 정보', response.data);
+
+  return {
+    participants: response.data.participants?.content ?? [],
+    nextPage: response.data.participants?.hasNext ? pageParam + 1 : undefined,
+  };
+};
+
 export default function List() {
+  const queryClient = useQueryClient();
   const accessToken = useAuthStore((state) => state.accessToken);
-  const sessionInfo = useContentsSessionStore((state) => state.sessionInfo);
-  const { startSSE, stopSSE, isConnected, contentsSessionInfo } = useSSEStore();
+  const { isRehydrated: isLoadingContentsSessionInfo, sessionInfo } =
+    useContentsSessionStore((state) => state);
+  const {
+    startSSE,
+    stopSSE,
+    isConnected,
+    setCurrentParticipants,
+    currentParticipants,
+  } = useSSEStore();
   const channelId = useChannelStore((state) => state.channelId);
   const isTokenLoading = useAuthStore((state) => state.isRehydrated);
   const [isSessionOn, setIsSessionOn] = useState<SessionStatus>(
     SessionStatus.INITIAL,
   );
-  const [currentParticipants, setCurrentParticipants] = useState<
-    CurrentParticipants[]
-  >([]);
+  const [menu, setMenu] = useState(0); // 0 전체인원 1/고정인원/2현재인원
+
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteQuery<getFetchParticipantsDataResponse>({
+      queryKey: ['participants'],
+      queryFn: async ({ pageParam = 1 }) => {
+        return await fetchParticipantsData({
+          pageParam,
+          accessToken,
+          size: 10,
+        });
+      },
+      initialPageParam: 0,
+      getNextPageParam: (lastPage) => lastPage.nextPage ?? undefined, // 다음 페이지 정보
+      enabled: !!accessToken,
+      staleTime: 3000,
+    });
+
+  //브라우저 종료시 실행되는 콜백 함수
+  const handleExit = async () => {
+    alert('⚠️ 로그아웃 되었습니다.');
+    // await logout({ accessToken });
+    //로그아웃 api 쓰기
+  };
+
+  useDetectExit(handleExit);
+
+  //다음 파티 호출 버튼 클릭시 Handler
+  const nextPartyCallHandler = async () => {
+    try {
+      const response = await putContentsSessionNextGroup({ accessToken });
+      if (response.status === 200) {
+        toast.success('다음 파티를 호출 했습니다.');
+        queryClient.setQueryData(['participants'], () => ({
+          pages: [],
+          pageParams: [0],
+        })); // participants 호출
+        queryClient.refetchQueries({ queryKey: ['participants'] }); // 쿼리 재요청 (첫 페이지부터)
+      }
+      console.log(response);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const filterParticipantsData = (
+    participants: ParticipantResponseType[],
+  ): ParticipantResponseType[] => {
+    const filtered = participants.filter(
+      (participant, index, self) =>
+        index === self.findIndex((p) => p.viewerId === participant.viewerId),
+    );
+
+    return filtered;
+  };
+
+  //이벤트 발생에 따른 로드
+  useEffect(() => {
+    if (currentParticipants) {
+      queryClient.setQueryData<InfiniteParticipantsData>(
+        ['participants'],
+        (oldData: InfiniteParticipantsData | undefined) => {
+          if (!oldData) return;
+
+          //이벤트로 발생한 데이터와 페이지네이션으로 데이터 발생시 통합 관리
+          let newParticipants: ParticipantResponseType[] = [];
+          if (
+            Array.isArray(currentParticipants) &&
+            currentParticipants.length > 0
+          ) {
+            // 기존 + 새 participants 통합 후 필터링
+
+            const currentIds = new Set(
+              currentParticipants.map((p) => p.viewerId),
+            );
+
+            // 기존 참가자 중 current에 아직 남아 있는 유저만 유지 (나간 유저 제거)
+            const filteredOldParticipants = oldData.pages
+              .flatMap((page: any) => page.participants || [])
+              .filter((p) => currentIds.has(p.viewerId) === false); // current에 없는 유저만 유지해서 중복 제거
+
+            // current에는 최신 유저 상태가 들어있으므로 우선순위로 맨 앞에 붙인다
+            const combinedParticipants = [
+              ...filteredOldParticipants, // current에 포함되지 않은 나머지 기존 유저 (즉, 중복 제거된 old)
+              ...currentParticipants,
+            ];
+            console.log('combined');
+            console.log(combinedParticipants);
+            newParticipants = combinedParticipants;
+          }
+
+          return {
+            ...oldData,
+            pages: [
+              { ...oldData.pages[0], participants: newParticipants },
+              ...oldData.pages.slice(1),
+            ],
+          };
+        },
+      );
+    }
+  }, [currentParticipants, queryClient]);
+
+  const participants = useMemo(() => {
+    console.log('참가자');
+
+    let filteredParticipants =
+      data?.pages.flatMap((p) => p.participants || []) ?? [];
+    if (filteredParticipants.length > 0) {
+      if (menu === 1) {
+        //고정인원만 출력
+        filteredParticipants = filteredParticipants.filter(
+          (participant) => participant.fixedPick === true,
+        );
+      } else if (menu === 2) {
+        filteredParticipants = filteredParticipants.filter(
+          (participant) => participant.round === 1, //현재 순서인 사람만 추가
+        );
+      }
+    }
+
+    return filteredParticipants;
+  }, [data?.pages, menu]);
+
+  const loadMoreData = async () => {
+    if (!hasNextPage || isFetchingNextPage) return;
+    await fetchNextPage();
+  };
+
+  //하트비트 체크
+  useEffect(() => {
+    heartBeatStreamer(accessToken);
+
+    const intervalId = setInterval(() => {
+      heartBeatStreamer(accessToken);
+      console.log('ping');
+    }, 10000); // 10초
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [accessToken, isTokenLoading]);
 
   //세션 생성 함수
   const onCreateSession = async () => {
@@ -46,8 +234,7 @@ export default function List() {
       };
 
       const response = await createContentsSession(reqData, accessToken);
-      console.log('Res');
-      console.log(response);
+
       return response.status;
     }
   };
@@ -62,13 +249,11 @@ export default function List() {
     // 상태변화 sessionOn=>sessionOff
     if (isSessionOn) {
       const response = await deleteContentsSession(accessToken);
-      if (response.status !== 200) {
-        toast.warn('에러가 발생했습니다. 나중에 다시 시도해 주세요');
-        return;
-      }
+
       if (
-        isSessionOn === SessionStatus.INITIAL ||
-        isSessionOn === SessionStatus.OPEN
+        response.status === 200 &&
+        (isSessionOn === SessionStatus.INITIAL ||
+          isSessionOn === SessionStatus.OPEN)
       ) {
         stopSSE();
         setIsSessionOn(SessionStatus.CLOSED);
@@ -93,59 +278,31 @@ export default function List() {
     toast.warn('요청에 실패했습니다. 잠시후 다시 시도해주세요');
   };
 
-  //이벤트 발생시 참가자 정보를 불러오는 api
-  useEffect(() => {
-    const getSessionInfo = async () => {
-      const response = await getContentsSessionInfo(accessToken);
-      if ('error' in response) {
-        // 에러 발생 시 사용자 피드백 제공
-        toast.error(`❌에러코드 : ${response.status} 오류: ${response.error}`, {
-          position: 'top-right',
-          autoClose: 3000,
-        });
-        return;
-      } else {
-        const data = response.data;
-        const newParticipants = data?.participants?.content ?? [];
-        setCurrentParticipants((prev) => [
-          ...prev,
-          ...newParticipants, // 기존 데이터 유지하면서 새 데이터 추가
-        ]);
-        console.log('newParticipants');
-        console.log(newParticipants);
-      }
-    };
+  //todo 테스트 동안만 잠가놓는 최초 데이터 불러오는 api
 
-    const fetchData = async () => {
-      try {
-        const response = await getSessionInfo();
-        console.log(response);
-        //setCurrentParticipants(result);
-      } catch (error) {
-        console.error('데이터 가져오기 실패:', error);
-      }
-    };
-    if (isTokenLoading && isSessionOn) fetchData();
-  }, [accessToken, isTokenLoading, isSessionOn, contentsSessionInfo]); // 의존성 배열이 빈 배열이면, 컴포넌트 마운트 시 한 번만 실행
+  useEffect(() => {
+    if (accessToken) {
+      queryClient.invalidateQueries({
+        queryKey: ['participants'],
+        refetchType: 'none',
+      }); // ✅ accessToken이 변경될 때 데이터 갱신
+    }
+  }, [accessToken, queryClient]);
 
   useEffect(() => {
     if (accessToken && !isConnected) {
       console.log('🔄 SSE 자동 시작');
       const url = makeUrl({ accessToken, isStreamer: true });
       startSSE(url);
+      //todo test시에만 컨텐츠 세션의 currentStatus를 날리기
+      setCurrentParticipants([]);
     }
   }, [accessToken, isConnected, startSSE]); // ✅ accessToken이 바뀔 때마다 SSE 연결
 
-  useEffect(() => {
-    return () => {
-      console.log('🛑 컴포넌트 언마운트 시 SSE 종료');
-      stopSSE();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // ✅ 언마운트 시 한 번만 실행
+  console.log(participants);
 
   if (!isTokenLoading) return <div>로딩중입니다.</div>;
-
+  const maxGroupParticipants = sessionInfo?.maxGroupParticipants ?? 1;
   return (
     isTokenLoading &&
     sessionInfo && (
@@ -158,60 +315,64 @@ export default function List() {
               sessionCode={sessionInfo?.sessionCode}
               channelId={channelId!}
             />
+          </section>
+          <section id="infoBox" className="w-full">
             {!isSessionOn ? (
               <p className="mb-5 mt-4 text-bold-middle">시참을 시작해주세요</p>
-            ) : currentParticipants.length === 0 ? (
+            ) : participants.length === 0 ? (
               <p className="mb-5 mt-4 text-bold-middle">아직 참여자가 없어요</p>
             ) : (
               <p className="mb-5 mt-4 text-bold-middle">
-                총{' '}
-                <span className="text-primary">
-                  {currentParticipants.length}명
-                </span>
+                총 <span className="text-primary">{participants.length}명</span>
                 이 참여중이에요
               </p>
             )}
           </section>
-          <section className="w-full flex-1">
-            <div id="listNav " className="mb-3 flex flex-row justify-between">
+          <section className="mb-3 flex min-h-[34px] w-full">
+            <div id="listNav " className="flex w-full flex-row justify-between">
               <ul className="flex flex-row items-center text-medium-large">
-                <li className="menutab mr-3 last:mr-0">전체 인원</li>
-                <li className="menutab mr-3 last:mr-0">고정 인원</li>
-                <li className="menutab mr-3 last:mr-0">현재 인원</li>
+                <li
+                  className={`menutab cursor mr-3 cursor-pointer last:mr-0 ${menu === 0 ? 'text-bold-small text-primary underline underline-offset-4' : ''}`}
+                  onClick={() => setMenu(0)}
+                >
+                  전체 인원
+                </li>
+                <li
+                  className={`menutab cursor mr-3 cursor-pointer last:mr-0 ${menu === 1 ? 'text-bold-small text-primary underline underline-offset-4' : ''}`}
+                  onClick={() => setMenu(1)}
+                >
+                  고정 인원
+                </li>
+                <li
+                  className={`menutab cursor mr-3 cursor-pointer last:mr-0 ${menu === 2 ? 'text-bold-small text-primary underline underline-offset-4' : ''}`}
+                  onClick={() => setMenu(2)}
+                >
+                  현재 인원
+                </li>
               </ul>
-              <div className="rounded-md bg-background-sub p-2 text-semi-bold text-secondary">
+              <div
+                // onClick={nextPartyCallHandler}
+                onClick={handleExit}
+                className="cursor-pointer rounded-md bg-background-sub p-2 text-semi-bold text-secondary"
+              >
                 다음 파티 호출 🔈
               </div>
             </div>
-            <div id="list" className="flex w-full flex-1 flex-col">
-              {!isSessionOn ? (
-                <div>시참을 시작해주세요.</div>
-              ) : currentParticipants.length === 0 ? (
-                <div>유저를 기다리는 중입니다.</div>
-              ) : (
-                currentParticipants.map((participant, index) => (
-                  <div
-                    key={index}
-                    id="partyblock"
-                    className="flex h-full w-full flex-row"
-                  >
-                    <div
-                      id="partyOrder"
-                      className="mr-[6px] flex w-7 items-center justify-center rounded-md bg-background-sub text-bold-small text-secondary"
-                    >
-                      {index + 1}
-                    </div>
-                    <div id="partyMembers" className="flex-1 flex-col">
-                      <MemberCard
-                        zicName={`${participant.chzzkNickname}`}
-                        gameNicname={`${participant.gameNickname}`}
-                        isHeart={participant.fixedPick}
-                      />
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
+          </section>
+          <section className="w-full flex-1 overflow-y-auto">
+            {!isSessionOn ? (
+              <div>시참을 시작해주세요.</div>
+            ) : participants.length === 0 ? (
+              <div>유저를 기다리는 중입니다.</div>
+            ) : (
+              <ViewerList
+                accessToken={accessToken}
+                participants={participants}
+                loadMoreItems={loadMoreData}
+                maxGroupParticipants={maxGroupParticipants}
+                key={'viewerList'}
+              ></ViewerList>
+            )}
           </section>
         </div>
       </CommonLayout>

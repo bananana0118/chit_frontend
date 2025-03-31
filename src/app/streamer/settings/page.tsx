@@ -1,14 +1,21 @@
 'use client';
+
 import Minus from '@/app/assets/icons/Minus';
 import Plus from '@/app/assets/icons/Plus';
-import { BtnSubmit } from '@/app/components/atoms/button/BtnWithChildren';
-import { InputPassword } from '@/app/components/atoms/input/Input';
-import CategoryText from '@/app/components/atoms/text/CategoryText';
-import CommonLayout from '@/app/components/layout/CommonLayout';
-import { createContentsSession } from '@/app/services/streamer/streamer';
-import useChannelStore from '@/app/store/channelStore';
-import useContentsSessionStore from '@/app/store/sessionStore';
-import useAuthStore from '@/app/store/store';
+import { BtnSubmit } from '@/components/atoms/button/BtnWithChildren';
+import { InputPassword } from '@/components/atoms/input/Input';
+import CategoryText from '@/components/atoms/text/CategoryText';
+import CommonLayout from '@/components/layout/CommonLayout';
+import useDetectExit from '@/hooks/useDetectExit';
+import { logout } from '@/services/auth/auth';
+import {
+  createContentsSession,
+  updateContentsSession,
+} from '@/services/streamer/streamer';
+import useChannelStore from '@/store/channelStore';
+import useContentsSessionStore from '@/store/sessionStore';
+import { useSSEStore } from '@/store/sseStore';
+import useAuthStore from '@/store/store';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
@@ -16,11 +23,23 @@ import { toast } from 'react-toastify';
 export default function Settings() {
   const [maxGroupParticipants, setmaxGroupParticipants] = useState(1);
   const router = useRouter();
+  const { eventSource } = useSSEStore((state) => state);
   const accessToken = useAuthStore((state) => state.accessToken);
   const streamerInfo = useChannelStore((state) => state.streamerInfo);
-  const setSessionInfo = useContentsSessionStore(
-    (state) => state.setSessionInfo,
+  const { sessionInfo, setSessionInfo } = useContentsSessionStore(
+    (state) => state,
   );
+
+  //브라우저 종료시 실행되는 콜백 함수
+  const handleExit = async () => {
+    if (eventSource) {
+      // await logout({ accessToken });
+      //로그아웃 api 쓰기
+    }
+  };
+
+  useDetectExit(handleExit);
+
   const onClickPlusMinusHandler = (e: React.MouseEvent<HTMLButtonElement>) => {
     const eventName = e.currentTarget.name;
 
@@ -59,23 +78,27 @@ export default function Settings() {
       maxGroupParticipants: Number(maxGroupParticipants),
     };
     try {
-      const response = await createContentsSession(reqData, accessToken);
-      console.log('Res');
-      console.log(response);
+      console.log(sessionInfo);
+      if (!sessionInfo?.sessionCode) {
+        const response = await createContentsSession(reqData, accessToken);
+        console.log('Res');
+        console.log(response);
 
-      if ('error' in response) {
-        // 에러 발생 시 사용자 피드백 제공
-        toast.error(`❌에러코드 : ${response.status} 오류: ${response.error}`, {
-          position: 'top-right',
-          autoClose: 3000,
-        });
-        return;
+        if (response && response.data) {
+          console.log(response.data);
+          setSessionInfo(response.data);
+          toast.success('✅ 세션이 성공적으로 생성되었습니다!');
+          router.push(`/streamer/list?max=${maxGroupParticipants}`);
+        }
+      } else {
+        const response = await updateContentsSession(reqData, accessToken);
+        if (response && response.data) {
+          console.log(response.data);
+          setSessionInfo(response.data);
+          toast.success('✅ 세션이 성공적으로 업데이트 되었습니다!');
+          router.push(`/streamer/list?max=${maxGroupParticipants}`);
+        }
       }
-
-      console.log(response.data);
-      setSessionInfo(response.data);
-      toast.success('✅ 세션이 성공적으로 생성되었습니다!');
-      router.push('/streamer/list');
     } catch (error) {
       console.log('settings error');
       console.error(error);
@@ -147,7 +170,7 @@ export default function Settings() {
                 </div>
               </div>
             </section>
-            <BtnSubmit>시참 목록 완성 🎉 </BtnSubmit>
+            <BtnSubmit>시참 설정 완료 🎉 </BtnSubmit>
           </form>
         </div>
       </CommonLayout>

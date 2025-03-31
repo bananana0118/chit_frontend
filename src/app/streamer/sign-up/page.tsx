@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 //안쓰는 페이지
 'use client';
-import BtnWithChildren from '@/app/components/atoms/button/BtnWithChildren';
-import Input from '@/app/components/atoms/input/Input';
-import CommonLayout from '@/app/components/layout/CommonLayout';
-import useAuthStore from '@/app/store/store';
+
+import BtnWithChildren from '@/components/atoms/button/BtnWithChildren';
+import Input from '@/components/atoms/input/Input';
+import CommonLayout from '@/components/layout/CommonLayout';
+import useAuthStore from '@/store/store';
 import axios from 'axios';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export default function Home() {
