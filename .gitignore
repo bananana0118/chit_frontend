@@ -20,10 +20,6 @@
 # production
 /build
 
-#package_locks
-package-lock.json
-
-
 # misc
 .DS_Store
 *.pem
