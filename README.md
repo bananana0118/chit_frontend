@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CHIT (치지직 중심의 시청자 방송참여 플랫폼)
 
-## Getting Started
+이 프로젝트는 치지직 스트리머가 시청자 참여 이벤트 등을 열 때, 시청자 참여를 관리 할 수 있도록 해주는 플랫폼입니다.
 
-First, run the development server:
+### 주 기능
+
+1. 실시간 시참 대기순서 표시
+2. 원하는 시청자 고정 (FIXED PICK)
+3. 시청자 강퇴
+
+---
+
+## 🚀 시작하기
+
+### 1. 레포지토리 클론
+
+```bash
+git clone https://github.com/bananana0118/chit_frontend.git
+cd chit_frontend
+```
+
+### 2. 패키지 설치
+
+```bash
+npm install
+```
+
+### 3. 개발 서버 실행
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 📁 폴더 구조
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+/src
+  ├── app            # 페이지 컴포넌트 (Next.js app 라우팅)
+  ├── components       # 공통 UI 컴포넌트
+  ├── hooks            # 커스텀 훅
+  ├── utils            # 유틸리티 함수
+  ├── styles           # 전역 스타일 정의
+  └── store            # 전역 상태 관리
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
 
-## Learn More
+## 🛠 사용 기술 스택
 
-To learn more about Next.js, take a look at the following resources:
+- Next.js
+- TypeScript
+- Tailwind CSS
+- ESLint / Prettier
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📌 커밋 컨벤션
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- feat: 새로운 기능 추가
 
-## Deploy on Vercel
+- fix: 버그 수정
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- docs: 문서 변경
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- style: 코드 스타일 변경 (포맷팅 등)
+
+- refactor: 코드 리팩터링
+
+- test: 테스트 코드 추가/수정
+
+- chore: 기타 변경사항
+
+- setting : 라이브러리 추가 및 설정 추가
+
+```bash
+# 예시 커밋 메시지
+[feat]: 로그인 버튼 UI 구현
+
+- 로그인 버튼 UI를 세부구현 했습니다. (옵션)
+```
+
+## 🔍 브랜치 전략
+
+- main: 배포 브랜치
+
+- dev: 개발 브랜치 (기능 병합 전용)
+
+- feature/이름: 개별 기능 개발 브랜치
+
+## PR 규칙
+
+- PR 제목: [Feat] 기능 이름, [Fix] 버그 설명 등
+
+- PR 생성 시 템플릿을 활용해 작업 내용 명확히 작성
+
+- 리뷰어 지정 필수
+
+- 본인 PR은 최소 1명 이상 리뷰 후 병합
+
+## 📄 라이선스
+
+이 프로젝트는 [MIT 라이선스](./LICENSE)를 따릅니다.
