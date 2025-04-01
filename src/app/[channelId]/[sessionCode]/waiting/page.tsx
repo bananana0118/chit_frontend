@@ -12,11 +12,12 @@ import BtnWithChildren from '@/components/atoms/button/BtnWithChildren';
 import Live from '@/components/atoms/label/Live';
 import OFF from '@/components/atoms/label/Off';
 import ViewerPageLayout from '@/components/layout/ViewerPageLayout';
-import { deleteContentsSessionViewerLeave, heartBeatViewer } from '@/services/viewer/viewer';
+import { deleteContentsSessionViewerLeave } from '@/services/viewer/viewer';
 import { useRouter } from 'next/navigation';
 import useParentPath from '@/hooks/useParentPath';
 import copyClipBoard from '@/lib/copyClipBoard';
 import useBeforeUnload from '@/hooks/useBeforeUnload';
+import { heartBeat } from '@/services/common/common';
 
 export default function Page() {
   const streamerInfo = useChannelStore((state) => state.streamerInfo);
@@ -75,12 +76,12 @@ export default function Page() {
 
   useEffect(() => {
     // 처음 한 번 실행
-    if (sessionCode) heartBeatViewer(accessToken, sessionCode);
+    if (sessionCode) heartBeat(accessToken, sessionCode);
 
     // 인터벌 시작
 
     const intervalId = setInterval(() => {
-      if (sessionCode) heartBeatViewer(accessToken, sessionCode);
+      if (sessionCode) heartBeat(accessToken, sessionCode);
       console.log('ping');
     }, 10000); // 10초
 
