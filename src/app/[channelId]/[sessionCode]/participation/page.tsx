@@ -34,7 +34,6 @@ export default function Settings() {
       startSSE(
         makeUrl({
           accessToken,
-          isStreamer: false,
           sessionCode,
           viewerNickname: viewerGameNickname,
         }),
@@ -67,9 +66,7 @@ export default function Settings() {
                 <span className="text-secondary">게임 닉네임</span>을 알려주시면
               </p>
               <p>스트리머에게 전달해드릴게요:)</p>
-              <HintText>
-                닉네임은 스트리머에게만 보여지며, 다른 목적으로 활용하지 않아요
-              </HintText>
+              <HintText>닉네임은 스트리머에게만 보여지며, 다른 목적으로 활용하지 않아요</HintText>
             </div>
             <Input
               type="text"

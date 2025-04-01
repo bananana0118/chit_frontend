@@ -8,7 +8,6 @@ import {
   createContentsSession,
   deleteContentsSession,
   getContentsSessionInfo,
-  heartBeatStreamer,
   putContentsSessionNextGroup,
 } from '@/services/streamer/streamer';
 import useChannelStore from '@/store/channelStore';
@@ -23,6 +22,7 @@ import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { isErrorResponse } from '@/lib/handleErrors';
 import useDetectExit from '@/hooks/useDetectExit';
 import { logout } from '@/services/auth/auth';
+import { heartBeat } from '@/services/common/common';
 
 export enum SessionStatus {
   INITIAL = 1,
@@ -67,20 +67,20 @@ const fetchParticipantsData = async ({
 export default function List() {
   const queryClient = useQueryClient();
   const accessToken = useAuthStore((state) => state.accessToken);
-  const { isRehydrated: isLoadingContentsSessionInfo, sessionInfo } =
-    useContentsSessionStore((state) => state);
+  const { isRehydrated: isLoadingContentsSessionInfo, sessionInfo } = useContentsSessionStore(
+    (state) => state,
+  );
   const {
     startSSE,
     stopSSE,
+    sessionCode,
     isConnected,
     setCurrentParticipants,
     currentParticipants,
   } = useSSEStore();
   const channelId = useChannelStore((state) => state.channelId);
   const isTokenLoading = useAuthStore((state) => state.isRehydrated);
-  const [isSessionOn, setIsSessionOn] = useState<SessionStatus>(
-    SessionStatus.INITIAL,
-  );
+  const [isSessionOn, setIsSessionOn] = useState<SessionStatus>(SessionStatus.INITIAL);
   const [menu, setMenu] = useState(0); // 0 전체인원 1/고정인원/2현재인원
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
@@ -126,17 +126,6 @@ export default function List() {
     }
   };
 
-  const filterParticipantsData = (
-    participants: ParticipantResponseType[],
-  ): ParticipantResponseType[] => {
-    const filtered = participants.filter(
-      (participant, index, self) =>
-        index === self.findIndex((p) => p.viewerId === participant.viewerId),
-    );
-
-    return filtered;
-  };
-
   //이벤트 발생에 따른 로드
   useEffect(() => {
     if (currentParticipants) {
@@ -147,30 +136,25 @@ export default function List() {
 
           //이벤트로 발생한 데이터와 페이지네이션으로 데이터 발생시 통합 관리
           let newParticipants: ParticipantResponseType[] = [];
-          if (
-            Array.isArray(currentParticipants) &&
-            currentParticipants.length > 0
-          ) {
+          if (Array.isArray(currentParticipants) && currentParticipants.length > 0) {
             // 기존 + 새 participants 통합 후 필터링
 
-            const currentIds = new Set(
-              currentParticipants.map((p) => p.viewerId),
-            );
-
-            // 기존 참가자 중 current에 아직 남아 있는 유저만 유지 (나간 유저 제거)
-            const filteredOldParticipants = oldData.pages
-              .flatMap((page: any) => page.participants || [])
-              .filter((p) => currentIds.has(p.viewerId) === false); // current에 없는 유저만 유지해서 중복 제거
+            const currentIds = new Set(currentParticipants.map((p) => p.viewerId));
+            console.log('currentIds', currentIds);
+            const oldParticipants = oldData.pages.flatMap((page: any) => page.participants || []);
+            // 기존 참가자 중 current에 아직 남아 있는 유저만 유지 (나간 유저 제거 및 중복삭제)
+            newParticipants = oldParticipants.filter((p) => currentIds.has(p.viewerId) === false); // current에 없는 유저만 유지해서 중복 제거
 
             // current에는 최신 유저 상태가 들어있으므로 우선순위로 맨 앞에 붙인다
-            const combinedParticipants = [
-              ...filteredOldParticipants, // current에 포함되지 않은 나머지 기존 유저 (즉, 중복 제거된 old)
-              ...currentParticipants,
-            ];
-            console.log('combined');
-            console.log(combinedParticipants);
-            newParticipants = combinedParticipants;
+            newParticipants = [...currentParticipants];
           }
+
+          newParticipants.sort((a, b) => {
+            if (a.fixedPick === b.fixedPick) {
+              return a.order - b.order;
+            }
+            return b.fixedPick ? 1 : -1;
+          });
 
           return {
             ...oldData,
@@ -187,8 +171,7 @@ export default function List() {
   const participants = useMemo(() => {
     console.log('참가자');
 
-    let filteredParticipants =
-      data?.pages.flatMap((p) => p.participants || []) ?? [];
+    let filteredParticipants = data?.pages.flatMap((p) => p.participants || []) ?? [];
     if (filteredParticipants.length > 0) {
       if (menu === 1) {
         //고정인원만 출력
@@ -212,17 +195,19 @@ export default function List() {
 
   //하트비트 체크
   useEffect(() => {
-    heartBeatStreamer(accessToken);
+    if (sessionCode) {
+      heartBeat(accessToken, sessionCode);
 
-    const intervalId = setInterval(() => {
-      heartBeatStreamer(accessToken);
-      console.log('ping');
-    }, 10000); // 10초
+      const intervalId = setInterval(() => {
+        heartBeat(accessToken, sessionCode);
+        console.log('ping');
+      }, 10000); // 10초
 
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, [accessToken, isTokenLoading]);
+      return () => {
+        clearInterval(intervalId);
+      };
+    }
+  }, [accessToken, isTokenLoading, sessionCode]);
 
   //세션 생성 함수
   const onCreateSession = async () => {
@@ -252,8 +237,7 @@ export default function List() {
 
       if (
         response.status === 200 &&
-        (isSessionOn === SessionStatus.INITIAL ||
-          isSessionOn === SessionStatus.OPEN)
+        (isSessionOn === SessionStatus.INITIAL || isSessionOn === SessionStatus.OPEN)
       ) {
         stopSSE();
         setIsSessionOn(SessionStatus.CLOSED);
@@ -268,7 +252,7 @@ export default function List() {
         return;
       }
 
-      const url = makeUrl({ accessToken, isStreamer: true });
+      const url = makeUrl({ accessToken, sessionCode: sessionInfo?.sessionCode });
       startSSE(url);
       setIsSessionOn(SessionStatus.OPEN);
       toast.success('시참이 시작되었습니다.');
@@ -292,12 +276,12 @@ export default function List() {
   useEffect(() => {
     if (accessToken && !isConnected) {
       console.log('🔄 SSE 자동 시작');
-      const url = makeUrl({ accessToken, isStreamer: true });
+      const url = makeUrl({ accessToken, sessionCode: sessionInfo?.sessionCode });
       startSSE(url);
       //todo test시에만 컨텐츠 세션의 currentStatus를 날리기
       setCurrentParticipants([]);
     }
-  }, [accessToken, isConnected, startSSE]); // ✅ accessToken이 바뀔 때마다 SSE 연결
+  }, [accessToken, isConnected, sessionInfo?.sessionCode]); // ✅ accessToken이 바뀔 때마다 SSE 연결
 
   console.log(participants);
 
@@ -323,8 +307,7 @@ export default function List() {
               <p className="mb-5 mt-4 text-bold-middle">아직 참여자가 없어요</p>
             ) : (
               <p className="mb-5 mt-4 text-bold-middle">
-                총 <span className="text-primary">{participants.length}명</span>
-                이 참여중이에요
+                총 <span className="text-primary">{participants.length}명</span>이 참여중이에요
               </p>
             )}
           </section>
@@ -351,8 +334,7 @@ export default function List() {
                 </li>
               </ul>
               <div
-                // onClick={nextPartyCallHandler}
-                onClick={handleExit}
+                onClick={nextPartyCallHandler}
                 className="cursor-pointer rounded-md bg-background-sub p-2 text-semi-bold text-secondary"
               >
                 다음 파티 호출 🔈

@@ -18,6 +18,5 @@ export const SESSION_URLS = {
 };
 
 export const SSE_URLS = {
-  streamerHeartBeat: DEFAULT_URL + '/sse/streamer/heartbeat',
-  viewerHeartBeat: DEFAULT_URL + '/sse/streamer/heartbeat',
+  heartBeat: DEFAULT_URL + '/sse/session/heartbeat',
 };

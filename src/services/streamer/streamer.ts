@@ -11,7 +11,7 @@ import {
 } from './type';
 import { handleSessionError } from '@/lib/handleErrors';
 import apiSession from '../axios/apiSession';
-import { SESSION_URLS, SSE_URLS } from '@/constants/urls';
+import { SESSION_URLS } from '@/constants/urls';
 import { ApiResponse, ContentsSession } from '@/store/sessionStore';
 
 const client = new ChzzkClient();
@@ -222,21 +222,6 @@ export const deleteContentsSessionParticipant = async (
       },
     });
 
-    return response.data; // 성공적인 응답 데이터 반환
-  } catch (error: unknown) {
-    return handleSessionError(error); // 에러 핸들링 함수 사용
-  }
-};
-
-//스트리머 하트비트
-export const heartBeatStreamer = async (accessToken: string) => {
-  try {
-    const response = await apiSession.get(`${SSE_URLS.streamerHeartBeat}`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
-      },
-    });
-    console.log('heartBeat');
     return response.data; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {
     return handleSessionError(error); // 에러 핸들링 함수 사용
