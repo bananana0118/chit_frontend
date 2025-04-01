@@ -8,7 +8,7 @@ import {
   createContentsSession,
   deleteContentsSession,
   getContentsSessionInfo,
-  heartBeatStreamer,
+  heartBeat,
   putContentsSessionNextGroup,
 } from '@/services/streamer/streamer';
 import useChannelStore from '@/store/channelStore';
@@ -67,20 +67,14 @@ const fetchParticipantsData = async ({
 export default function List() {
   const queryClient = useQueryClient();
   const accessToken = useAuthStore((state) => state.accessToken);
-  const { isRehydrated: isLoadingContentsSessionInfo, sessionInfo } =
-    useContentsSessionStore((state) => state);
-  const {
-    startSSE,
-    stopSSE,
-    isConnected,
-    setCurrentParticipants,
-    currentParticipants,
-  } = useSSEStore();
+  const { isRehydrated: isLoadingContentsSessionInfo, sessionInfo } = useContentsSessionStore(
+    (state) => state,
+  );
+  const { startSSE, stopSSE, isConnected, setCurrentParticipants, currentParticipants } =
+    useSSEStore();
   const channelId = useChannelStore((state) => state.channelId);
   const isTokenLoading = useAuthStore((state) => state.isRehydrated);
-  const [isSessionOn, setIsSessionOn] = useState<SessionStatus>(
-    SessionStatus.INITIAL,
-  );
+  const [isSessionOn, setIsSessionOn] = useState<SessionStatus>(SessionStatus.INITIAL);
   const [menu, setMenu] = useState(0); // 0 전체인원 1/고정인원/2현재인원
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
@@ -147,15 +141,10 @@ export default function List() {
 
           //이벤트로 발생한 데이터와 페이지네이션으로 데이터 발생시 통합 관리
           let newParticipants: ParticipantResponseType[] = [];
-          if (
-            Array.isArray(currentParticipants) &&
-            currentParticipants.length > 0
-          ) {
+          if (Array.isArray(currentParticipants) && currentParticipants.length > 0) {
             // 기존 + 새 participants 통합 후 필터링
 
-            const currentIds = new Set(
-              currentParticipants.map((p) => p.viewerId),
-            );
+            const currentIds = new Set(currentParticipants.map((p) => p.viewerId));
 
             // 기존 참가자 중 current에 아직 남아 있는 유저만 유지 (나간 유저 제거)
             const filteredOldParticipants = oldData.pages
@@ -187,8 +176,7 @@ export default function List() {
   const participants = useMemo(() => {
     console.log('참가자');
 
-    let filteredParticipants =
-      data?.pages.flatMap((p) => p.participants || []) ?? [];
+    let filteredParticipants = data?.pages.flatMap((p) => p.participants || []) ?? [];
     if (filteredParticipants.length > 0) {
       if (menu === 1) {
         //고정인원만 출력
@@ -212,10 +200,10 @@ export default function List() {
 
   //하트비트 체크
   useEffect(() => {
-    heartBeatStreamer(accessToken);
+    heartBeat(accessToken);
 
     const intervalId = setInterval(() => {
-      heartBeatStreamer(accessToken);
+      heartBeat(accessToken);
       console.log('ping');
     }, 10000); // 10초
 
@@ -252,8 +240,7 @@ export default function List() {
 
       if (
         response.status === 200 &&
-        (isSessionOn === SessionStatus.INITIAL ||
-          isSessionOn === SessionStatus.OPEN)
+        (isSessionOn === SessionStatus.INITIAL || isSessionOn === SessionStatus.OPEN)
       ) {
         stopSSE();
         setIsSessionOn(SessionStatus.CLOSED);
@@ -323,8 +310,7 @@ export default function List() {
               <p className="mb-5 mt-4 text-bold-middle">아직 참여자가 없어요</p>
             ) : (
               <p className="mb-5 mt-4 text-bold-middle">
-                총 <span className="text-primary">{participants.length}명</span>
-                이 참여중이에요
+                총 <span className="text-primary">{participants.length}명</span>이 참여중이에요
               </p>
             )}
           </section>
