@@ -18,6 +18,7 @@ import useParentPath from '@/hooks/useParentPath';
 import copyClipBoard from '@/lib/copyClipBoard';
 import useBeforeUnload from '@/hooks/useBeforeUnload';
 import { heartBeat } from '@/services/common/common';
+import makeUrl from '@/lib/makeUrl';
 
 export default function Page() {
   const streamerInfo = useChannelStore((state) => state.streamerInfo);
@@ -29,6 +30,8 @@ export default function Page() {
   const {
     viewerSessionInfo,
     viewerStatus,
+    viewerNickname,
+    startSSE,
     isRehydrated: isViewerInfoLoading = false,
   } = useSSEStore();
   //세션인포 찾기
@@ -55,6 +58,9 @@ export default function Page() {
     if (viewerStatus === ViewerStatus.KICKED) {
       toast.success('시참에서 강퇴처리되었습니다.');
       router.replace(parentPath + '/ban');
+    } else if (viewerStatus === ViewerStatus.SESSION_CLOSED) {
+      toast.success('시참이 종료되었습니다.');
+      router.replace(parentPath);
     }
   }, [parentPath, router, viewerStatus]);
 
@@ -76,7 +82,16 @@ export default function Page() {
 
   useEffect(() => {
     // 처음 한 번 실행
-    if (sessionCode) heartBeat(accessToken, sessionCode);
+    if (sessionCode && viewerNickname) {
+      heartBeat(accessToken, sessionCode);
+      startSSE(
+        makeUrl({
+          accessToken,
+          sessionCode,
+          viewerNickname,
+        }),
+      );
+    }
 
     // 인터벌 시작
 
@@ -89,7 +104,7 @@ export default function Page() {
     return () => {
       clearInterval(intervalId);
     };
-  }, [accessToken, isTokenLoading, sessionCode]);
+  }, [accessToken, isTokenLoading, sessionCode, startSSE, viewerNickname]);
 
   return (
     isTokenLoading &&
@@ -135,13 +150,15 @@ export default function Page() {
         {/* 나중에 1번 2번 3버 이런식으로 할 것 */}
         <section className="flex w-full flex-1 flex-col items-center justify-center">
           <p className="text-bold-large">내 순서는</p>
-          {viewerSessionInfo?.round === 1 ? (
+          {gameCode ? (
+            //임시처리
+            // viewerSessionInfo?.order === 1 ? (
             <p className="flex flex-row items-center justify-center text-bold-big text-primary">
               지금 참여
             </p>
           ) : (
             <p className="flex flex-row items-center justify-center text-bold-big text-primary">
-              {`${viewerSessionInfo!.round! - 1}`}번
+              {`${viewerSessionInfo!.order!}`}번
             </p>
           )}
         </section>

@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 export enum ViewerStatus {
   JOINED = 'JOINED', // 시청자가 세션에 참여 중
-  LIVE_CLOSED = 'LIVE_CLOSED', // 스트리머가 세션 종료함
+  SESSION_CLOSED = 'SESSION_CLOSED', // 스트리머가 세션 종료함
   DISCONNECTED = 'DISCONNECTED', // 연결이 끊긴 상태
   KICKED = 'KICKED', //강퇴당한 상태
 }
@@ -46,7 +46,7 @@ enum SSEEventType {
   PARTICIPANT_LEFT_SESSION = 'PARTICIPANT_LEFT_SESSION',
   SESSION_ORDER_UPDATED = 'SESSION_ORDER_UPDATED',
   //LEFT로 바뀐듯
-  STREAMER_PARTICIPANT_REMOVED = 'STREAMER_PARTICIPANT_REMOVED',
+  CLOSED_SESSION = 'CLOSED_SESSION',
   //깜빡하신듯
   STREAMER_SESSION_UPDATED = 'STREAMER_SESSION_UPDATED',
   PARTICIPANT_SESSION_UPDATED = 'PARTICIPANT_SESSION_UPDATED', //스트리머가 업데이트시
@@ -206,6 +206,14 @@ export const useSSEStore = create<SSEState>()(
                   get().stopSSE(); // 기존 stopSSE 함수 호출하여 안전하게 종료
                   break;
 
+                case SSEEventType.CLOSED_SESSION:
+                  get().stopSSE();
+                  set({
+                    viewerSessionInfo: null,
+                    viewerStatus: ViewerStatus.SESSION_CLOSED,
+                  }); // viewer 세션 정보 초기화
+                  break;
+
                 case SSEEventType.PARTICIPANT_JOINED_SESSION:
                   const { maxGroupParticipants, currentParticipants, participant } =
                     eventData as EVENT_ParticipantAddedResponse;
@@ -274,12 +282,18 @@ export const useSSEStore = create<SSEState>()(
                   break;
                 }
 
-                //아직 안만드심
                 case SSEEventType.STREAMER_SESSION_UPDATED:
                   newState.contentsSessionInfo = {
                     ...(get().contentsSessionInfo || {}),
                     ...(eventData as EVENT_SessionStatusUpdateResponse),
                   };
+
+                  if (get().viewerSessionInfo) {
+                    newState.viewerSessionInfo = {
+                      ...(get().viewerSessionInfo || {}),
+                      ...(eventData as EVENT_ParticipantOrderUpdated),
+                    };
+                  }
                   break;
 
                 case SSEEventType.SESSION_ORDER_UPDATED:
@@ -319,7 +333,7 @@ export const useSSEStore = create<SSEState>()(
           });
           newEventSource.onmessage = (event) => {
             set({ ...state, lastEventId: event.lastEventId });
-            console.log('메세지 수신', JSON.parse(event.data));
+            console.log('메세지 수신', event.data.data.message);
           };
 
           newEventSource.onerror = (error) => {

@@ -334,8 +334,7 @@ export default function List() {
                 </li>
               </ul>
               <div
-                // onClick={nextPartyCallHandler}
-                onClick={handleExit}
+                onClick={nextPartyCallHandler}
                 className="cursor-pointer rounded-md bg-background-sub p-2 text-semi-bold text-secondary"
               >
                 다음 파티 호출 🔈
