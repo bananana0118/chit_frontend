@@ -1,4 +1,3 @@
-//todo 임시적용, 추후 삭제
 'use client';
 
 import CommonLayout from '@/components/layout/CommonLayout';
@@ -19,10 +18,12 @@ import { toast } from 'react-toastify';
 
 import ViewerList from '@/components/molecules/ViewerList';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
-import { isErrorResponse } from '@/lib/handleErrors';
+import { handleSessionError, isErrorResponse } from '@/lib/handleErrors';
 import useDetectExit from '@/hooks/useDetectExit';
 import { logout } from '@/services/auth/auth';
 import { heartBeat } from '@/services/common/common';
+import SessionError, { SessionErrorCode } from '@/app/errors/sessionError';
+import { useRouter } from 'next/navigation';
 
 export enum SessionStatus {
   INITIAL = 1,
@@ -75,6 +76,9 @@ export default function List() {
     stopSSE,
     sessionCode,
     isConnected,
+    isSessionError,
+    isProcessing,
+    setProcessing,
     setCurrentParticipants,
     currentParticipants,
   } = useSSEStore();
@@ -82,7 +86,7 @@ export default function List() {
   const isTokenLoading = useAuthStore((state) => state.isRehydrated);
   const [isSessionOn, setIsSessionOn] = useState<SessionStatus>(SessionStatus.INITIAL);
   const [menu, setMenu] = useState(0); // 0 전체인원 1/고정인원/2현재인원
-
+  const router = useRouter();
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery<getFetchParticipantsDataResponse>({
       queryKey: ['participants'],
@@ -272,16 +276,32 @@ export default function List() {
       }); // ✅ accessToken이 변경될 때 데이터 갱신
     }
   }, [accessToken, queryClient]);
-
+  // 1. 세션 에러 감지 및 처리
+  // ✅ 세션 에러 감지 → stop + 처리 + 라우팅
   useEffect(() => {
-    if (accessToken && !isConnected) {
+    const handleError = () => {
+      if (isSessionError && isProcessing) {
+        console.log('🚨 세션 에러 발생 - SSE 중지 및 홈으로 이동');
+        try {
+          handleSessionError(new SessionError(SessionErrorCode.SESSION_CODE_NOT_FOUND));
+          router.push('/');
+        } finally {
+          setProcessing(false); // 라우팅 후 unlock
+        }
+      }
+    };
+
+    handleError();
+  }, [isSessionError, isProcessing, router, setProcessing]);
+
+  // 2. 자동 SSE 연결 감지
+  useEffect(() => {
+    if (accessToken && !isConnected && !isSessionError && !isProcessing) {
       console.log('🔄 SSE 자동 시작');
       const url = makeUrl({ accessToken, sessionCode: sessionInfo?.sessionCode });
       startSSE(url);
-      //todo test시에만 컨텐츠 세션의 currentStatus를 날리기
-      setCurrentParticipants([]);
     }
-  }, [accessToken, isConnected, sessionInfo?.sessionCode]); // ✅ accessToken이 바뀔 때마다 SSE 연결
+  }, [accessToken, isConnected, isProcessing, isSessionError, sessionInfo?.sessionCode, startSSE]);
 
   console.log(participants);
 

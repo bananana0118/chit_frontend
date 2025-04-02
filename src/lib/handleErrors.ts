@@ -37,8 +37,9 @@ export const handleAuthError = (error: unknown): ErrorResponse => {
 };
 
 export const handleSessionError = (error: unknown): ErrorResponse => {
+  console.log('여기 타는중?');
   if (error instanceof SessionError) {
-    toast.warn(`에러코드:${error.code}\n ${error.name}:${error.message}`);
+    toast.warn(`${error.message}`);
     return {
       status: error.status,
       code: error.code,
@@ -46,6 +47,7 @@ export const handleSessionError = (error: unknown): ErrorResponse => {
       data: error.message,
     };
   }
+  toast.warn(`500 서버에러\n 알 수 없는 오류가 발생했습니다.`);
   return {
     status: 500,
     error: '알 수 없는 오류가 발생했습니다.',

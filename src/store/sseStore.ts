@@ -1,3 +1,4 @@
+import SessionError, { SessionErrorCode } from '@/app/errors/sessionError';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 export enum ViewerStatus {
@@ -14,15 +15,18 @@ type SSEState = {
   eventSource: EventSource | null;
   lastEventId: string | null;
   isConnected: boolean;
+  isProcessing: boolean;
+  errorMessage: string | null;
   viewerSessionInfo: viewerSessionInfo | null;
   viewerNickname?: string | null;
-  error: string | null;
+  isSessionError: boolean;
   viewerStatus: ViewerStatus | null;
+  setProcessing: (value: boolean) => void;
+  setSessionError: (value: boolean) => void;
   isRehydrated: boolean; // 상태가 로드 완료되었는지 여부 추가
   setCurrentParticipants: (newCurrentParticipants: ParticipantResponseType[]) => void;
   setViewerNickname: (viewerNickname: string) => void;
   startSSE: (url: string) => void;
-  restartSSE: () => void;
   stopSSE: () => void;
 };
 
@@ -79,14 +83,6 @@ interface EVENT_SessionStatusUpdateResponse extends EVENT_ParticipantAddedRespon
   currentParticipants: number;
   gameParticipationCode: string;
 }
-type Event_BaseResponse = {
-  status: string;
-  message: string;
-};
-
-interface EVENT_JoinedSessionResponse extends Event_BaseResponse {
-  data: string; // 세션참가코드
-}
 
 interface EVENT_ParticipantOrderUpdated extends ParticipantResponseType {
   gameParticipationCode?: string | null;
@@ -100,15 +96,18 @@ export const useSSEStore = create<SSEState>()(
     (set, get) => ({
       eventSource: null,
       isConnected: false,
+      isProcessing: false,
       sessionCode: null,
       lastEventId: null,
       viewerSessionInfo: null,
       currentParticipants: null,
       viewerStatus: null,
-      error: null,
+      isSessionError: false,
       viewerNickname: null,
       isRehydrated: false,
+      errorMessage: null,
       contentsSessionInfo: null,
+
       resetContentSessionInfo: () => {
         set((state) => ({ ...state, contentsSessionInfo: null }));
       },
@@ -121,43 +120,29 @@ export const useSSEStore = create<SSEState>()(
           viewerNickname,
         }));
       },
-      restartSSE: () => {
-        set((state) => {
-          if (state.eventSource && state.lastEventId) {
-            const lastId = state.lastEventId;
-            const url = lastId ? `/events?lastEventId=${lastId}` : '/events';
-            const eventSource = new EventSource(url);
-
-            return {
-              eventSource: eventSource,
-              isConnected: true,
-              error: null,
-            };
-          } else {
-            return {
-              ...state,
-            };
-          }
-        });
-      },
+      setProcessing: (value) => set({ isProcessing: value }),
+      setSessionError: (value) => set({ isSessionError: value }),
       stopSSE: () => {
         set((state) => {
           if (state.eventSource) {
             console.log('SSE연결을 종료합니다.');
             try {
               state.eventSource.close();
-            } catch (error) {
-              console.error('SSE 종료 중 오류 발생:', error);
+            } catch (isSessionError) {
+              console.log('SSE 종료 중 오류 발생:', isSessionError);
             }
           }
           return {
             eventSource: null,
             isConnected: false,
+            isSessionError: false,
+            isProcessing: true,
             viewerSessionInfo: null,
           };
         });
       },
       startSSE: (url) => {
+        set({ isProcessing: true });
         set((state) => {
           if (state.isConnected) {
             console.log('⚠️ 이미 SSE가 연결되어 있음. 중복 구독 방지');
@@ -165,11 +150,6 @@ export const useSSEStore = create<SSEState>()(
           }
 
           console.log('새로운 SSE연결 시작');
-          set({
-            isConnected: false,
-            error: null,
-            viewerStatus: ViewerStatus.JOINED,
-          }); // ✅ 에러 초기화
           const newEventSource = new EventSource(url);
           console.log(newEventSource);
           newEventSource.onopen = (event) => {
@@ -177,7 +157,7 @@ export const useSSEStore = create<SSEState>()(
             console.log('연결성공메세지 수신', event);
             set({
               isConnected: true,
-              error: null,
+              isSessionError: false,
               viewerStatus: ViewerStatus.JOINED,
             }); // ✅ 에러 초기화
           };
@@ -189,7 +169,7 @@ export const useSSEStore = create<SSEState>()(
               const parsedData = JSON.parse(event.data);
               const { status, data: eventData, message } = parsedData;
               console.log('hit2');
-              console.log(eventData);
+              console.log(message);
 
               if (status !== 'OK') throw Error;
               const newState: Partial<SSEState> = {};
@@ -336,16 +316,17 @@ export const useSSEStore = create<SSEState>()(
             console.log('메세지 수신', event.data.data.message);
           };
 
-          newEventSource.onerror = (error) => {
-            console.log('SSE오류 발생~', error);
+          newEventSource.onerror = (isSessionError) => {
+            console.log('onError');
+            console.log('SSE오류 발생~', isSessionError);
             newEventSource.close();
-            set({ isConnected: false, eventSource: null, error: '연결실패' });
+            set({ isConnected: false, eventSource: newEventSource, isSessionError: true });
           };
 
           return {
             eventSource: newEventSource,
             isConnected: true,
-            error: null,
+            isSessionError: false,
           };
         });
       },

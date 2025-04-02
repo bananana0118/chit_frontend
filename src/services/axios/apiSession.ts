@@ -1,9 +1,4 @@
-import axios, {
-  AxiosError,
-  AxiosInstance,
-  AxiosResponse,
-  InternalAxiosRequestConfig,
-} from 'axios';
+import axios, { AxiosError, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { ErrorResponse } from '../streamer/type';
 import SessionError, { SessionErrorCode } from '@/app/errors/sessionError';
 
@@ -45,17 +40,14 @@ apiSession.interceptors.response.use(
     if (error && error.response) {
       const { status, error: message } = error.response?.data;
       if (status === 400) {
-        if (
-          message ===
-          '현재 진행중인 라이브 방송을 찾을 수 없습니다. 다시 확인해 주세요.'
-        ) {
+        if (message === '현재 진행중인 라이브 방송을 찾을 수 없습니다. 다시 확인해 주세요.') {
           throw new SessionError(SessionErrorCode.LIVE_SESSION_NOT_FOUND);
         }
-        if (
-          message ===
-          '이미 진행 중인 컨텐츠 세션이 존재합니다. 중복 생성을 할 수 없습니다.'
-        ) {
+        if (message === '이미 진행 중인 컨텐츠 세션이 존재합니다. 중복 생성을 할 수 없습니다.') {
           throw new SessionError(SessionErrorCode.LIVE_SESSION_EXISTS);
+        }
+        if (message === '현재 진행 중인 시청자 참여 세션이 없습니다. 다시 확인해 주세요.') {
+          throw new SessionError(SessionErrorCode.SESSION_CLOSED);
         }
       }
     } else if (axios.isAxiosError(error)) {
