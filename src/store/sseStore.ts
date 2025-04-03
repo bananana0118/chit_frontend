@@ -28,6 +28,7 @@ type SSEState = {
   setViewerNickname: (viewerNickname: string) => void;
   startSSE: (url: string) => void;
   stopSSE: () => void;
+  reset: () => void;
 };
 
 type SSEStateContentsSession = {
@@ -52,8 +53,7 @@ enum SSEEventType {
   //LEFT로 바뀐듯
   CLOSED_SESSION = 'CLOSED_SESSION',
   //깜빡하신듯
-  STREAMER_SESSION_UPDATED = 'STREAMER_SESSION_UPDATED',
-  PARTICIPANT_SESSION_UPDATED = 'PARTICIPANT_SESSION_UPDATED', //스트리머가 업데이트시
+  UPDATED_SESSION = 'UPDATED_SESSION',
 }
 
 export type ParticipantResponseType = {
@@ -62,6 +62,7 @@ export type ParticipantResponseType = {
   status: ViewerStatus;
   fixedPick: boolean;
   viewerId: number;
+  isReadyToPlay: boolean;
   participantId: number;
   chzzkNickname: string;
   gameNickname: string;
@@ -89,24 +90,27 @@ interface EVENT_ParticipantOrderUpdated extends ParticipantResponseType {
 }
 
 type viewerSessionInfo = EVENT_ParticipantOrderUpdated;
+const initialSSEState = {
+  contentsSessionInfo: null,
+  sessionCode: null,
+  currentParticipants: null,
+  eventSource: null,
+  lastEventId: null,
+  isConnected: false,
+  isProcessing: false,
+  errorMessage: null,
+  viewerSessionInfo: null,
+  viewerNickname: null,
+  isSessionError: false,
+  viewerStatus: null,
+  isRehydrated: false,
+};
 
 export const useSSEStore = create<SSEState>()(
   persist(
     (set, get) => ({
-      eventSource: null,
-      isConnected: false,
-      isProcessing: false,
-      sessionCode: null,
-      lastEventId: null,
-      viewerSessionInfo: null,
-      currentParticipants: null,
-      viewerStatus: null,
-      isSessionError: false,
-      viewerNickname: null,
-      isRehydrated: false,
-      errorMessage: null,
-      contentsSessionInfo: null,
-
+      ...initialSSEState,
+      reset: () => set({ ...initialSSEState }),
       resetContentSessionInfo: () => {
         set((state) => ({ ...state, contentsSessionInfo: null }));
       },
@@ -276,8 +280,7 @@ export const useSSEStore = create<SSEState>()(
                   break;
 
                 case SSEEventType.SESSION_ORDER_UPDATED:
-                //legacy
-                case SSEEventType.PARTICIPANT_SESSION_UPDATED:
+                case SSEEventType.UPDATED_SESSION:
                   newState.viewerSessionInfo = {
                     ...(get().viewerSessionInfo || {}),
                     ...(eventData as EVENT_ParticipantOrderUpdated),

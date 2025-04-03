@@ -39,6 +39,7 @@ type ContentsSessionState = {
 
 type ContentsSessionAction = {
   setSessionInfo: (update: ContentsSession | ((prev: ContentsSession) => ContentsSession)) => void;
+  reset: () => void;
 };
 
 //일단 persist 처리
@@ -56,6 +57,7 @@ const useContentsSessionStore = create<ContentsSessionState & ContentsSessionAct
       (set) => ({
         sessionInfo: defaultSessionInfo,
         isRehydrated: false,
+        reset: () => set({ ...defaultSessionInfo, isRehydrated: false }),
         setSessionInfo: (update) =>
           set((state) => ({
             sessionInfo: {
