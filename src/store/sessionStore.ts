@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 import { ParticipantResponseType } from './sseStore';
+import { STORAGE_KEYS } from '@/constants/urls';
 
 export type ApiResponse<T> = {
   status: number;
@@ -40,8 +41,7 @@ type ContentsSessionAction = {
   setSessionInfo: (update: ContentsSession | ((prev: ContentsSession) => ContentsSession)) => void;
 };
 
-//일단 persist 처리리
-export const SessionStorageKey = 'contents-session-session-storage';
+//일단 persist 처리
 const defaultSessionInfo: ContentsSession = {
   sessionCode: '',
   maxGroupParticipants: 0,
@@ -68,7 +68,7 @@ const useContentsSessionStore = create<ContentsSessionState & ContentsSessionAct
       }),
 
       {
-        name: SessionStorageKey,
+        name: STORAGE_KEYS.SessionStorageKey,
         storage: createJSONStorage(() => localStorage),
         partialize: (state) => ({
           sessionInfo: state.sessionInfo,
@@ -81,9 +81,9 @@ const useContentsSessionStore = create<ContentsSessionState & ContentsSessionAct
       },
     ),
     {
-      anonymousActionType: 'contentsSessionStore',
+      anonymousActionType: STORAGE_KEYS.SessionStorageKey,
       enabled: true,
-      name: 'contentsSessionStore',
+      name: STORAGE_KEYS.SessionStorageKey,
     },
   ),
 );

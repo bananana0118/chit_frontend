@@ -1,4 +1,4 @@
-import SessionError, { SessionErrorCode } from '@/app/errors/sessionError';
+import { STORAGE_KEYS } from '@/constants/urls';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 export enum ViewerStatus {
@@ -89,7 +89,6 @@ interface EVENT_ParticipantOrderUpdated extends ParticipantResponseType {
 }
 
 type viewerSessionInfo = EVENT_ParticipantOrderUpdated;
-export const SSEStorageKey = 'SSE-storage';
 
 export const useSSEStore = create<SSEState>()(
   persist(
@@ -333,7 +332,7 @@ export const useSSEStore = create<SSEState>()(
     }),
 
     {
-      name: SSEStorageKey,
+      name: STORAGE_KEYS.SSEStorageKey,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         viewerNickname: state.viewerNickname,

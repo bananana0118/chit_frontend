@@ -1,3 +1,4 @@
+import { STORAGE_KEYS } from '@/constants/urls';
 import { create } from 'zustand';
 import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 
@@ -17,8 +18,7 @@ type AuthAction = {
   setRole: (role: RoleType) => void;
 };
 
-//일단 persist 처리리
-export const AuthStorageKey = 'auth-session-storage';
+//일단 persist 처리
 
 const useAuthStore = create<AuthState & AuthAction>()(
   devtools(
@@ -44,7 +44,7 @@ const useAuthStore = create<AuthState & AuthAction>()(
       }),
 
       {
-        name: AuthStorageKey,
+        name: STORAGE_KEYS.AuthStorageKey,
         storage: createJSONStorage(() => sessionStorage),
         partialize: (state) => ({
           role: state.role,
@@ -57,7 +57,11 @@ const useAuthStore = create<AuthState & AuthAction>()(
         },
       },
     ),
-    { anonymousActionType: 'authStore', enabled: true, name: 'authStore' },
+    {
+      anonymousActionType: STORAGE_KEYS.AuthStorageKey,
+      enabled: true,
+      name: STORAGE_KEYS.AuthStorageKey,
+    },
   ),
 );
 

@@ -20,3 +20,10 @@ export const SESSION_URLS = {
 export const SSE_URLS = {
   heartBeat: DEFAULT_URL + '/sse/session/heartbeat',
 };
+
+export const STORAGE_KEYS = {
+  SSEStorageKey: 'SSE-storage',
+  SessionStorageKey: 'contents-session-storage',
+  ChannelStorageKey: 'channel-session-storage',
+  AuthStorageKey: 'auth-session-storage',
+};
