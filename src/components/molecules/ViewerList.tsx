@@ -15,15 +15,9 @@ type Props = {
   participants: ParticipantResponseType[];
   maxGroupParticipants: number;
   loadMoreItems: () => void;
-  accessToken: string;
 };
 
-export default function ViewerList({
-  accessToken,
-  participants,
-  maxGroupParticipants,
-  loadMoreItems,
-}: Props) {
+export default function ViewerList({ participants, maxGroupParticipants, loadMoreItems }: Props) {
   //유저 그룹 생성
   const createGroupedUser = useCallback(
     (participants: ParticipantResponseType[]) => {
@@ -95,7 +89,6 @@ export default function ViewerList({
                           return (
                             <MemberCard
                               key={viewer.viewerId}
-                              accessToken={accessToken}
                               // refreshUsers={throttledFetchParticipants}
                               refreshUsers={() => {}}
                               memberId={viewer.viewerId}

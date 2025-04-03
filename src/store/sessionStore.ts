@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 import { ParticipantResponseType } from './sseStore';
+import { STORAGE_KEYS } from '@/constants/urls';
 
 export type ApiResponse<T> = {
   status: number;
@@ -37,13 +38,11 @@ type ContentsSessionState = {
 };
 
 type ContentsSessionAction = {
-  setSessionInfo: (
-    update: ContentsSession | ((prev: ContentsSession) => ContentsSession),
-  ) => void;
+  setSessionInfo: (update: ContentsSession | ((prev: ContentsSession) => ContentsSession)) => void;
+  reset: () => void;
 };
 
-//일단 persist 처리리
-export const SessionStorageKey = 'contents-session-session-storage';
+//일단 persist 처리
 const defaultSessionInfo: ContentsSession = {
   sessionCode: '',
   maxGroupParticipants: 0,
@@ -52,14 +51,13 @@ const defaultSessionInfo: ContentsSession = {
   participants: undefined,
 };
 
-const useContentsSessionStore = create<
-  ContentsSessionState & ContentsSessionAction
->()(
+const useContentsSessionStore = create<ContentsSessionState & ContentsSessionAction>()(
   devtools(
     persist(
       (set) => ({
         sessionInfo: defaultSessionInfo,
         isRehydrated: false,
+        reset: () => set({ ...defaultSessionInfo, isRehydrated: false }),
         setSessionInfo: (update) =>
           set((state) => ({
             sessionInfo: {
@@ -72,8 +70,8 @@ const useContentsSessionStore = create<
       }),
 
       {
-        name: SessionStorageKey,
-        storage: createJSONStorage(() => sessionStorage),
+        name: STORAGE_KEYS.SessionStorageKey,
+        storage: createJSONStorage(() => localStorage),
         partialize: (state) => ({
           sessionInfo: state.sessionInfo,
         }),
@@ -85,9 +83,9 @@ const useContentsSessionStore = create<
       },
     ),
     {
-      anonymousActionType: 'contentsSessionStore',
+      anonymousActionType: STORAGE_KEYS.SessionStorageKey,
       enabled: true,
-      name: 'contentsSessionStore',
+      name: STORAGE_KEYS.SessionStorageKey,
     },
   ),
 );

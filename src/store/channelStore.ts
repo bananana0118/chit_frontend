@@ -1,3 +1,4 @@
+import { STORAGE_KEYS } from '@/constants/urls';
 import { StreamerInfo } from '@/services/streamer/type';
 import { create } from 'zustand';
 import { createJSONStorage, devtools, persist } from 'zustand/middleware';
@@ -12,8 +13,6 @@ type ChannelAction = {
   setChannelId: (channelId: string) => void;
   setStreamerInfo: (streamerInfo: StreamerInfo) => void;
 };
-
-export const ChannelStorageKey = 'channel-session-storage';
 
 const useChannelStore = create<ChannelState & ChannelAction>()(
   devtools(
@@ -34,8 +33,8 @@ const useChannelStore = create<ChannelState & ChannelAction>()(
           })),
       }),
       {
-        name: ChannelStorageKey,
-        storage: createJSONStorage(() => sessionStorage),
+        name: STORAGE_KEYS.ChannelStorageKey,
+        storage: createJSONStorage(() => localStorage),
         partialize: (state) => ({
           channelId: state.channelId,
           streamerInfo: state.streamerInfo,
@@ -47,7 +46,7 @@ const useChannelStore = create<ChannelState & ChannelAction>()(
         },
       },
     ),
-    { anonymousActionType: 'channelStore', name: 'channelStore' },
+    { anonymousActionType: STORAGE_KEYS.ChannelStorageKey, name: STORAGE_KEYS.ChannelStorageKey },
   ),
 );
 

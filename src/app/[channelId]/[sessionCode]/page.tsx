@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 import useChannelStore from '../../../store/channelStore';
-import useAuthStore from '../../../store/store';
+import useAuthStore from '../../../store/authStore';
 import useContentsSessionStore from '@/store/sessionStore';
 import useParamsParser from '@/hooks/useParamsParser';
 import CategoryText from '@/components/atoms/text/CategoryText';
@@ -23,9 +23,7 @@ export default function Home() {
   const streamerInfo = useChannelStore((state) => state.streamerInfo);
   const setChannelId = useChannelStore((state) => state.setChannelId);
   const setStreamerInfo = useChannelStore((state) => state.setStreamerInfo);
-  const setSessionInfo = useContentsSessionStore(
-    (state) => state.setSessionInfo,
-  );
+  const setSessionInfo = useContentsSessionStore((state) => state.setSessionInfo);
   const accessToken = useAuthStore((state) => state.accessToken);
   //로그인 되어있는지
   useEffect(() => {
@@ -77,12 +75,8 @@ export default function Home() {
               <p>다음 시참을 기대해주세요 :)</p>
             </div>
             <div className="flex w-full flex-col items-center justify-center">
-              <p className="text-medium-small text-alert">
-                스트리머가 시참을 진행중이라면
-              </p>
-              <p className="text-medium-small text-alert">
-                시참 링크를 요청해보세요!
-              </p>
+              <p className="text-medium-small text-alert">스트리머가 시참을 진행중이라면</p>
+              <p className="text-medium-small text-alert">시참 링크를 요청해보세요!</p>
             </div>
           </div>
         </section>
@@ -107,13 +101,9 @@ export default function Home() {
 
           <div className="mt-3 flex flex-row items-center justify-center">
             {streamerInfo.status === 'OPEN' ? <Live /> : <OFF />}
-            <div className="text-bold-large">
-              {streamerInfo.channel.channelName}
-            </div>
+            <div className="text-bold-large">{streamerInfo.channel.channelName}</div>
           </div>
-          <CategoryText
-            category={streamerInfo.liveCategoryValue || ''}
-          ></CategoryText>
+          <CategoryText category={streamerInfo.liveCategoryValue || ''}></CategoryText>
         </section>
         <BtnWithChildren onClickHandler={onClickLogin}>
           (로그인하고 3초만에) 시참등록하기

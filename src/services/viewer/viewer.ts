@@ -19,7 +19,6 @@ export const getContentsSessionViewerSubscribe = async ({
   try {
     const URL = makeUrl({
       accessToken,
-      isStreamer: false,
       sessionCode,
       viewerNickname: gameNickname,
     });
@@ -79,14 +78,11 @@ export const deleteContentsSessionViewerLeave = async ({
 //시청자 하트비트
 export const heartBeatViewer = async (accessToken: string, sessionCode: string) => {
   try {
-    const response = await apiSession.get(
-      `${SSE_URLS.viewerHeartBeat}?sessionCode=${sessionCode}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
-        },
+    const response = await apiSession.get(`${SSE_URLS.heartBeat}?sessionCode=${sessionCode}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
       },
-    );
+    });
     console.log('heartBeat');
     return response.data; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {

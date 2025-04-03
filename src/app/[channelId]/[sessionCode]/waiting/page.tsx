@@ -4,7 +4,7 @@ import CopyIcon from '@/app/assets/icons/CopyIcon';
 import useChannelStore from '@/store/channelStore';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import useAuthStore from '@/store/store';
+import useAuthStore from '@/store/authStore';
 import { useSSEStore, ViewerStatus } from '@/store/sseStore';
 import { toast } from 'react-toastify';
 import useParamsParser from '@/hooks/useParamsParser';
@@ -40,7 +40,7 @@ export default function Page() {
   //시참 종료 버튼 클릭 시
   const onClickSessionCloseHandler = async () => {
     console.log('🛑세션종료');
-    if (sessionCode) {
+    if (sessionCode && accessToken) {
       const response = await deleteContentsSessionViewerLeave({
         accessToken,
         sessionCode,
@@ -64,12 +64,12 @@ export default function Page() {
     }
   }, [parentPath, router, viewerStatus]);
 
-  const [gameCode, setGameCode] = useState('아직 순서가 되지 않았습니다.');
+  const [gameCode, setGameCode] = useState<string | null>(null);
 
   //gameCode event처리
   useEffect(() => {
     console.log(viewerSessionInfo?.gameParticipationCode);
-    setGameCode(viewerSessionInfo?.gameParticipationCode ?? '아직 순서가 되지 않았습니다.');
+    setGameCode(viewerSessionInfo?.gameParticipationCode ?? null);
   }, [isViewerInfoLoading, viewerSessionInfo]);
 
   //rerender
@@ -82,7 +82,7 @@ export default function Page() {
 
   useEffect(() => {
     // 처음 한 번 실행
-    if (sessionCode && viewerNickname) {
+    if (sessionCode && viewerNickname && accessToken) {
       heartBeat(accessToken, sessionCode);
       startSSE(
         makeUrl({
@@ -96,7 +96,7 @@ export default function Page() {
     // 인터벌 시작
 
     const intervalId = setInterval(() => {
-      if (sessionCode) heartBeat(accessToken, sessionCode);
+      if (sessionCode && accessToken) heartBeat(accessToken, sessionCode);
       console.log('ping');
     }, 10000); // 10초
 
@@ -150,9 +150,7 @@ export default function Page() {
         {/* 나중에 1번 2번 3버 이런식으로 할 것 */}
         <section className="flex w-full flex-1 flex-col items-center justify-center">
           <p className="text-bold-large">내 순서는</p>
-          {gameCode ? (
-            //임시처리
-            // viewerSessionInfo?.order === 1 ? (
+          {viewerSessionInfo?.isReadyToPlay ? (
             <p className="flex flex-row items-center justify-center text-bold-big text-primary">
               지금 참여
             </p>
@@ -163,7 +161,11 @@ export default function Page() {
           )}
         </section>
         <section className="flex w-full items-center justify-center">
-          <div className="m-5 text-bold-middle">스트리머가 당신을 찾고있어요! 🎉</div>
+          {viewerSessionInfo?.isReadyToPlay ? (
+            <div className="m-5 text-bold-middle">스트리머가 당신을 찾고있어요! 🎉</div>
+          ) : (
+            <div className="m-5 text-bold-middle">방송에서 열심히 응원해주세요! 🎉</div>
+          )}
         </section>
         <BtnWithChildren type={'alert'} onClickHandler={onClickSessionCloseHandler}>
           이제 시참 그만할래요

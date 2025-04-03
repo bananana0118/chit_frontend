@@ -5,7 +5,7 @@
 import BtnWithChildren from '@/components/atoms/button/BtnWithChildren';
 import Input from '@/components/atoms/input/Input';
 import CommonLayout from '@/components/layout/CommonLayout';
-import useAuthStore from '@/store/store';
+import useAuthStore from '@/store/authStore';
 import axios from 'axios';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
@@ -91,10 +91,7 @@ export default function Home() {
           />
         </section>
       </div>
-      <BtnWithChildren
-        onClickHandler={onCompleteChannelId}
-        type={isVerify ? 'default' : 'disable'}
-      >
+      <BtnWithChildren onClickHandler={onCompleteChannelId} type={isVerify ? 'default' : 'disable'}>
         제 채널 ID 다 입력했어요
       </BtnWithChildren>
     </CommonLayout>

@@ -1,4 +1,3 @@
-//todo 임시적용, 추후 삭제
 'use client';
 
 import CommonLayout from '@/components/layout/CommonLayout';
@@ -13,16 +12,18 @@ import {
 import useChannelStore from '@/store/channelStore';
 import useContentsSessionStore from '@/store/sessionStore';
 import { ParticipantResponseType, useSSEStore } from '@/store/sseStore';
-import useAuthStore from '@/store/store';
+import useAuthStore from '@/store/authStore';
 import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'react-toastify';
 
 import ViewerList from '@/components/molecules/ViewerList';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
-import { isErrorResponse } from '@/lib/handleErrors';
+import { handleSessionError, isErrorResponse } from '@/lib/handleErrors';
 import useDetectExit from '@/hooks/useDetectExit';
 import { logout } from '@/services/auth/auth';
 import { heartBeat } from '@/services/common/common';
+import SessionError, { SessionErrorCode } from '@/app/errors/sessionError';
+import { useRouter } from 'next/navigation';
 
 export enum SessionStatus {
   INITIAL = 1,
@@ -46,10 +47,14 @@ const fetchParticipantsData = async ({
   size = 20,
 }: {
   pageParam?: unknown;
-  accessToken: string;
+  accessToken: string | null;
   size?: number;
-}): Promise<getFetchParticipantsDataResponse> => {
+}): Promise<getFetchParticipantsDataResponse | void> => {
   const page = pageParam as number;
+  if (!accessToken) {
+    console.log('token이 없습니다.');
+    return;
+  }
   const response = await getContentsSessionInfo({ page, accessToken, size });
   if (isErrorResponse(response)) {
     console.error(`api error 발생: ${response.error}`);
@@ -67,37 +72,50 @@ const fetchParticipantsData = async ({
 export default function List() {
   const queryClient = useQueryClient();
   const accessToken = useAuthStore((state) => state.accessToken);
-  const { isRehydrated: isLoadingContentsSessionInfo, sessionInfo } = useContentsSessionStore(
-    (state) => state,
-  );
+  const {
+    isRehydrated: isLoadingContentsSessionInfo,
+    sessionInfo,
+    setSessionInfo,
+    reset: resetContentsSession,
+  } = useContentsSessionStore((state) => state);
   const {
     startSSE,
     stopSSE,
     sessionCode,
     isConnected,
-    setCurrentParticipants,
+    isSessionError,
+    isProcessing,
+    setProcessing,
+    reset: resetSSEStore,
     currentParticipants,
   } = useSSEStore();
   const channelId = useChannelStore((state) => state.channelId);
   const isTokenLoading = useAuthStore((state) => state.isRehydrated);
   const [isSessionOn, setIsSessionOn] = useState<SessionStatus>(SessionStatus.INITIAL);
   const [menu, setMenu] = useState(0); // 0 전체인원 1/고정인원/2현재인원
+  const router = useRouter();
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    error: isFetchError,
+  } = useInfiniteQuery<getFetchParticipantsDataResponse | void>({
+    queryKey: ['participants'],
+    enabled: !!accessToken && isSessionOn !== SessionStatus.CLOSED,
+    queryFn: async ({ pageParam = 1 }) => {
+      return await fetchParticipantsData({
+        pageParam,
+        accessToken,
+        size: 10,
+      });
+    },
+    retryDelay: () => 5000,
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useInfiniteQuery<getFetchParticipantsDataResponse>({
-      queryKey: ['participants'],
-      queryFn: async ({ pageParam = 1 }) => {
-        return await fetchParticipantsData({
-          pageParam,
-          accessToken,
-          size: 10,
-        });
-      },
-      initialPageParam: 0,
-      getNextPageParam: (lastPage) => lastPage.nextPage ?? undefined, // 다음 페이지 정보
-      enabled: !!accessToken,
-      staleTime: 3000,
-    });
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => lastPage.nextPage ?? undefined, // 다음 페이지 정보
+    staleTime: 3000,
+  });
 
   //브라우저 종료시 실행되는 콜백 함수
   const handleExit = async () => {
@@ -110,6 +128,7 @@ export default function List() {
 
   //다음 파티 호출 버튼 클릭시 Handler
   const nextPartyCallHandler = async () => {
+    if (!accessToken) return;
     try {
       const response = await putContentsSessionNextGroup({ accessToken });
       if (response.status === 200) {
@@ -195,7 +214,7 @@ export default function List() {
 
   //하트비트 체크
   useEffect(() => {
-    if (sessionCode) {
+    if (sessionCode && accessToken) {
       heartBeat(accessToken, sessionCode);
 
       const intervalId = setInterval(() => {
@@ -211,7 +230,7 @@ export default function List() {
 
   //세션 생성 함수
   const onCreateSession = async () => {
-    if (sessionInfo) {
+    if (sessionInfo && accessToken) {
       const { gameParticipationCode, maxGroupParticipants } = sessionInfo;
       const reqData = {
         gameParticipationCode,
@@ -220,7 +239,7 @@ export default function List() {
 
       const response = await createContentsSession(reqData, accessToken);
 
-      return response.status;
+      return response;
     }
   };
 
@@ -240,20 +259,24 @@ export default function List() {
         (isSessionOn === SessionStatus.INITIAL || isSessionOn === SessionStatus.OPEN)
       ) {
         stopSSE();
+        queryClient.removeQueries({ queryKey: ['participants'] }); // 캐시 제거
+        resetSSEStore();
+        resetContentsSession();
         setIsSessionOn(SessionStatus.CLOSED);
         toast.success('시참이 종료되었습니다.');
         return;
       }
     } else {
       // 상태변화 sessionOff=>sessionOn
-      const status = await onCreateSession();
-      if (status !== 200) {
+      const response = await onCreateSession();
+      if (response?.status !== 200) {
         toast.warn('에러가 발생했습니다. 나중에 다시 시도해 주세요');
         return;
       }
 
-      const url = makeUrl({ accessToken, sessionCode: sessionInfo?.sessionCode });
+      const url = makeUrl({ accessToken, sessionCode: response.data.sessionCode });
       startSSE(url);
+      setSessionInfo(response.data);
       setIsSessionOn(SessionStatus.OPEN);
       toast.success('시참이 시작되었습니다.');
       return;
@@ -272,16 +295,56 @@ export default function List() {
       }); // ✅ accessToken이 변경될 때 데이터 갱신
     }
   }, [accessToken, queryClient]);
-
+  // 1. 세션 에러 감지 및 처리
+  // ✅ 세션 에러 감지 → stop + 처리 + 라우팅
   useEffect(() => {
-    if (accessToken && !isConnected) {
+    const handleError = () => {
+      if (isSessionError && isProcessing && isSessionOn !== SessionStatus.CLOSED) {
+        console.log('🚨 세션 에러 발생 - SSE 중지 및 홈으로 이동');
+        try {
+          resetSSEStore();
+          resetContentsSession();
+          handleSessionError(new SessionError(SessionErrorCode.SESSION_CODE_NOT_FOUND));
+          router.push('/');
+        } finally {
+          setProcessing(false); // 라우팅 후 unlock
+        }
+      }
+    };
+
+    handleError();
+  }, [
+    isSessionError,
+    isProcessing,
+    router,
+    setProcessing,
+    isSessionOn,
+    resetSSEStore,
+    resetContentsSession,
+  ]);
+
+  // 2. 자동 SSE 연결 감지
+  useEffect(() => {
+    if (
+      accessToken &&
+      !isConnected &&
+      isSessionOn !== SessionStatus.CLOSED &&
+      !isSessionError &&
+      !isProcessing
+    ) {
       console.log('🔄 SSE 자동 시작');
       const url = makeUrl({ accessToken, sessionCode: sessionInfo?.sessionCode });
       startSSE(url);
-      //todo test시에만 컨텐츠 세션의 currentStatus를 날리기
-      setCurrentParticipants([]);
     }
-  }, [accessToken, isConnected, sessionInfo?.sessionCode]); // ✅ accessToken이 바뀔 때마다 SSE 연결
+  }, [
+    accessToken,
+    isConnected,
+    isProcessing,
+    isSessionError,
+    isFetchError,
+    sessionInfo?.sessionCode,
+    startSSE,
+  ]);
 
   console.log(participants);
 
@@ -348,7 +411,6 @@ export default function List() {
               <div>유저를 기다리는 중입니다.</div>
             ) : (
               <ViewerList
-                accessToken={accessToken}
                 participants={participants}
                 loadMoreItems={loadMoreData}
                 maxGroupParticipants={maxGroupParticipants}

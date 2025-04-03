@@ -13,7 +13,7 @@ export const SessionErrorCode = {
     name: 'LiveSessionNotFoundError',
     status: 400,
     code: 302,
-    message: '현재 진행 중인 시청자 참여 세션이 없습니다. 다시 확인해주세요',
+    message: '라이브 방송이 꺼져있습니다, 라이브 방송을 키고 다시 시도해주세요',
   },
   INVALID_PARTICIPANT_COUNT: {
     name: 'InvalidParticipantCountError',
@@ -32,8 +32,20 @@ export const SessionErrorCode = {
     name: 'LiveSessionNotFoundError',
     status: 400,
     code: 305,
-    message:
-      '이미 진행 중인 컨텐츠 세션이 존재합니다. 중복 생성을 할 수 없습니다.',
+    message: `이미 진행 중인 컨텐츠 세션이 존재합니다. 중복 생성을 할 수 없습니다. \n(진행중이던 세션은 잠시 후 자동적으로 종료됩니다. 잠시만 기다려 주세요)`,
+  },
+  SESSION_CODE_NOT_FOUND: {
+    //세션코드가 세션스토리지에서 삭제 되었을 때
+    name: 'SessionCodeNotFoundError',
+    status: 400,
+    code: 306,
+    message: `세션코드를 찾을 수 없습니다. 시참방을 다시 생성해 주세요`,
+  },
+  SESSION_CLOSED: {
+    name: 'SessionClosedError',
+    status: 400,
+    code: 307,
+    message: `해당 세션이 이미 닫혔으니 세션을 다시 생성해주세요`,
   },
 };
 

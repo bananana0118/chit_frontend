@@ -27,8 +27,6 @@ const useDetectExit = (onExit: () => void) => {
 
       setTimeout(() => {
         isRefresh.current = false;
-        console.log('test');
-        console.log(isRefresh.current);
       }, 3000);
     };
     console.log(isRefresh.current);
