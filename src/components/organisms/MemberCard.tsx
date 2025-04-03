@@ -5,10 +5,10 @@ import {
   deleteContentsSessionParticipant,
   putContentsSessionParticipantPick,
 } from '@/services/streamer/streamer';
+import useAuthStore from '@/store/authStore';
 import { useQueryClient } from '@tanstack/react-query';
 
 type Props = {
-  accessToken: string;
   refreshUsers: () => void;
   memberId: number;
   chzzkNickname: string;
@@ -17,7 +17,6 @@ type Props = {
 };
 
 export default function MemberCard({
-  accessToken,
   refreshUsers,
   memberId,
   chzzkNickname,
@@ -26,14 +25,12 @@ export default function MemberCard({
 }: Props) {
   //하트 클릭하면 변경
   const queryClient = useQueryClient();
-
+  const { accessToken } = useAuthStore();
   const onClickPickHandler = async () => {
     console.log('pick! <3');
     console.log(refreshUsers);
-    const response = await putContentsSessionParticipantPick(
-      accessToken,
-      memberId,
-    );
+    if (!accessToken) return;
+    const response = await putContentsSessionParticipantPick(accessToken, memberId);
     if (response.status === 200) {
       queryClient.refetchQueries({ queryKey: ['participants'] });
       console.log('유저를 선택했습니다.');
@@ -42,13 +39,11 @@ export default function MemberCard({
     }
   };
   const onClickBanHandler = async () => {
+    if (!accessToken) return;
     console.log('delete! <3');
     console.log('asd');
     queryClient.refetchQueries({ queryKey: ['participants'] });
-    const response = await deleteContentsSessionParticipant(
-      accessToken,
-      memberId,
-    );
+    const response = await deleteContentsSessionParticipant(accessToken, memberId);
     if (response.status === 200) {
       refreshUsers();
       console.log('유저를 추방했습니다.');
@@ -63,9 +58,7 @@ export default function MemberCard({
     >
       <div className="mb-2 flex flex-row items-center justify-start">
         <ZzzicIcon width={20} height={20} />
-        <div className="mx-2 flex-1 text-bold-small text-black">
-          {chzzkNickname}
-        </div>
+        <div className="mx-2 flex-1 text-bold-small text-black">{chzzkNickname}</div>
         <div
           className="absolute right-[10px] top-[10px] cursor-pointer"
           onClick={onClickBanHandler}
@@ -76,10 +69,7 @@ export default function MemberCard({
       <div className="flex flex-row items-center justify-start">
         <div className="h-5 w-5"></div>
         <div className="mx-2 flex-1 text-medium text-hint">{gameNicname}</div>
-        <div
-          className="absolute right-[10px] cursor-pointer"
-          onClick={onClickPickHandler}
-        >
+        <div className="absolute right-[10px] cursor-pointer" onClick={onClickPickHandler}>
           <Heart width={12} height={12} fill={isHeart} />
         </div>
       </div>
