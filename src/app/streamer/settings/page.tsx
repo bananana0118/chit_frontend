@@ -12,7 +12,7 @@ import { createContentsSession, updateContentsSession } from '@/services/streame
 import useChannelStore from '@/store/channelStore';
 import useContentsSessionStore from '@/store/sessionStore';
 import { useSSEStore } from '@/store/sseStore';
-import useAuthStore from '@/store/store';
+import useAuthStore from '@/store/authStore';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'react-toastify';

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import useChannelStore from '@/store/channelStore';
 import axios from 'axios';
-import useAuthStore from '@/store/store';
+import useAuthStore from '@/store/authStore';
 import useContentsSessionStore from '@/store/sessionStore';
 import CommonLayout from '@/components/layout/CommonLayout';
 import axiosInstance from '@/services/axios/apiAuth';
@@ -12,9 +12,7 @@ import axiosInstance from '@/services/axios/apiAuth';
 export default function Page() {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const searchParams = useSearchParams();
-  const sessionCode = useContentsSessionStore(
-    (state) => state.sessionInfo?.sessionCode,
-  );
+  const sessionCode = useContentsSessionStore((state) => state.sessionInfo?.sessionCode);
   const code = searchParams.get('code');
   const state = searchParams.get('state');
   const isRehydrated = useAuthStore((state) => state.isRehydrated);
@@ -40,12 +38,9 @@ export default function Page() {
       };
       console.log('requestData:', requestData);
       try {
-        const response = await axiosInstance.post(
-          'http://localhost:8080/api/v1/auth/login',
-          {
-            ...requestData,
-          },
-        );
+        const response = await axiosInstance.post('http://localhost:8080/api/v1/auth/login', {
+          ...requestData,
+        });
 
         const { data, status } = response;
         console.log(response);
@@ -64,9 +59,7 @@ export default function Page() {
         if (axios.isAxiosError(error)) {
           const { response } = error; // Axios 에러 객체에서 response 추출
           if (response?.status === 500) {
-            alert(
-              `오류가 발생했습니다. : ${response.data?.error || '알 수 없는 오류'}`,
-            );
+            alert(`오류가 발생했습니다. : ${response.data?.error || '알 수 없는 오류'}`);
             router.push('error');
           }
         }
@@ -83,16 +76,10 @@ export default function Page() {
     return (
       <CommonLayout>
         <div>재로그인이 필요합니다.</div>
-        <button onClick={() => (window.location.href = '/login')}>
-          로그인 하러 가기
-        </button>
+        <button onClick={() => (window.location.href = '/login')}>로그인 하러 가기</button>
       </CommonLayout>
     );
   }
 
-  return (
-    <CommonLayout>
-      {isRedirecting ? <div>잠시만 기다려 주세요...</div> : null}
-    </CommonLayout>
-  );
+  return <CommonLayout>{isRedirecting ? <div>잠시만 기다려 주세요...</div> : null}</CommonLayout>;
 }

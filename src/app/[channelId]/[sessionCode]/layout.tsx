@@ -1,3 +1,4 @@
+'use client';
 import CommonLayout from '@/components/layout/CommonLayout';
 import NavBar from '@/components/layout/NavBar';
 

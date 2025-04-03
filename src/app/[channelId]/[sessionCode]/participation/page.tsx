@@ -2,7 +2,7 @@
 
 import useChannelStore from '@/store/channelStore';
 import { useSSEStore } from '@/store/sseStore';
-import useAuthStore from '@/store/store';
+import useAuthStore from '@/store/authStore';
 import useParamsParser from '@/hooks/useParamsParser';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -18,7 +18,7 @@ export default function Settings() {
   const [viewerGameNickname, setGameNickname] = useState('');
   const { sessionCode } = useParamsParser();
   const router = useRouter();
-  const { startSSE, isConnected, setViewerNickname, error } = useSSEStore();
+  const { startSSE, isConnected, setViewerNickname, isSessionError } = useSSEStore();
   const streamerInfo = useChannelStore((state) => state.streamerInfo);
 
   const onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,11 +42,11 @@ export default function Settings() {
   };
 
   useEffect(() => {
-    if (isConnected && !error) {
+    if (isConnected && !isSessionError) {
       toast.success('시참에 참여했습니다. 조금만 기다려주세요!');
       router.replace(`waiting`);
     }
-  }, [error, isConnected, router]);
+  }, [isSessionError, isConnected, router]);
 
   return (
     streamerInfo && (

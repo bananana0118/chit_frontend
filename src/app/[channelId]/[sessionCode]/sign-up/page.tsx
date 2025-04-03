@@ -8,7 +8,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import AlertIcon from '@/app/assets/icons/AlertIcon';
 import Image from 'next/image';
 import ViewerGuide from '@/app/assets/imgs/ViewerGuide.png';
-import useAuthStore from '@/store/store';
+import useAuthStore from '@/store/authStore';
 import BtnWithChildren from '@/components/atoms/button/BtnWithChildren';
 import ViewerPageLayout from '@/components/layout/ViewerPageLayout';
 import { loginWithOAuth2 } from '@/services/auth/auth';
@@ -72,13 +72,7 @@ export default function SignUp() {
           <p className="mb-2 text-medium-small">
             &lsquo;내 채널&rsquo;의 URL에서 맨 뒤쪽에 있는 글자들이에요!
           </p>
-          <Image
-            src={ViewerGuide}
-            width={317}
-            height={33}
-            alt="viewerGuide"
-            unoptimized
-          ></Image>
+          <Image src={ViewerGuide} width={317} height={33} alt="viewerGuide" unoptimized></Image>
         </section>
       </div>
       {/* todo : state에 따라 닉네임 상태 분리하기  */}
