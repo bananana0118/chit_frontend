@@ -37,9 +37,7 @@ type ContentsSessionState = {
 };
 
 type ContentsSessionAction = {
-  setSessionInfo: (
-    update: ContentsSession | ((prev: ContentsSession) => ContentsSession),
-  ) => void;
+  setSessionInfo: (update: ContentsSession | ((prev: ContentsSession) => ContentsSession)) => void;
 };
 
 //일단 persist 처리리
@@ -52,9 +50,7 @@ const defaultSessionInfo: ContentsSession = {
   participants: undefined,
 };
 
-const useContentsSessionStore = create<
-  ContentsSessionState & ContentsSessionAction
->()(
+const useContentsSessionStore = create<ContentsSessionState & ContentsSessionAction>()(
   devtools(
     persist(
       (set) => ({
@@ -73,7 +69,7 @@ const useContentsSessionStore = create<
 
       {
         name: SessionStorageKey,
-        storage: createJSONStorage(() => sessionStorage),
+        storage: createJSONStorage(() => localStorage),
         partialize: (state) => ({
           sessionInfo: state.sessionInfo,
         }),

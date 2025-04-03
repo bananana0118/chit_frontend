@@ -334,7 +334,7 @@ export const useSSEStore = create<SSEState>()(
 
     {
       name: SSEStorageKey,
-      storage: createJSONStorage(() => sessionStorage),
+      storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         viewerNickname: state.viewerNickname,
         viewerSessionInfo: state.viewerSessionInfo,
