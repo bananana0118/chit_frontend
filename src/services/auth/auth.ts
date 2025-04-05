@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { handleAuthError } from '@/lib/handleErrors';
-import apiAuth from '../axios/apiAuth';
+import authClient from '../axios/authClient';
 import { RequestLoginWithOAuth2, RequestLogout, ResponseLoginWithOAuth2 } from './type';
 import { AUTH_URLS } from '@/constants/urls';
 
@@ -11,7 +11,7 @@ export const loginWithOAuth2 = async ({
   channelId = '',
 }: RequestLoginWithOAuth2): Promise<ResponseLoginWithOAuth2> => {
   try {
-    const response = await apiAuth.post(AUTH_URLS.login, {
+    const response = await authClient.post(AUTH_URLS.login, {
       code,
       state,
       channelId,
@@ -26,7 +26,7 @@ export const loginWithOAuth2 = async ({
 //로그아웃
 export const logout = async ({ accessToken }: RequestLogout) => {
   try {
-    const response = await apiAuth.post(
+    const response = await authClient.post(
       AUTH_URLS.logout,
       {},
       { headers: { Authorization: `Bearer ${accessToken}` } },

@@ -1,6 +1,6 @@
 'use client';
 import axios from 'axios';
-import SessionError from '@/app/errors/sessionError';
+import SessionError from '@/errors/sessionError';
 import { toast } from 'react-toastify';
 import { ErrorResponse } from '@/services/streamer/type';
 
@@ -37,7 +37,6 @@ export const handleAuthError = (error: unknown): ErrorResponse => {
 };
 
 export const handleSessionError = (error: unknown): ErrorResponse => {
-  console.log('여기 타는중?');
   if (error instanceof SessionError) {
     toast.warn(`${error.message}`);
     return {
