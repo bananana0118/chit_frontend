@@ -7,7 +7,7 @@ import axios from 'axios';
 import useAuthStore from '@/store/authStore';
 import useContentsSessionStore from '@/store/sessionStore';
 import CommonLayout from '@/components/layout/CommonLayout';
-import axiosInstance from '@/services/axios/apiAuth';
+import axiosInstance from '@/services/axios/authClient';
 
 export default function Page() {
   const [isRedirecting, setIsRedirecting] = useState(false);

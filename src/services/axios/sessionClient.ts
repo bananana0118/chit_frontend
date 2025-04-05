@@ -1,8 +1,8 @@
 import axios, { AxiosError, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { ErrorResponse } from '../streamer/type';
-import SessionError, { SessionErrorCode } from '@/app/errors/sessionError';
+import SessionError, { SessionErrorCode } from '@/errors/sessionError';
 
-const apiSession: AxiosInstance = axios.create({
+const sessionClient: AxiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL, // API의 기본 URL
   timeout: 1000000,
   headers: {
@@ -10,7 +10,7 @@ const apiSession: AxiosInstance = axios.create({
   },
 });
 // 요청 인터셉터
-apiSession.interceptors.request.use(
+sessionClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     // 요청 전 처리 (예: 토큰 추가)
     const accessToken = sessionStorage.getItem('accessToken');
@@ -31,7 +31,7 @@ apiSession.interceptors.request.use(
 );
 
 // 응답 인터셉터
-apiSession.interceptors.response.use(
+sessionClient.interceptors.response.use(
   (response: AxiosResponse) => {
     return response;
   },
@@ -80,4 +80,4 @@ apiSession.interceptors.response.use(
   // 응답 데이터 가공
 );
 
-export default apiSession;
+export default sessionClient;

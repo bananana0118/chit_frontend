@@ -10,7 +10,7 @@ import {
   PutContentsSessionNextGroupResponse,
 } from './type';
 import { handleSessionError } from '@/lib/handleErrors';
-import apiSession from '../axios/apiSession';
+import sessionClient from '../axios/sessionClient';
 import { SESSION_URLS } from '@/constants/urls';
 import { ApiResponse, ContentsSession } from '@/store/sessionStore';
 
@@ -83,7 +83,7 @@ export const getContentsSessionInfo = async ({
   size: number;
 }): Promise<GetContentsSessionResponse> => {
   try {
-    const response = await apiSession.get(
+    const response = await sessionClient.get(
       `${SESSION_URLS.contentsSession}?page=${page}&size=${size}`,
       {
         headers: {
@@ -104,7 +104,7 @@ export const createContentsSession = async (
 ): Promise<CreateContentsSessionResponse> => {
   console.log(accessToken);
   try {
-    const response = await apiSession.post(
+    const response = await sessionClient.post(
       SESSION_URLS.contentsSession,
       {
         ...data,
@@ -129,7 +129,7 @@ export const updateContentsSession = async (
 ): Promise<CreateContentsSessionResponse> => {
   console.log(accessToken);
   try {
-    const response = await apiSession.put(
+    const response = await sessionClient.put(
       SESSION_URLS.contentsSession,
       {
         ...data,
@@ -153,7 +153,7 @@ export const deleteContentsSession = async (
 ): Promise<DeleteContentsSessionResponse> => {
   console.log(accessToken);
   try {
-    const response = await apiSession.delete(SESSION_URLS.contentsSession, {
+    const response = await sessionClient.delete(SESSION_URLS.contentsSession, {
       headers: {
         Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
       },
@@ -171,7 +171,7 @@ export const putContentsSessionParticipantPick = async (
   viewerId: number,
 ): Promise<DeleteContentsSessionResponse> => {
   try {
-    const response = await apiSession.put(
+    const response = await sessionClient.put(
       `${SESSION_URLS.contentsParticipants}/${viewerId}/pick`,
       {},
       {
@@ -193,7 +193,7 @@ export const putContentsSessionNextGroup = async ({
 }: PutContentsSessionNextGroupRequest): Promise<PutContentsSessionNextGroupResponse> => {
   console.log(accessToken);
   try {
-    const response = await apiSession.put(
+    const response = await sessionClient.put(
       `${SESSION_URLS.contentsSession}/next-group`,
       {},
       {
@@ -216,11 +216,14 @@ export const deleteContentsSessionParticipant = async (
 ): Promise<DeleteContentsSessionResponse> => {
   console.log(accessToken);
   try {
-    const response = await apiSession.delete(`${SESSION_URLS.contentsParticipants}/${viewerId}`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
+    const response = await sessionClient.delete(
+      `${SESSION_URLS.contentsParticipants}/${viewerId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
+        },
       },
-    });
+    );
 
     return response.data; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {

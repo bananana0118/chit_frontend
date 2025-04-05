@@ -66,19 +66,20 @@ export default function Settings() {
     const formData = new FormData(e.currentTarget); // 현재 폼의 데이터 수집
     const { gameParticipationCode, maxGroupParticipants } = Object.fromEntries(formData.entries()); // 객체로 변환
     const strGameParticipationCode = gameParticipationCode as string;
+
     const reqData = {
       gameParticipationCode: strGameParticipationCode || null,
       maxGroupParticipants: Number(maxGroupParticipants),
     };
-    try {
-      console.log(sessionInfo);
-      if (!sessionInfo?.sessionCode) {
-        const response = await createContentsSession(reqData, accessToken);
-        console.log('Res');
-        console.log(response);
 
+    try {
+      if (!accessToken) {
+        toast.warn('토큰이 없습니다. 잠시후 다시 시도해주세요');
+        return;
+      }
+      if (!sessionInfo?.sessionCode && accessToken) {
+        const response = await createContentsSession(reqData, accessToken);
         if (response && response.data) {
-          console.log(response.data);
           setSessionInfo(response.data);
           toast.success('✅ 세션이 성공적으로 생성되었습니다!');
           router.push(`/streamer/list?max=${maxGroupParticipants}`);
@@ -86,7 +87,6 @@ export default function Settings() {
       } else {
         const response = await updateContentsSession(reqData, accessToken);
         if (response && response.data) {
-          console.log(response.data);
           setSessionInfo(response.data);
           toast.success('✅ 세션이 성공적으로 업데이트 되었습니다!');
           router.push(`/streamer/list?max=${maxGroupParticipants}`);
@@ -95,6 +95,9 @@ export default function Settings() {
     } catch (error) {
       console.log('settings error');
       console.error(error);
+      //if 400 ...
+      //if 403 ...
+      //if 500 ...
     }
   };
 

@@ -22,7 +22,7 @@ import { handleSessionError, isErrorResponse } from '@/lib/handleErrors';
 import useDetectExit from '@/hooks/useDetectExit';
 import { logout } from '@/services/auth/auth';
 import { heartBeat } from '@/services/common/common';
-import SessionError, { SessionErrorCode } from '@/app/errors/sessionError';
+import SessionError, { SessionErrorCode } from '@/errors/sessionError';
 import { useRouter } from 'next/navigation';
 
 export enum SessionStatus {

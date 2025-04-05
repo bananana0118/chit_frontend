@@ -1,5 +1,5 @@
 import { handleSessionError } from '@/lib/handleErrors';
-import apiSession from '../axios/apiSession';
+import sessionClient from '../axios/sessionClient';
 import {
   DeleteContentSessionViewerLeaveRequest,
   DeleteContentSessionViewerLeaveResponse,
@@ -22,7 +22,7 @@ export const getContentsSessionViewerSubscribe = async ({
       sessionCode,
       viewerNickname: gameNickname,
     });
-    const response = await apiSession.get(URL, {
+    const response = await sessionClient.get(URL, {
       headers: {
         Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
       },
@@ -41,7 +41,7 @@ export const getContentsSessionViewerGameCode = async ({
 }: GetContentsSessionGameCodeRequest): Promise<GetContentsSessionGameCodeResponse> => {
   try {
     const url = `${SESSION_URLS.contentsSession}/${sessionCode}/gameCode`;
-    const response = await apiSession.get(url, {
+    const response = await sessionClient.get(url, {
       headers: {
         Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
       },
@@ -60,7 +60,7 @@ export const deleteContentsSessionViewerLeave = async ({
 }: DeleteContentSessionViewerLeaveRequest): Promise<DeleteContentSessionViewerLeaveResponse> => {
   console.log(accessToken);
   try {
-    const response = await apiSession.delete(
+    const response = await sessionClient.delete(
       `${SESSION_URLS.contentsSession}/${sessionCode}/leave`,
       {
         headers: {
@@ -78,7 +78,7 @@ export const deleteContentsSessionViewerLeave = async ({
 //시청자 하트비트
 export const heartBeatViewer = async (accessToken: string, sessionCode: string) => {
   try {
-    const response = await apiSession.get(`${SSE_URLS.heartBeat}?sessionCode=${sessionCode}`, {
+    const response = await sessionClient.get(`${SSE_URLS.heartBeat}?sessionCode=${sessionCode}`, {
       headers: {
         Authorization: `Bearer ${accessToken}`, // accessToken을 Bearer 토큰으로 추가
       },

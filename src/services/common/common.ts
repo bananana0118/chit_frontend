@@ -1,12 +1,12 @@
 import { handleSessionError } from '@/lib/handleErrors';
-import apiSession from '../axios/apiSession';
+import sessionClient from '../axios/sessionClient';
 import { SSE_URLS } from '@/constants/urls';
 
 //Get
 //15초 주기로 체크하는 하트비트
 export const heartBeat = async (accessToken: string, sessionCode: string) => {
   try {
-    const response = await apiSession.get(
+    const response = await sessionClient.get(
       `${SSE_URLS.heartBeat}?sessionCode=${sessionCode}&accessToken=${accessToken}`,
       {},
     );
