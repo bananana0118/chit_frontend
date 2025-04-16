@@ -10,29 +10,34 @@ import useParamsParser from '@/hooks/useParamsParser';
 import { useRouter } from 'next/navigation';
 import { useSSEStore } from '@/store/sseStore';
 import { logout } from '@/services/auth/auth';
+import useContentsSessionStore from '@/store/sessionStore';
 const NavBar = () => {
   const { isLogin, role, setLogin, accessToken, setAccessToken } = useAuthStore((state) => state);
   const { reset: SSEStoreReset } = useSSEStore();
+  const { reset: ContentsSessionReset } = useContentsSessionStore();
   const [isOpen, setIsOpen] = useState(false);
   const { channelId, sessionCode } = useParamsParser();
   const router = useRouter();
+  console.log(isLogin);
 
   const handleLogout = async () => {
     const userRole = role;
     setIsOpen(false);
     setLogin(false);
 
+    setAccessToken(null);
+    SSEStoreReset();
+    ContentsSessionReset();
+    localStorage.removeItem(STORAGE_KEYS.AuthStorageKey);
+    localStorage.removeItem(STORAGE_KEYS.SSEStorageKey);
+    localStorage.removeItem(STORAGE_KEYS.SessionStorageKey);
+
     if (userRole === 'VIEWER' && accessToken) {
       await logout({ accessToken });
-
-      setAccessToken(null);
-      SSEStoreReset();
-      localStorage.removeItem(STORAGE_KEYS.AuthStorageKey);
-      localStorage.removeItem(STORAGE_KEYS.SSEStorageKey);
-
       router.replace(`/${channelId}/${sessionCode}`);
-    } else {
-      router.replace(`/`);
+    } else if (accessToken) {
+      const response = await logout({ accessToken });
+      if (response.status === 200) router.push(`/`);
     }
   };
 
@@ -60,7 +65,7 @@ const NavBar = () => {
           alt="profile"
         />
 
-        <div className="text-medium-13 pointer-events-none absolute right-0 top-[52px] z-20 w-24 flex-col overflow-hidden rounded-2xl border-2 border-primary bg-black text-white opacity-0 transition-transform duration-200 ease-out will-change-transform group-hover:pointer-events-auto group-hover:scale-[1.02] group-hover:opacity-100">
+        <div className="pointer-events-none absolute right-0 top-[52px] z-20 w-24 flex-col overflow-hidden rounded-2xl border-2 border-primary bg-black text-medium-13 text-white opacity-0 transition-transform duration-200 ease-out will-change-transform group-hover:pointer-events-auto group-hover:scale-[1.02] group-hover:opacity-100">
           {/* <div className="cursor-pointer border-b border-primary px-4 py-2 text-center hover:bg-primary/30">
             마이페이지
           </div> */}

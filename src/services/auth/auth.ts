@@ -35,7 +35,12 @@ export const logout = async ({ accessToken }: RequestLogout) => {
       {},
       { headers: { Authorization: `Bearer ${accessToken}` } },
     );
+    console.log(response);
 
+    if (response.status === 200) {
+      const response2 = await fetch('/api/login');
+      console.log(response2);
+    }
     return response;
   } catch (error: any) {
     return handleAuthError(error);

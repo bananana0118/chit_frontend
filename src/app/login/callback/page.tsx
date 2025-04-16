@@ -6,8 +6,6 @@ import useAuthStore from '@/store/authStore';
 import useContentsSessionStore from '@/store/sessionStore';
 import CommonLayout from '@/components/layout/CommonLayout';
 import { login } from '@/services/auth/auth';
-import { accessToken } from 'chzzk/dist/api/chat';
-import { ErrorResponse } from '@/services/streamer/type';
 import { isErrorResponse } from '@/lib/handleErrors';
 
 export default function Page() {
@@ -52,6 +50,7 @@ export default function Page() {
         setLogin(true);
       }
       if (channelId && sessionCode) {
+        console.log('dlrjxkdkasl');
         router.push(`/${channelId}/${sessionCode}`); //2번 케이스 채널 id가 있을 경우
       } else {
         router.push('/');

@@ -48,6 +48,7 @@ const useAuthStore = create<AuthState & AuthAction>()(
         storage: createJSONStorage(() => localStorage),
         partialize: (state) => ({
           role: state.role,
+          isLogin: state.isLogin,
         }),
         onRehydrateStorage: () => (state) => {
           if (state) {

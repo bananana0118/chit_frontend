@@ -12,14 +12,24 @@ export const POST = async (req: NextRequest): Promise<Response> => {
   const data = await res.json();
   const response = NextResponse.json({ accessToken: data.data }, { status: 200 });
 
-  // ✅ HttpOnly + Secure + SameSite 쿠키설정
+  // ✅ Secure + SameSite 쿠키설정
   response.cookies.set('accessToken', data.data, {
-    httpOnly: true,
     secure: true,
+    httpOnly: true,
     sameSite: 'lax',
     path: '/',
     maxAge: 60 * 60,
   });
 
+  return response;
+};
+
+export const GET = async () => {
+  const response = new NextResponse(null, { status: 200 });
+  response.cookies.set('accessToken', '', {
+    path: '/',
+    httpOnly: true,
+    expires: new Date(0),
+  });
   return response;
 };

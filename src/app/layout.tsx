@@ -1,10 +1,8 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import '../styles/toast.css'; // ✅ 추가한 CSS 파일 import 필수!
-
 import 'react-toastify/dist/ReactToastify.css';
 import './globals.css';
-
 import { ToastContainer } from 'react-toastify';
 import PageLayout from '@/components/layout/PageLayout';
 import AuthInitializer from '@/provider/AuthInitializer';
@@ -35,7 +33,6 @@ export default function RootLayout({
         <Providers>
           <AuthInitializer />
           <PageLayout>{children}</PageLayout>
-
           <ToastContainer
             className="custom-toast"
             position="top-right"
