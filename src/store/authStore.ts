@@ -48,7 +48,6 @@ const useAuthStore = create<AuthState & AuthAction>()(
         storage: createJSONStorage(() => localStorage),
         partialize: (state) => ({
           role: state.role,
-          accessToken: state.accessToken, // accessToken만 스토리지에 저장
         }),
         onRehydrateStorage: () => (state) => {
           if (state) {

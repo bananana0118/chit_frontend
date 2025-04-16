@@ -1,28 +1,37 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 // This function can be marked `async` if using `await` inside
 //
-export function middleware() {
-  // const cookie = request.cookies.get('name');
-  // let hasCookie;
-  // if (cookie?.value && cookie?.value.length >= 0) {
-  //   hasCookie = true;
+export function middleware(request: NextRequest) {
+  const cookie = request.cookies.get('accessToken');
+  let hasCookie = false;
 
-  //스트리머에서 sign-in요청시 리다이렉트를 스트리머 페이지로 보냅니다.
+  const segments = request.nextUrl.pathname.split('/').filter(Boolean);
 
-  // if (!request.nextUrl.pathname.startsWith('/streamer/sign-in')) {
-  //   return NextResponse.redirect(new URL('/streamer', request.url));
-  // }
+  if (cookie?.value && cookie?.value.length >= 0) {
+    hasCookie = true;
+  }
 
-  // //streamer 가 로그인 했을 경우
-  // if (!request.nextUrl.pathname.startsWith('/viewer') && hasCookie) {
-  //   console.log('hit');
-  //   return NextResponse.redirect(new URL('/streamer/', request.url));
-  // }
+  if (
+    request.nextUrl.pathname.startsWith('/_next') ||
+    request.nextUrl.pathname.startsWith('/favicon.ico')
+  ) {
+    return NextResponse.next();
+  }
 
+  // 스트리머에서 sign-in요청시 리다이렉트를 스트리머 페이지로 보냅니다.
+  if (!hasCookie) {
+    if (request.nextUrl.pathname.startsWith('/streamer')) {
+      return NextResponse.redirect(new URL('/', request.url));
+    } else if (!request.nextUrl.pathname.startsWith('/streamer') && segments.length >= 3) {
+      const channelId = segments[0];
+      const sessionCode = segments[1];
+
+      return NextResponse.redirect(new URL(`/${channelId}/${sessionCode}`, request.url));
+    }
+  }
   return NextResponse.next();
 }
-// See "Matching Paths" below to learn more
-// export const config = {
-//   matcher: '/',
-// };
+export const config = {
+  matcher: ['/streamer/:path*', '/:channelId/:sessionCode/:path*'],
+};
