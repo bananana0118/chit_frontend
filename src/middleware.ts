@@ -3,9 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 // This function can be marked `async` if using `await` inside
 //
 export function middleware(request: NextRequest) {
-  const cookie = request.cookies.get('accessToken');
+  const cookie = request.cookies.get('REFRESH_TOKEN');
   let hasCookie = false;
-
+  console.log('refresh', cookie?.value);
   const segments = request.nextUrl.pathname.split('/').filter(Boolean);
 
   if (cookie?.value && cookie?.value.length >= 0) {
@@ -21,6 +21,7 @@ export function middleware(request: NextRequest) {
 
   // 스트리머에서 sign-in요청시 리다이렉트를 스트리머 페이지로 보냅니다.
   if (!hasCookie) {
+    console.log('Redirect발동');
     if (request.nextUrl.pathname.startsWith('/streamer')) {
       return NextResponse.redirect(new URL('/', request.url));
     } else if (!request.nextUrl.pathname.startsWith('/streamer') && segments.length >= 3) {
