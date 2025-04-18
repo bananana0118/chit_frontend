@@ -1,5 +1,5 @@
 import { handleSessionError } from '@/lib/handleErrors';
-import sessionClient from '../axios/sessionClient';
+import sessionClient from '../_axios/sessionClient';
 import {
   DeleteContentSessionViewerLeaveRequest,
   DeleteContentSessionViewerLeaveResponse,

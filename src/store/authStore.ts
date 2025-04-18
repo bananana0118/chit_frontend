@@ -30,9 +30,13 @@ const useAuthStore = create<AuthState & AuthAction>()(
         role: 'VIEWER',
         sessionCode: '',
         setAccessToken: (value: string | null) =>
-          set(() => ({
-            accessToken: value,
-          })),
+          set(
+            () => ({
+              accessToken: value,
+            }),
+            false,
+            'auth/setAccessToken',
+          ),
         setLogin: (value: boolean) =>
           set(() => ({
             isLogin: value,
