@@ -10,6 +10,7 @@ export const STREAMER_URLS = {
 export const AUTH_URLS = {
   login: DEFAULT_URL + '/auth/login',
   logout: DEFAULT_URL + '/auth/logout',
+  refresh: DEFAULT_URL + '/auth/refresh',
 };
 
 export const SESSION_URLS = {

@@ -5,32 +5,24 @@ import Image from 'next/image';
 import useAuthStore from '@/store/authStore';
 import { useState } from 'react';
 import LogoutConfirmModal from '../molecules/LogoutConfirmModal';
-import { STORAGE_KEYS } from '@/constants/urls';
 import useParamsParser from '@/hooks/useParamsParser';
 import { useRouter } from 'next/navigation';
-import { useSSEStore } from '@/store/sseStore';
+import useLogout from '@/hooks/useLogout';
 import { logout } from '@/services/auth/auth';
-import useContentsSessionStore from '@/store/sessionStore';
+
 const NavBar = () => {
-  const { isLogin, role, setLogin, accessToken, setAccessToken } = useAuthStore((state) => state);
-  const { reset: SSEStoreReset } = useSSEStore();
-  const { reset: ContentsSessionReset } = useContentsSessionStore();
+  const { isLogin, role, accessToken } = useAuthStore((state) => state);
+
   const [isOpen, setIsOpen] = useState(false);
   const { channelId, sessionCode } = useParamsParser();
+  const resetLocal = useLogout();
   const router = useRouter();
   console.log(isLogin);
 
   const handleLogout = async () => {
     const userRole = role;
     setIsOpen(false);
-    setLogin(false);
-
-    setAccessToken(null);
-    SSEStoreReset();
-    ContentsSessionReset();
-    localStorage.removeItem(STORAGE_KEYS.AuthStorageKey);
-    localStorage.removeItem(STORAGE_KEYS.SSEStorageKey);
-    localStorage.removeItem(STORAGE_KEYS.SessionStorageKey);
+    resetLocal();
 
     if (userRole === 'VIEWER' && accessToken) {
       await logout({ accessToken });
