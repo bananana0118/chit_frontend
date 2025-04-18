@@ -1,5 +1,5 @@
 import { handleAuthError } from '@/lib/handleErrors';
-import authClient from '../axios/authClient';
+import authClient from '../_axios/authClient';
 import { RequestLogout } from './type';
 import { AUTH_URLS } from '@/constants/urls';
 import { ErrorResponse } from '../streamer/type';
@@ -20,8 +20,8 @@ export const login = async ({
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include', // ✅ 쿠키 보내려면 이거 필요
     });
-    const data = response.json();
-    return data; // 성공적인 응답 데이터 반환
+    const { data } = await response.json();
+    return { accessToken: data }; // 성공적인 응답 데이터 반환
   } catch (error: any) {
     return handleAuthError(error);
   }

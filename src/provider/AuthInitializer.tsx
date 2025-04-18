@@ -3,12 +3,11 @@ import AuthInitializerClient from './AuthInitializerClient';
 
 export default async function AuthInitializer() {
   const cookieStore = await cookies();
-  const accessToken = cookieStore.get('accessToken')?.value;
+  const REFRESH_TOKEN = cookieStore.get('REFRESH_TOKEN')?.value;
 
-  console.log('access?' + accessToken);
   return (
     <>
-      <AuthInitializerClient accessToken={accessToken ?? null} />
+      <AuthInitializerClient refreshToken={REFRESH_TOKEN ?? null} />
     </>
   );
 }
