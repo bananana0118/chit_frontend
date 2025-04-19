@@ -44,9 +44,8 @@ export default function Page() {
       const response = await login(requestData);
       if (!isErrorResponse(response)) {
         const { accessToken } = response;
-
+        console.log('accessToken', accessToken);
         setAccessToken(accessToken);
-
         setLogin(true);
       }
       if (channelId && sessionCode) {
