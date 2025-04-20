@@ -77,8 +77,11 @@ export default function Settings() {
         toast.warn('토큰이 없습니다. 잠시후 다시 시도해주세요');
         return;
       }
+      console.log(accessToken);
       if (!sessionInfo?.sessionCode && accessToken) {
         const response = await createContentsSession(reqData, accessToken);
+        console.log('hit');
+        console.log(response);
         if (response && response.data) {
           setSessionInfo(response.data);
           toast.success('✅ 세션이 성공적으로 생성되었습니다!');

@@ -1,13 +1,12 @@
 'use client';
-
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import useChannelStore from '@/store/channelStore';
-import axios from 'axios';
 import useAuthStore from '@/store/authStore';
 import useContentsSessionStore from '@/store/sessionStore';
 import CommonLayout from '@/components/layout/CommonLayout';
-import axiosInstance from '@/services/axios/authClient';
+import { login } from '@/services/auth/auth';
+import { isErrorResponse } from '@/lib/handleErrors';
 
 export default function Page() {
   const [isRedirecting, setIsRedirecting] = useState(false);
@@ -17,8 +16,7 @@ export default function Page() {
   const state = searchParams.get('state');
   const isRehydrated = useAuthStore((state) => state.isRehydrated);
   const channelId = useChannelStore((state) => state.channelId);
-  const setAccessToken = useAuthStore((state) => state.setAccessToken);
-  const setLogin = useAuthStore((state) => state.setLogin);
+  const { setLogin, setAccessToken } = useAuthStore((state) => state);
   const router = useRouter();
 
   // 로그인의 경우의 수는 두가지
@@ -30,39 +28,31 @@ export default function Page() {
 
   useEffect(() => {
     const onCompleteChannelId = async (channelId?: string | string[]) => {
-      let requestData = null;
+      if (!code || !state)
+        return (
+          <CommonLayout>
+            <div>잘못된 접근입니다. 다시 로그인해 주세요.</div>
+            <button onClick={() => (window.location.href = '/login')}>로그인 하러 가기</button>
+          </CommonLayout>
+        );
 
-      requestData = {
+      const requestData = {
         code: code,
         state: state,
       };
-      console.log('requestData:', requestData);
-      try {
-        const response = await axiosInstance.post('http://localhost:8080/api/v1/auth/login', {
-          ...requestData,
-        });
 
-        const { data, status } = response;
-        console.log(response);
-        if (status === 200) {
-          setAccessToken(data.data);
-          setLogin(true);
-
-          if (channelId && sessionCode) {
-            router.push(`/${channelId}/${sessionCode}`); //2번 케이스 채널 id가 있을 경우
-          } else {
-            router.push('/');
-          }
-        }
-      } catch (error) {
-        //todo 추후 api 타입 지정해줄것
-        if (axios.isAxiosError(error)) {
-          const { response } = error; // Axios 에러 객체에서 response 추출
-          if (response?.status === 500) {
-            alert(`오류가 발생했습니다. : ${response.data?.error || '알 수 없는 오류'}`);
-            router.push('error');
-          }
-        }
+      const response = await login(requestData);
+      if (!isErrorResponse(response)) {
+        const { accessToken } = response;
+        console.log('accessToken', accessToken);
+        setAccessToken(accessToken);
+        setLogin(true);
+      }
+      if (channelId && sessionCode) {
+        console.log('dlrjxkdkasl');
+        router.push(`/${channelId}/${sessionCode}`); //2번 케이스 채널 id가 있을 경우
+      } else {
+        router.push('/');
       }
     };
 
@@ -70,7 +60,7 @@ export default function Page() {
       setIsRedirecting(true);
       onCompleteChannelId(channelId);
     }
-  }, [code, state, channelId, setAccessToken, setLogin, router, isRehydrated]);
+  }, [code, state, channelId, setLogin, router, isRehydrated, sessionCode]);
 
   if (!code && state) {
     return (
