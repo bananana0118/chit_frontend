@@ -28,7 +28,6 @@ const nextConfig: NextConfig = {
     fileLoaderRule.exclude = /\.svg$/i;
     return config;
   },
-  devtool: process.env.NODE_ENV === 'production' ? false : 'source-map',
   reactStrictMode: false,
   images: {
     remotePatterns: [

@@ -3,10 +3,7 @@ import { NextResponse } from 'next/server';
 
 const totalViewers = 500;
 
-const generagtionViewers = (
-  page: number,
-  limit: number,
-): ParticipantResponseType[] => {
+const generagtionViewers = (page: number, limit: number): ParticipantResponseType[] => {
   const start = (page - 1) * limit;
   return Array.from({ length: limit }, (_, i) => ({
     viewerId: start + i + 1,

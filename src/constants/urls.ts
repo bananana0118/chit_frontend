@@ -1,4 +1,4 @@
-const DEFAULT_URL = '/api/v1';
+export const DEFAULT_URL = '/api/v1';
 
 export const VIEWER_URLS = {
   callbackUrl: '/sign-up',
@@ -8,8 +8,9 @@ export const STREAMER_URLS = {
   callbackUrl: '/streamer/sign-up',
 };
 export const AUTH_URLS = {
-  login: DEFAULT_URL + '/oauth2/login',
+  login: DEFAULT_URL + '/auth/login',
   logout: DEFAULT_URL + '/auth/logout',
+  refresh: DEFAULT_URL + '/auth/refresh',
 };
 
 export const SESSION_URLS = {

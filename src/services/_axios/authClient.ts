@@ -1,4 +1,5 @@
-import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import setUpTokenInterceptor from './setUpTokenInterceptor';
 
 const authClient: AxiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL, // API의 기본 URL
@@ -25,10 +26,6 @@ authClient.interceptors.request.use(
   },
 );
 
-// 응답 인터셉터
-authClient.interceptors.response.use((response: AxiosResponse) => {
-  // 응답 데이터 가공
-  return response;
-});
+setUpTokenInterceptor(authClient);
 
 export default authClient;
