@@ -70,7 +70,7 @@ npm run dev
 - TypeScript
 - Tailwind CSS
 - ESLint / Prettier
-
+- npm (추후 pnpm으로 업그레이드 예정)
 ## 📌 커밋 컨벤션
 
 - feat: 새로운 기능 추가
