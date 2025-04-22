@@ -30,9 +30,13 @@ const useAuthStore = create<AuthState & AuthAction>()(
         role: 'VIEWER',
         sessionCode: '',
         setAccessToken: (value: string | null) =>
-          set(() => ({
-            accessToken: value,
-          })),
+          set(
+            () => ({
+              accessToken: value,
+            }),
+            false,
+            'auth/setAccessToken',
+          ),
         setLogin: (value: boolean) =>
           set(() => ({
             isLogin: value,
@@ -48,7 +52,7 @@ const useAuthStore = create<AuthState & AuthAction>()(
         storage: createJSONStorage(() => localStorage),
         partialize: (state) => ({
           role: state.role,
-          accessToken: state.accessToken, // accessToken만 스토리지에 저장
+          isLogin: state.isLogin,
         }),
         onRehydrateStorage: () => (state) => {
           if (state) {

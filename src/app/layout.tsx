@@ -1,13 +1,11 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import '../styles/toast.css'; // ✅ 추가한 CSS 파일 import 필수!
-
 import 'react-toastify/dist/ReactToastify.css';
 import './globals.css';
-
 import { ToastContainer } from 'react-toastify';
 import PageLayout from '@/components/layout/PageLayout';
-import AuthProvider from '@/provider/AuthProvider';
+import AuthInitializer from '@/provider/AuthInitializer';
 import Providers from '@/provider/Providers';
 
 const pretendard = localFont({
@@ -33,9 +31,8 @@ export default function RootLayout({
         className={`${pretendard.variable} h-screen w-screen cursor-default bg-background text-white antialiased`}
       >
         <Providers>
-          <AuthProvider>
-            <PageLayout>{children}</PageLayout>
-          </AuthProvider>
+          <AuthInitializer />
+          <PageLayout>{children}</PageLayout>
           <ToastContainer
             className="custom-toast"
             position="top-right"

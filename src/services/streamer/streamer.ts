@@ -10,7 +10,7 @@ import {
   PutContentsSessionNextGroupResponse,
 } from './type';
 import { handleSessionError } from '@/lib/handleErrors';
-import sessionClient from '../axios/sessionClient';
+import sessionClient from '../_axios/sessionClient';
 import { SESSION_URLS } from '@/constants/urls';
 import { ApiResponse, ContentsSession } from '@/store/sessionStore';
 
