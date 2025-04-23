@@ -33,7 +33,6 @@ export default function setUpTokenInterceptor(instance: AxiosInstance) {
 
             const newAccessToken = await refreshPromise;
 
-            console.log('HIT');
             //쿠키 재설정
             originalRequest.headers = {
               ...originalRequest.headers,

@@ -1,6 +1,6 @@
-import Cancel from '@/app/assets/icons/Cancel';
-import Heart from '@/app/assets/icons/Heart';
-import ZzzicIcon from '@/app/assets/icons/ZzzicIcon';
+import Cancel from '../../../public/assets/icons/Cancel';
+import Heart from '../../../public/assets/icons/Heart';
+import ZzzicIcon from '../../../public/assets/icons/ZzzicIcon';
 import {
   deleteContentsSessionParticipant,
   putContentsSessionParticipantPick,

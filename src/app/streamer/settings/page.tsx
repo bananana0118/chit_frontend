@@ -1,7 +1,7 @@
 'use client';
 
-import Minus from '@/app/assets/icons/Minus';
-import Plus from '@/app/assets/icons/Plus';
+import Minus from '../../../../public/assets/icons/Minus';
+import Plus from '../../../../public/assets/icons/Plus';
 import { BtnSubmit } from '@/components/atoms/button/BtnWithChildren';
 import { InputPassword } from '@/components/atoms/input/Input';
 import CategoryText from '@/components/atoms/text/CategoryText';
