@@ -1,6 +1,6 @@
 'use client';
 
-import ChitLogo from '@/app/assets/logo/ChitLogo';
+import ChitLogo from '../../../public/assets/logo/ChitLogo';
 import Image from 'next/image';
 import useAuthStore from '@/store/authStore';
 import { useState } from 'react';

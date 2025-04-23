@@ -1,4 +1,4 @@
-import CopyIcon from '@/app/assets/icons/CopyIcon';
+import CopyIcon from '../../../../public/assets/icons/CopyIcon';
 import copyClipBoard from '@/lib/copyClipBoard';
 
 type Props = {

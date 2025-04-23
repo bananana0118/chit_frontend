@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
-import '../styles/toast.css'; // ✅ 추가한 CSS 파일 import 필수!
+import '../styles/toast.css';
 import 'react-toastify/dist/ReactToastify.css';
 import './globals.css';
 import { ToastContainer } from 'react-toastify';
@@ -9,13 +9,13 @@ import AuthInitializer from '@/provider/AuthInitializer';
 import Providers from '@/provider/Providers';
 
 const pretendard = localFont({
-  src: './fonts/PretendardVariable.woff2',
+  src: '../fonts/PretendardVariable.woff2',
   display: 'swap',
   weight: '45 920',
   variable: '--font-pretendard',
 });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'CHIT 칫',
   description: '지금, 시참에 참여해주세요 CHI- CHI- CHIT-',
   keywords: ['CHIT', '치지직', 'CHZZK', '시참', '시청자 참여', '시청자 참여형'],

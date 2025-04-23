@@ -1,5 +1,5 @@
 'use client';
-import CopyIcon from '@/app/assets/icons/CopyIcon';
+import CopyIcon from '../../../../../public/assets/icons/CopyIcon';
 
 import useChannelStore from '@/store/channelStore';
 import Image from 'next/image';
