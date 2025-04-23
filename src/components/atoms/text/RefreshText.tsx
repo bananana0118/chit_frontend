@@ -1,4 +1,4 @@
-import RefreshIcon from '@/app/assets/icons/RefreshIcon';
+import RefreshIcon from '../../../../public/assets/icons/RefreshIcon';
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 type Props = {};
 

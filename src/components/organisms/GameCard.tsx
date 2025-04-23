@@ -1,4 +1,4 @@
-import EditIcon from '@/app/assets/icons/EditIcon';
+import EditIcon from '../../../public/assets/icons/EditIcon';
 
 type Props = {
   category: string;

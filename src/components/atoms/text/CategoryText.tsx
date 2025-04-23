@@ -1,4 +1,4 @@
-import GameIcon from '@/app/assets/icons/GameIcon';
+import GameIcon from '../../../../public/assets/icons/GameIcon';
 import guideText from '@/constants/guideText';
 type Props = {
   category: string;
