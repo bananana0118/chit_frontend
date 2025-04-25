@@ -1,5 +1,7 @@
 'use client';
 
+import Loading from '@/app/loading';
+import BtnUserProfile from '@/components/atoms/button/BtnUserProfile';
 import useLogout from '@/hooks/useLogout';
 import { refreshAccessToken } from '@/services/common/common';
 import useAuthStore from '@/store/authStore';
@@ -24,7 +26,6 @@ export default function AuthInitializerClient({ refreshToken }: { refreshToken: 
               setLogin(true);
               setAccessToken(accessToken);
             } else {
-              console.log('hit2');
               resetLocal();
               if (role === 'STREAMER') router.push('/');
               else {
@@ -46,7 +47,9 @@ export default function AuthInitializerClient({ refreshToken }: { refreshToken: 
 
     restoreAuthState();
   }, [setAccessToken, resetLocal, refreshToken, setLogin]);
-  if (!bootstrapped) return <div>부트스트랩중</div>;
-
-  return null;
+  if (!bootstrapped) return <Loading />;
+  if (!isLogin) {
+    return null;
+  }
+  return <BtnUserProfile />;
 }
