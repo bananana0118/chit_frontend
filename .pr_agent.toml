@@ -1,6 +1,6 @@
 [config]
 response_language="ko-KR"
-model="gpt-4o"
+model="o3-mini"
 
 
 [pr_reviewer]
