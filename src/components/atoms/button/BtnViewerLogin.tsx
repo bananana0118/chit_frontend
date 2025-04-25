@@ -36,7 +36,7 @@ const BtnViewerLogin = ({ channelId, sessionCode, streamerInfo }: BtnLoginProps)
         sessionCode,
       }));
     }
-  }, [channelId, router, sessionCode, setChannelId, setSessionInfo, streamerInfo]);
+  }, [channelId, router, sessionCode, setChannelId, setSessionInfo, setStreamerInfo, streamerInfo]);
 
   //로그인 되어있는지
 
