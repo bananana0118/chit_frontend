@@ -31,7 +31,6 @@ sessionClient.interceptors.request.use(
     return Promise.reject(error);
   },
 );
-setUpTokenInterceptor(sessionClient);
 
 // 응답 인터셉터
 sessionClient.interceptors.response.use(
@@ -82,5 +81,6 @@ sessionClient.interceptors.response.use(
   },
   // 응답 데이터 가공
 );
+setUpTokenInterceptor(sessionClient);
 
 export default sessionClient;
