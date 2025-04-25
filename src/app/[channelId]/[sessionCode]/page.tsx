@@ -1,70 +1,29 @@
-'use client';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-
-import useChannelStore from '../../../store/channelStore';
-import useAuthStore from '../../../store/authStore';
-import useContentsSessionStore from '@/store/sessionStore';
-import useParamsParser from '@/hooks/useParamsParser';
+import { notFound } from 'next/navigation';
 import CategoryText from '@/components/atoms/text/CategoryText';
-import BtnWithChildren from '@/components/atoms/button/BtnWithChildren';
 import Live from '@/components/atoms/label/Live';
 import OFF from '@/components/atoms/label/Off';
 import ViewerPageLayout from '@/components/layout/ViewerPageLayout';
 import { postStreamerInfo } from '@/services/streamer/streamer';
 import CommonLayout from '@/components/layout/CommonLayout';
 import StreamerTextLive from '@/components/atoms/text/StreamerTextLive';
+import BtnViewerLogin from '@/components/atoms/button/BtnViewerLogin';
 
-export default function Home() {
-  const router = useRouter();
-  const { channelId, sessionCode } = useParamsParser();
-  const setRole = useAuthStore((state) => state.setRole);
-  const streamerInfo = useChannelStore((state) => state.streamerInfo);
-  const setChannelId = useChannelStore((state) => state.setChannelId);
-  const setStreamerInfo = useChannelStore((state) => state.setStreamerInfo);
-  const setSessionInfo = useContentsSessionStore((state) => state.setSessionInfo);
-  const accessToken = useAuthStore((state) => state.accessToken);
+interface PageProps {
+  params: { channelId: string; sessionCode: string };
+}
+
+export default async function Home({ params }: PageProps) {
   //로그인 되어있는지
-  useEffect(() => {
-    const fetchData = async (channelId: string) => {
-      const DummyChannelId = channelId || '0dad8baf12a436f722faa8e5001c5011';
+  const sessionCode = params.sessionCode;
+  const channelId = params.channelId || '0dad8baf12a436f722faa8e5001c5011';
 
-      try {
-        const streamerInfo = await postStreamerInfo(DummyChannelId);
+  const streamerInfo = await postStreamerInfo(channelId);
 
-        if (streamerInfo === null) {
-          alert('channelId가 잘못됐거나 해당 스트리머의 방송 정보가 없습니다.');
-          router.push(`/${channelId}/error`);
-        } else {
-          setChannelId(streamerInfo.channel.channelId);
-          setStreamerInfo(streamerInfo);
-          if (sessionCode)
-            setSessionInfo((prev) => ({
-              ...prev,
-              sessionCode,
-            }));
-          console.log(streamerInfo);
-        }
-      } catch (error) {
-        console.log('error가 발생했습니다.', error);
-        router.push(`/${channelId}/error`);
-      }
-    };
+  if (!streamerInfo) {
+    notFound();
+  }
 
-    fetchData(channelId as string);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [channelId, setChannelId]);
-
-  const onClickLogin = async () => {
-    if (accessToken) {
-      router.push(`${sessionCode}/participation`);
-    } else {
-      window.location.href = 'http://localhost:8080/';
-    }
-    setRole('VIEWER');
-  };
-  if (!streamerInfo) return;
   if (streamerInfo?.status === 'CLOSE') {
     return (
       <ViewerPageLayout>
@@ -105,9 +64,11 @@ export default function Home() {
           </div>
           <CategoryText category={streamerInfo.liveCategoryValue || ''}></CategoryText>
         </section>
-        <BtnWithChildren onClickHandler={onClickLogin}>
-          (로그인하고 3초만에) 시참등록하기
-        </BtnWithChildren>
+        <BtnViewerLogin
+          channelId={channelId}
+          sessionCode={sessionCode}
+          streamerInfo={streamerInfo}
+        ></BtnViewerLogin>
       </CommonLayout>
     )
   );

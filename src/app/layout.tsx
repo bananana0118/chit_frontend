@@ -5,8 +5,10 @@ import 'react-toastify/dist/ReactToastify.css';
 import './globals.css';
 import { ToastContainer } from 'react-toastify';
 import PageLayout from '@/components/layout/PageLayout';
-import AuthInitializer from '@/provider/AuthInitializer';
 import Providers from '@/provider/Providers';
+
+import CommonLayout from '@/components/layout/CommonLayout';
+import NavBar from '@/components/layout/NavBar';
 
 const pretendard = localFont({
   src: '../fonts/PretendardVariable.woff2',
@@ -52,8 +54,12 @@ export default function RootLayout({
         className={`${pretendard.variable} h-screen w-screen cursor-default bg-background text-white antialiased`}
       >
         <Providers>
-          <AuthInitializer />
-          <PageLayout>{children}</PageLayout>
+          <PageLayout>
+            <CommonLayout>
+              <NavBar></NavBar>
+              {children}
+            </CommonLayout>
+          </PageLayout>
           <ToastContainer
             className="custom-toast"
             position="top-right"
