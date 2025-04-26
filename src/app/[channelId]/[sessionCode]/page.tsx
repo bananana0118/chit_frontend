@@ -14,7 +14,7 @@ interface PageProps {
 
 export default async function Home({ params }: PageProps) {
   //로그인 되어있는지
-  const { sessionCode, channelId } = await params;
+  const { sessionCode, channelId } = params;
   const streamerInfo = await postStreamerInfo(channelId);
 
   if (!streamerInfo) {
