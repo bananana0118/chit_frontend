@@ -49,7 +49,6 @@ export default function Page() {
         setLogin(true);
       }
       if (channelId && sessionCode) {
-        console.log('dlrjxkdkasl');
         router.push(`/${channelId}/${sessionCode}`); //2번 케이스 채널 id가 있을 경우
       } else {
         router.push('/');

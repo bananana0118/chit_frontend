@@ -5,9 +5,5 @@ export default async function AuthInitializer() {
   const cookieStore = await cookies();
   const REFRESH_TOKEN = cookieStore.get('REFRESH_TOKEN')?.value;
 
-  return (
-    <>
-      <AuthInitializerClient refreshToken={REFRESH_TOKEN ?? null} />
-    </>
-  );
+  return <AuthInitializerClient refreshToken={REFRESH_TOKEN ?? null} />;
 }
