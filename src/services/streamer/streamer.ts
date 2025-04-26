@@ -60,16 +60,25 @@ const handleFetchError = (error: unknown) => {
 
 //치지직 api에 직접 스트리머 정보 가져오는 api
 export const postStreamerInfo = async (channelId: string): Promise<StreamerInfo | null> => {
-  const data = await axios
-    .post(`${process.env.NEXT_PUBLIC_FRONT_API_URL}/api/streamer`, {
-      channelId: channelId,
-    })
-    .catch((error) => {
-      handleFetchError(error);
-      throw error;
-    });
-  if (data?.data) return data.data.streamerInfo;
-  return null;
+  await new Promise((res) => setTimeout(res, 2000));
+  const res = await fetch(`${process.env.NEXT_PUBLIC_FRONT_API_URL}/api/streamer`, {
+    method: 'POST', // POST 메소드 사용
+    headers: {
+      'Content-Type': 'application/json', // JSON 형식으로 데이터 전송
+    },
+    body: JSON.stringify({ channelId }), // channelId를 JSON 형식으로 변환하여 전송
+    cache: 'no-store', // ✅ SSR 로딩 감지를 위해 추가!
+  }).catch((error) => {
+    handleFetchError(error);
+    throw error;
+  });
+  if (!res.ok) {
+    console.error('스트리머 정보 가져오기 실패');
+    return null;
+  }
+
+  const json = await res.json();
+  return json?.streamerInfo ?? null; // 응답 데이터에서 스트리머 정보 추출
 };
 
 //현재 세션 조회

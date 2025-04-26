@@ -5,7 +5,6 @@ import Live from '@/components/atoms/label/Live';
 import OFF from '@/components/atoms/label/Off';
 import ViewerPageLayout from '@/components/layout/ViewerPageLayout';
 import { postStreamerInfo } from '@/services/streamer/streamer';
-import CommonLayout from '@/components/layout/CommonLayout';
 import StreamerTextLive from '@/components/atoms/text/StreamerTextLive';
 import BtnViewerLogin from '@/components/atoms/button/BtnViewerLogin';
 
@@ -15,9 +14,7 @@ interface PageProps {
 
 export default async function Home({ params }: PageProps) {
   //로그인 되어있는지
-  const sessionCode = params.sessionCode;
-  const channelId = params.channelId || '0dad8baf12a436f722faa8e5001c5011';
-
+  const { sessionCode, channelId } = params;
   const streamerInfo = await postStreamerInfo(channelId);
 
   if (!streamerInfo) {
@@ -45,7 +42,7 @@ export default async function Home({ params }: PageProps) {
 
   return (
     streamerInfo && (
-      <CommonLayout>
+      <>
         <section className="flex w-full flex-1 flex-col items-center justify-center">
           <div className="mb-10 flex flex-col items-center justify-center gap-2">
             <StreamerTextLive isLive={streamerInfo.status}></StreamerTextLive>
@@ -69,7 +66,7 @@ export default async function Home({ params }: PageProps) {
           sessionCode={sessionCode}
           streamerInfo={streamerInfo}
         ></BtnViewerLogin>
-      </CommonLayout>
+      </>
     )
   );
 }

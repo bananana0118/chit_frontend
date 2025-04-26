@@ -38,13 +38,11 @@ const BtnViewerLogin = ({ channelId, sessionCode, streamerInfo }: BtnLoginProps)
     }
   }, [channelId, router, sessionCode, setChannelId, setSessionInfo, setStreamerInfo, streamerInfo]);
 
-  //로그인 되어있는지
-
   const onClickLogin = async () => {
     if (accessToken) {
       router.push(`${sessionCode}/participation`);
     } else {
-      window.location.href = 'http://localhost:8080/';
+      window.location.href = process.env.NEXT_PUBLIC_API_URL || '';
     }
     setRole('VIEWER');
   };
