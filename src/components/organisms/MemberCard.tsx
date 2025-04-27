@@ -27,8 +27,6 @@ export default function MemberCard({
   const queryClient = useQueryClient();
   const { accessToken } = useAuthStore();
   const onClickPickHandler = async () => {
-    console.log('pick! <3');
-    console.log(refreshUsers);
     if (!accessToken) return;
     const response = await putContentsSessionParticipantPick(accessToken, memberId);
     if (response.status === 200) {
