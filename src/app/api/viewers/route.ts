@@ -12,6 +12,7 @@ const generagtionViewers = (page: number, limit: number): ParticipantResponseTyp
     chzzkNickname: `치지직유저 ${start + i + 1}`,
     fixedPick: false,
     order: start + i + 1,
+    
   }));
 };
 
