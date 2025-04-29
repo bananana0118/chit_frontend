@@ -24,13 +24,11 @@ export default function Home() {
   const [streamerInfo, setStateStreamerInfo] = useState<StreamerInfo | null>(null);
   const setChannelId = useChannelStore((state) => state.setChannelId);
   const setStreamerInfo = useChannelStore((state) => state.setStreamerInfo);
-  console.log(streamerInfo);
   const onClickCreateSession = () => {
     router.push('/streamer/settings');
   };
 
   useEffect(() => {
-    console.log('access', accessToken);
     const fetchData = async () => {
       const dummyChannelId = DummyData.channelId;
       const response = await postStreamerInfo(dummyChannelId);
