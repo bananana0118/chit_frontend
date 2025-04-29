@@ -5,7 +5,6 @@ import { NextRequest, NextResponse } from 'next/server';
 export function middleware(request: NextRequest) {
   const cookie = request.cookies.get('REFRESH_TOKEN');
   let hasCookie = false;
-  console.log('refresh', cookie?.value);
   const segments = request.nextUrl.pathname.split('/').filter(Boolean);
 
   if (cookie?.value && cookie?.value.length >= 0) {
