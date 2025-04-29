@@ -29,7 +29,6 @@ export default function Home() {
   };
 
   useEffect(() => {
-    console.log('access', accessToken);
     const fetchData = async () => {
       const dummyChannelId = DummyData.channelId;
       const response = await postStreamerInfo(dummyChannelId);
