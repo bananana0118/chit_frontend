@@ -7,7 +7,6 @@ import { InputPassword } from '@/components/atoms/input/Input';
 import CategoryText from '@/components/atoms/text/CategoryText';
 import CommonLayout from '@/components/layout/CommonLayout';
 import useDetectExit from '@/hooks/useDetectExit';
-import { logout } from '@/services/auth/auth';
 import { createContentsSession, updateContentsSession } from '@/services/streamer/streamer';
 import useChannelStore from '@/store/channelStore';
 import useContentsSessionStore from '@/store/sessionStore';
@@ -77,11 +76,8 @@ export default function Settings() {
         toast.warn('토큰이 없습니다. 잠시후 다시 시도해주세요');
         return;
       }
-      console.log(accessToken);
       if (!sessionInfo?.sessionCode && accessToken) {
         const response = await createContentsSession(reqData, accessToken);
-        console.log('hit');
-        console.log(response);
         if (response && response.data) {
           setSessionInfo(response.data);
           toast.success('✅ 세션이 성공적으로 생성되었습니다!');
@@ -98,9 +94,7 @@ export default function Settings() {
     } catch (error) {
       console.log('settings error');
       console.error(error);
-      //if 400 ...
-      //if 403 ...
-      //if 500 ...
+
     }
   };
 
