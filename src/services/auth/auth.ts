@@ -41,7 +41,6 @@ export const logout = async ({ accessToken }: RequestLogout) => {
       const response2 = await fetch('/api/login');
       console.log(response2);
     }
-    console.log('sdalsdassdalsdassdalsdassdalsdassdalsdassdalsdas');
     return response;
   } catch (error: any) {
     return handleAuthError(error);
