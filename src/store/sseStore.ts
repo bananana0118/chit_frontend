@@ -50,10 +50,9 @@ enum SSEEventType {
   PARTICIPANT_KICKED_SESSION = 'PARTICIPANT_KICKED_SESSION',
   PARTICIPANT_LEFT_SESSION = 'PARTICIPANT_LEFT_SESSION',
   SESSION_ORDER_UPDATED = 'SESSION_ORDER_UPDATED',
-  //LEFT로 바뀐듯
   CLOSED_SESSION = 'CLOSED_SESSION',
-  //깜빡하신듯
   UPDATED_SESSION = 'UPDATED_SESSION',
+  STREAMER_SESSION_UPDATED = "STREAMER_SESSION_UPDATED",
 }
 
 export type ParticipantResponseType = {
@@ -75,8 +74,6 @@ type EVENT_ParticipantAddedResponse = {
 };
 
 type EVENT_ParticipantRemovededResponse = EVENT_ParticipantAddedResponse;
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-type EVENT_ParticipantFixedResponse = EVENT_ParticipantAddedResponse;
 
 interface EVENT_SessionStatusUpdateResponse extends EVENT_ParticipantAddedResponse {
   sessionCode: string;
