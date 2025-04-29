@@ -27,15 +27,11 @@ export default function MemberCard({
   const queryClient = useQueryClient();
   const { accessToken } = useAuthStore();
   const onClickPickHandler = async () => {
-    console.log('pick! <3');
-    console.log(refreshUsers);
     if (!accessToken) return;
     const response = await putContentsSessionParticipantPick(accessToken, memberId);
     if (response.status === 200) {
       queryClient.refetchQueries({ queryKey: ['participants'] });
-      console.log('유저를 선택했습니다.');
     } else {
-      console.log('문제 발생');
     }
   };
   const onClickBanHandler = async () => {
