@@ -13,6 +13,7 @@ import { handleSessionError } from '@/lib/handleErrors';
 import sessionClient from '../_axios/sessionClient';
 import { SESSION_URLS } from '@/constants/urls';
 import { ApiResponse, ContentsSession } from '@/store/sessionStore';
+import CustomError from '@/errors/errors';
 
 const client = new ChzzkClient();
 
@@ -102,6 +103,8 @@ export const getContentsSessionInfo = async ({
     );
     return response.data as ApiResponse<ContentsSession>; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {
+    console.log('세션 조회 에러 발생');
+    console.log(error);
     return handleSessionError(error); // 에러 핸들링 함수 사용
   }
 };
@@ -127,7 +130,13 @@ export const createContentsSession = async (
 
     return response.data; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {
-    return Promise.reject(handleSessionError(error)); // 에러 핸들링 함수 사용
+    console.log('d에러발생');
+    console.log(typeof error);
+    console.log(error instanceof CustomError);
+    console.log('👉 error instanceof CustomError:', error instanceof CustomError);
+    console.log('👉 error.constructor:', (error as any).constructor.name);
+    console.log('👉 error:', error);
+    return handleSessionError(error); // 에러 핸들링 함수 사용
   }
 };
 

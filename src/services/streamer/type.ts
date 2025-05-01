@@ -11,9 +11,9 @@ export type StreamerInfo = {
 };
 export type ErrorResponse = {
   status: number;
-  code?: number; //todo : 임시 code추가
+  code: number; //todo : 임시 code추가
   error: string;
-  data: string;
+  data?: string;
 };
 
 export type CreateContentsSessionRequest = {
@@ -23,14 +23,10 @@ export type CreateContentsSessionRequest = {
 
 export type CreateContentsSessionResponse = ApiResponse<ContentsSession>;
 
-export type GetContentsSessionResponse =
-  | ApiResponse<ContentsSession>
-  | ErrorResponse;
+export type GetContentsSessionResponse = ApiResponse<ContentsSession> | ErrorResponse;
 export type DeleteContentsSessionResponse = ApiResponse<string> | ErrorResponse;
 
 export type PutContentsSessionNextGroupRequest = {
   accessToken: string;
 };
-export type PutContentsSessionNextGroupResponse =
-  | ApiResponse<STATUS>
-  | ErrorResponse;
+export type PutContentsSessionNextGroupResponse = ApiResponse<STATUS> | ErrorResponse;
