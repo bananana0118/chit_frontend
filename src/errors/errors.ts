@@ -1,13 +1,16 @@
 // 2. 기본 CustomError 클래스 생성
 class CustomError extends Error {
-  error: string;
+  message: string;
   status: number;
-  statusCode: number;
-  constructor(errorData: { statusCode: number; error: string; status: number }) {
-    super(errorData.error);
-    this.statusCode = errorData.statusCode;
-    this.error = errorData.error;
+  code: number;
+
+  constructor(errorData: { code: number; status: number; message: string }) {
+    super(errorData.message);
+
+    this.code = errorData.code;
+    this.message = errorData.message;
     this.status = errorData.status;
+
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, CustomError);
     }

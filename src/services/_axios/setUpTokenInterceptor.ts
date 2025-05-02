@@ -8,9 +8,8 @@ let refreshPromise: Promise<string> | null = null;
 //공통토큰 리프레시 로직을 재사용 가능하게 추출
 export default function setUpTokenInterceptor(instance: AxiosInstance) {
   instance.interceptors.response.use(
-    //리스폰스 후 처리할 콜백 로직
     (response) => response,
-    //에러 났을 시 처리할 로직
+
     async (error) => {
       const originalRequest = error.config; //원래 보냈던 요청
 
@@ -24,7 +23,9 @@ export default function setUpTokenInterceptor(instance: AxiosInstance) {
             isRefreshing = true;
             refreshPromise = refreshAccessToken()
               .then((res) => {
-                if (res.status !== 200) throw new Error('Refresh 실패');
+                if (res.success === false) {
+                  throw new Error('Refresh token error');
+                }
                 return res.data;
               })
               .finally(() => {

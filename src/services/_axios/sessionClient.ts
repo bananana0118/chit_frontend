@@ -23,7 +23,6 @@ sessionClient.interceptors.request.use(
   },
   (error) => {
     // 요청 오류 처리
-    console.log(error);
     console.log('intercepter error');
     return Promise.reject(error);
   },
@@ -36,40 +35,39 @@ sessionClient.interceptors.response.use(
   (response: AxiosResponse) => {
     return response;
   },
-  (err: AxiosError<ErrorResponse>) => {
+  (error: AxiosError<ErrorResponse>) => {
     // 요청 오류 처리
-    if (axios.isAxiosError(err)) {
+    if (axios.isAxiosError(error)) {
       console.log('response?');
-      console.log(err);
-      if (err.response) {
+      console.log(error);
+      if (error.response) {
         // 서버에서 응답한 에러
-        console.warn('🚨 Server Response:', err.response.data);
-        const { code, status, error } = err.response.data;
-        console.log('dasdasdas');
+        console.warn('🚨 Server Response:', error.response.data);
+        const { code, status, message } = error.response.data;
         return Promise.reject(
           new CustomError({
-            statusCode: code,
-            status: status,
-            error: error || '서버 오류가 발생했습니다.',
+            code,
+            status,
+            message: message || '서버 오류가 발생했습니다.',
           }),
         );
       }
       return Promise.reject(
         new CustomError({
-          statusCode: 500,
+          code: 500,
           status: 500,
-          error: err.message || 'Axios 요청 중 오류가 발생했습니다.',
+          message: error.message || 'Axios 요청 중 오류가 발생했습니다.',
         }),
       );
     }
 
     // Axios 외의 일반적인 예외 처리
-    console.warn('❌ Unexpected Error:', err);
+    console.warn('❌ Unexpected Error:', error);
     return Promise.reject(
       new CustomError({
-        statusCode: 500,
+        code: 500,
         status: 500,
-        error: '알 수 없는 오류가 발생했습니다!.',
+        message: '알 수 없는 오류가 발생했습니다!.',
       }),
     );
   },

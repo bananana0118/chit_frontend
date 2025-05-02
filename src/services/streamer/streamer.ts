@@ -8,12 +8,11 @@ import {
   DeleteContentsSessionResponse,
   PutContentsSessionNextGroupRequest,
   PutContentsSessionNextGroupResponse,
+  Result,
 } from './type';
-import { handleSessionError } from '@/lib/handleErrors';
+import { handleError } from '@/lib/handleErrors';
 import sessionClient from '../_axios/sessionClient';
 import { SESSION_URLS } from '@/constants/urls';
-import { ApiResponse, ContentsSession } from '@/store/sessionStore';
-import CustomError from '@/errors/errors';
 
 const client = new ChzzkClient();
 
@@ -91,7 +90,7 @@ export const getContentsSessionInfo = async ({
   accessToken: string;
   page: number;
   size: number;
-}): Promise<GetContentsSessionResponse> => {
+}): Promise<Result<GetContentsSessionResponse>> => {
   try {
     const response = await sessionClient.get(
       `${SESSION_URLS.contentsSession}?page=${page}&size=${size}`,
@@ -101,11 +100,10 @@ export const getContentsSessionInfo = async ({
         },
       },
     );
-    return response.data as ApiResponse<ContentsSession>; // 성공적인 응답 데이터 반환
+
+    return { success: true, data: response.data }; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {
-    console.log('세션 조회 에러 발생');
-    console.log(error);
-    return handleSessionError(error); // 에러 핸들링 함수 사용
+    return { success: false, error: handleError(error) }; // 에러 핸들링 함수 사용
   }
 };
 
@@ -113,7 +111,7 @@ export const getContentsSessionInfo = async ({
 export const createContentsSession = async (
   data: CreateContentsSessionRequest,
   accessToken: string,
-): Promise<CreateContentsSessionResponse> => {
+): Promise<Result<CreateContentsSessionResponse>> => {
   console.log(accessToken);
   try {
     const response = await sessionClient.post(
@@ -128,15 +126,9 @@ export const createContentsSession = async (
       },
     );
 
-    return response.data; // 성공적인 응답 데이터 반환
+    return { success: true, data: response.data }; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {
-    console.log('d에러발생');
-    console.log(typeof error);
-    console.log(error instanceof CustomError);
-    console.log('👉 error instanceof CustomError:', error instanceof CustomError);
-    console.log('👉 error.constructor:', (error as any).constructor.name);
-    console.log('👉 error:', error);
-    return handleSessionError(error); // 에러 핸들링 함수 사용
+    return { success: false, error: handleError(error) }; // 에러 핸들링 함수 사용
   }
 };
 
@@ -144,7 +136,7 @@ export const createContentsSession = async (
 export const updateContentsSession = async (
   data: CreateContentsSessionRequest,
   accessToken: string,
-): Promise<CreateContentsSessionResponse> => {
+): Promise<Result<CreateContentsSessionResponse>> => {
   console.log(accessToken);
   try {
     const response = await sessionClient.put(
@@ -159,16 +151,16 @@ export const updateContentsSession = async (
       },
     );
 
-    return response.data; // 성공적인 응답 데이터 반환
+    return { success: true, data: response.data }; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {
-    return Promise.reject(handleSessionError(error)); // 에러 핸들링 함수 사용
+    return { success: false, error: handleError(error) }; // 에러 핸들링 함수 사용
   }
 };
 
 //세션 삭제
 export const deleteContentsSession = async (
   accessToken: string,
-): Promise<DeleteContentsSessionResponse> => {
+): Promise<Result<DeleteContentsSessionResponse>> => {
   console.log(accessToken);
   try {
     const response = await sessionClient.delete(SESSION_URLS.contentsSession, {
@@ -177,9 +169,9 @@ export const deleteContentsSession = async (
       },
     });
 
-    return response.data; // 성공적인 응답 데이터 반환
+    return { success: true, data: response.data }; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {
-    return handleSessionError(error); // 에러 핸들링 함수 사용
+    return { success: false, error: handleError(error) }; // 에러 핸들링 함수 사용
   }
 };
 
@@ -187,7 +179,7 @@ export const deleteContentsSession = async (
 export const putContentsSessionParticipantPick = async (
   accessToken: string,
   viewerId: number,
-): Promise<DeleteContentsSessionResponse> => {
+): Promise<Result<DeleteContentsSessionResponse>> => {
   try {
     const response = await sessionClient.put(
       `${SESSION_URLS.contentsParticipants}/${viewerId}/pick`,
@@ -199,16 +191,16 @@ export const putContentsSessionParticipantPick = async (
       },
     );
 
-    return response.data; // 성공적인 응답 데이터 반환
+    return { success: true, data: response.data }; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {
-    return handleSessionError(error); // 에러 핸들링 함수 사용
+    return { success: false, error: handleError(error) }; // 에러 핸들링 함수 사용
   }
 };
 
 //세션에서 다음 그룹 호출하기
 export const putContentsSessionNextGroup = async ({
   accessToken,
-}: PutContentsSessionNextGroupRequest): Promise<PutContentsSessionNextGroupResponse> => {
+}: PutContentsSessionNextGroupRequest): Promise<Result<PutContentsSessionNextGroupResponse>> => {
   console.log(accessToken);
   try {
     const response = await sessionClient.put(
@@ -221,9 +213,9 @@ export const putContentsSessionNextGroup = async ({
       },
     );
 
-    return response.data; // 성공적인 응답 데이터 반환
+    return { success: true, data: response.data }; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {
-    return handleSessionError(error); // 에러 핸들링 함수 사용
+    return { success: false, error: handleError(error) }; // 에러 핸들링 함수 사용
   }
 };
 
@@ -231,7 +223,7 @@ export const putContentsSessionNextGroup = async ({
 export const deleteContentsSessionParticipant = async (
   accessToken: string,
   viewerId: number,
-): Promise<DeleteContentsSessionResponse> => {
+): Promise<Result<DeleteContentsSessionResponse>> => {
   console.log(accessToken);
   try {
     const response = await sessionClient.delete(
@@ -243,8 +235,8 @@ export const deleteContentsSessionParticipant = async (
       },
     );
 
-    return response.data; // 성공적인 응답 데이터 반환
+    return { success: true, data: response.data }; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {
-    return handleSessionError(error); // 에러 핸들링 함수 사용
+    return { success: false, error: handleError(error) }; // 에러 핸들링 함수 사용
   }
 };

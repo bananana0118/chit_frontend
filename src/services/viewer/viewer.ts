@@ -1,4 +1,4 @@
-import { handleSessionError } from '@/lib/handleErrors';
+import { handleError } from '@/lib/handleErrors';
 import sessionClient from '../_axios/sessionClient';
 import {
   DeleteContentSessionViewerLeaveRequest,
@@ -30,7 +30,7 @@ export const getContentsSessionViewerSubscribe = async ({
 
     return response.data; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {
-    return handleSessionError(error); // 에러 핸들링 함수 사용
+    return handleError(error); // 에러 핸들링 함수 사용
   }
 };
 
@@ -49,7 +49,7 @@ export const getContentsSessionViewerGameCode = async ({
 
     return response.data; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {
-    return handleSessionError(error); // 에러 핸들링 함수 사용
+    return handleError(error); // 에러 핸들링 함수 사용
   }
 };
 
@@ -71,7 +71,7 @@ export const deleteContentsSessionViewerLeave = async ({
 
     return response.data; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {
-    return handleSessionError(error); // 에러 핸들링 함수 사용
+    return handleError(error); // 에러 핸들링 함수 사용
   }
 };
 
@@ -86,6 +86,6 @@ export const heartBeatViewer = async (accessToken: string, sessionCode: string) 
     console.log('heartBeat');
     return response.data; // 성공적인 응답 데이터 반환
   } catch (error: unknown) {
-    return handleSessionError(error); // 에러 핸들링 함수 사용
+    return handleError(error); // 에러 핸들링 함수 사용
   }
 };
