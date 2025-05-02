@@ -1,4 +1,4 @@
-import { handleAuthError } from '@/lib/handleErrors';
+import { handleError } from '@/lib/handleErrors';
 import authClient from '../_axios/authClient';
 import { RequestLogout } from './type';
 import { AUTH_URLS } from '@/constants/urls';
@@ -23,7 +23,7 @@ export const login = async ({
     const { data } = await response.json();
     return { accessToken: data }; // 성공적인 응답 데이터 반환
   } catch (error: any) {
-    return handleAuthError(error);
+    return handleError(error);
   }
 };
 
@@ -43,6 +43,6 @@ export const logout = async ({ accessToken }: RequestLogout) => {
     }
     return response;
   } catch (error: any) {
-    return handleAuthError(error);
+    return handleError(error);
   }
 };
