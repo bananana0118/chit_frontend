@@ -18,7 +18,7 @@ import { toast } from 'react-toastify';
 
 import ViewerList from '@/components/molecules/ViewerList';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
-import { handleSessionError, isErrorResponse } from '@/lib/handleErrors';
+import { handleError, isErrorResponse } from '@/lib/handleErrors';
 import useDetectExit from '@/hooks/useDetectExit';
 import { logout } from '@/services/auth/auth';
 import { heartBeat } from '@/services/common/common';
@@ -304,7 +304,7 @@ export default function List() {
         try {
           resetSSEStore();
           resetContentsSession();
-          handleSessionError(new SessionError(SessionErrorCode.SESSION_CODE_NOT_FOUND));
+          handleError(new SessionError(SessionErrorCode.SESSION_CODE_NOT_FOUND));
           router.push('/');
         } finally {
           setProcessing(false); // 라우팅 후 unlock

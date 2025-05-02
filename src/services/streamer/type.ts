@@ -10,10 +10,9 @@ export type StreamerInfo = {
   liveCategoryValue: string | undefined;
 };
 export type ErrorResponse = {
-  status: number;
-  code?: number; //todo : 임시 code추가
-  error: string;
-  data: string;
+  status: number; //상태코드
+  code: number; //커스텀코드
+  message: string; //에러메세지
 };
 
 export type CreateContentsSessionRequest = {
@@ -23,14 +22,12 @@ export type CreateContentsSessionRequest = {
 
 export type CreateContentsSessionResponse = ApiResponse<ContentsSession>;
 
-export type GetContentsSessionResponse =
-  | ApiResponse<ContentsSession>
-  | ErrorResponse;
+export type GetContentsSessionResponse = ApiResponse<ContentsSession> | ErrorResponse;
 export type DeleteContentsSessionResponse = ApiResponse<string> | ErrorResponse;
 
 export type PutContentsSessionNextGroupRequest = {
   accessToken: string;
 };
-export type PutContentsSessionNextGroupResponse =
-  | ApiResponse<STATUS>
-  | ErrorResponse;
+export type PutContentsSessionNextGroupResponse = ApiResponse<STATUS> | ErrorResponse;
+
+export type Result<T> = { success: true; data: T } | { success: false; error: ErrorResponse };
