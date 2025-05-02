@@ -3,7 +3,6 @@ import { refreshAccessToken } from '../common/common';
 import useAuthStore from '@/store/authStore';
 
 let isRefreshing = false;
-let refreshPromise: Promise<string> | null = null;
 
 //공통토큰 리프레시 로직을 재사용 가능하게 추출
 export default function setUpTokenInterceptor(instance: AxiosInstance) {
@@ -21,28 +20,21 @@ export default function setUpTokenInterceptor(instance: AxiosInstance) {
         try {
           if (!isRefreshing) {
             isRefreshing = true;
-            refreshPromise = refreshAccessToken()
-              .then((res) => {
-                if (res.success === false) {
-                  throw new Error('Refresh token error');
-                }
-                return res.data;
-              })
-              .finally(() => {
-                isRefreshing = false;
-              });
+            const response = await refreshAccessToken();
 
-            const newAccessToken = await refreshPromise;
+            isRefreshing = false;
+            if (response.success) {
+              const newAccessToken = response.data.data;
+              //쿠키 재설정
+              originalRequest.headers = {
+                ...originalRequest.headers,
+                Authorization: `Bearer ${newAccessToken}`,
+              };
 
-            //쿠키 재설정
-            originalRequest.headers = {
-              ...originalRequest.headers,
-              Authorization: `Bearer ${newAccessToken}`,
-            };
+              useAuthStore.getState().setAccessToken(newAccessToken);
 
-            useAuthStore.getState().setAccessToken(newAccessToken);
-
-            return instance(originalRequest);
+              return instance(originalRequest);
+            }
           }
         } catch (err) {
           console.warn('에러로 인해 로그아웃 처리합니다.');

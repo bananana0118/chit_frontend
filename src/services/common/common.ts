@@ -24,7 +24,10 @@ export const heartBeat = async (
   }
 };
 
-export const refreshAccessToken = async (): Promise<Result<ApiResponse<string>>> => {
+type RefreshAccessTokenResponse = string;
+export const refreshAccessToken = async (): Promise<
+  Result<ApiResponse<RefreshAccessTokenResponse>>
+> => {
   try {
     const response = await sessionClient.post(
       `${AUTH_URLS.refresh}`,
