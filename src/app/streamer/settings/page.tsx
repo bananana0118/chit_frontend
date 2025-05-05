@@ -78,15 +78,15 @@ export default function Settings() {
       }
       if (!sessionInfo?.sessionCode && accessToken) {
         const response = await createContentsSession(reqData, accessToken);
-        if (response && response.data) {
-          setSessionInfo(response.data);
+        if (response.success) {
+          setSessionInfo(response.data.data);
           toast.success('✅ 세션이 성공적으로 생성되었습니다!');
           router.push(`/streamer/list?max=${maxGroupParticipants}`);
         }
       } else {
         const response = await updateContentsSession(reqData, accessToken);
-        if (response && response.data) {
-          setSessionInfo(response.data);
+        if (response.success) {
+          setSessionInfo(response.data.data);
           toast.success('✅ 세션이 성공적으로 업데이트 되었습니다!');
           router.push(`/streamer/list?max=${maxGroupParticipants}`);
         }
@@ -94,7 +94,6 @@ export default function Settings() {
     } catch (error) {
       console.log('settings error');
       console.error(error);
-
     }
   };
 

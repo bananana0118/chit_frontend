@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
 
 export default function AuthInitializerClient({ refreshToken }: { refreshToken: string | null }) {
   const resetLocal = useLogout();
-  const { setAccessToken, setLogin, isLogin, role, accessToken } = useAuthStore((state) => state);
+  const { setAccessToken, setLogin, isLogin } = useAuthStore((state) => state);
   const [bootstrapped, setBootstrapped] = useState(false);
   const { channelId, sessionCode } = useParamsParser();
   const router = useRouter();

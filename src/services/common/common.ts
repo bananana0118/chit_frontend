@@ -3,7 +3,6 @@ import sessionClient from '../_axios/sessionClient';
 import { AUTH_URLS, SSE_URLS } from '@/constants/urls';
 import { Result } from '../streamer/type';
 import { ApiResponse } from '@/store/sessionStore';
-import authClient from '../_axios/authClient';
 
 //Get
 //15초 주기로 체크하는 하트비트
