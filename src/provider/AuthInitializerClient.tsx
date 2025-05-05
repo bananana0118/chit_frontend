@@ -35,7 +35,6 @@ export default function AuthInitializerClient({ refreshToken }: { refreshToken: 
               }
             }
           } else {
-            console.log('hit1');
             resetLocal();
           }
         }
@@ -49,6 +48,7 @@ export default function AuthInitializerClient({ refreshToken }: { refreshToken: 
 
     restoreAuthState();
   }, []);
+
   if (!bootstrapped)
     return <Image src="/assets/loading.svg" alt="loading" width="40" height="40"></Image>;
   if (!isLogin) {
