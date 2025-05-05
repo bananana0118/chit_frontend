@@ -70,7 +70,5 @@ export default function Page() {
     );
   }
 
-  return (
-    <CommonLayout>{isRedirecting ? <div>잠시만 기다려 주세요...</div> : <div></div>}</CommonLayout>
-  );
+  return <CommonLayout>{isRedirecting ? <div>잠시만 기다려 주세요...</div> : null}</CommonLayout>;
 }

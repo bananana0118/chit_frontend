@@ -22,6 +22,7 @@ import useDetectExit from '@/hooks/useDetectExit';
 import { heartBeat } from '@/services/common/common';
 import { useRouter } from 'next/navigation';
 import { Result } from '@/services/streamer/type';
+import { logout } from '@/services/auth/auth';
 
 export enum SessionStatus {
   INITIAL = 1,
@@ -128,7 +129,12 @@ export default function List() {
   //브라우저 종료시 실행되는 콜백 함수
   const handleExit = async () => {
     alert('⚠️ 로그아웃 되었습니다.');
-    // await logout({ accessToken });
+    if (accessToken) {
+      toast.warn('세션이 종료되었습니다.');
+      await logout({ accessToken });
+
+      router.replace('/');
+    }
     //로그아웃 api 쓰기
   };
 
@@ -136,7 +142,10 @@ export default function List() {
 
   //다음 파티 호출 버튼 클릭시 Handler
   const nextPartyCallHandler = async () => {
-    if (!accessToken) return;
+    if (!accessToken) {
+      toast.warn('접근 토큰이 필요합니다. 잠시 후 다시 시도해주세요');
+      return;
+    }
     try {
       const response = await putContentsSessionNextGroup({ accessToken });
       if (response.success) {
