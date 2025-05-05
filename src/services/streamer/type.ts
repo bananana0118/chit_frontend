@@ -22,7 +22,7 @@ export type CreateContentsSessionRequest = {
 
 export type CreateContentsSessionResponse = ApiResponse<ContentsSession>;
 
-export type GetContentsSessionResponse = ApiResponse<ContentsSession> | ErrorResponse;
+export type GetContentsSessionResponse = ApiResponse<ContentsSession>;
 export type DeleteContentsSessionResponse = ApiResponse<string> | ErrorResponse;
 
 export type PutContentsSessionNextGroupRequest = {

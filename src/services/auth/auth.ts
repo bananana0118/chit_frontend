@@ -37,10 +37,6 @@ export const logout = async ({ accessToken }: RequestLogout) => {
     );
     console.log(response);
 
-    if (response.status === 200) {
-      const response2 = await fetch('/api/login');
-      console.log(response2);
-    }
     return response;
   } catch (error: any) {
     return handleError(error);

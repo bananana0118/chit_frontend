@@ -1,17 +1,19 @@
 'use client';
 
-import Loading from '@/app/loading';
 import BtnUserProfile from '@/components/atoms/button/BtnUserProfile';
 import useLogout from '@/hooks/useLogout';
+import useParamsParser from '@/hooks/useParamsParser';
 import { refreshAccessToken } from '@/services/common/common';
 import useAuthStore from '@/store/authStore';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export default function AuthInitializerClient({ refreshToken }: { refreshToken: string | null }) {
   const resetLocal = useLogout();
-  const { setAccessToken, setLogin, isLogin, role } = useAuthStore((state) => state);
+  const { setAccessToken, setLogin, isLogin } = useAuthStore((state) => state);
   const [bootstrapped, setBootstrapped] = useState(false);
+  const { channelId, sessionCode } = useParamsParser();
   const router = useRouter();
   //새로고침시에 불러오기
   useEffect(() => {
@@ -20,20 +22,19 @@ export default function AuthInitializerClient({ refreshToken }: { refreshToken: 
         if (refreshToken && !isLogin) {
           const res = await refreshAccessToken();
           console.log('res Debug, bootstrap', res);
-          if (res.status === 200) {
-            const accessToken = res.data;
+          if (res.success) {
+            const accessToken = res.data.data.data;
             if (accessToken) {
               setLogin(true);
               setAccessToken(accessToken);
             } else {
               resetLocal();
-              if (role === 'STREAMER') router.push('/');
+              if (channelId && sessionCode) router.push(`/${channelId}/${sessionCode}`);
               else {
-                router.push('error');
+                router.push('/');
               }
             }
           } else {
-            console.log('hit1');
             resetLocal();
           }
         }
@@ -46,8 +47,10 @@ export default function AuthInitializerClient({ refreshToken }: { refreshToken: 
     };
 
     restoreAuthState();
-  }, [setAccessToken, resetLocal, refreshToken, setLogin]);
-  if (!bootstrapped) return <Loading />;
+  }, []);
+
+  if (!bootstrapped)
+    return <Image src="/assets/loading.svg" alt="loading" width="40" height="40"></Image>;
   if (!isLogin) {
     return null;
   }
