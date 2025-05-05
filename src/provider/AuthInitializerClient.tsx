@@ -1,11 +1,11 @@
 'use client';
 
-import Loading from '@/app/loading';
 import BtnUserProfile from '@/components/atoms/button/BtnUserProfile';
 import useLogout from '@/hooks/useLogout';
 import useParamsParser from '@/hooks/useParamsParser';
 import { refreshAccessToken } from '@/services/common/common';
 import useAuthStore from '@/store/authStore';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -49,7 +49,8 @@ export default function AuthInitializerClient({ refreshToken }: { refreshToken: 
 
     restoreAuthState();
   }, []);
-  if (!bootstrapped) return <Loading />;
+  if (!bootstrapped)
+    return <Image src="/assets/loading.svg" alt="loading" width="40" height="40"></Image>;
   if (!isLogin) {
     return null;
   }

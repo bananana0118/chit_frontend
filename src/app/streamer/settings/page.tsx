@@ -98,8 +98,8 @@ export default function Settings() {
   };
 
   return (
-    streamerInfo && (
-      <CommonLayout>
+    <CommonLayout>
+      {streamerInfo && (
         <div className="flex w-full flex-1 flex-col items-center justify-center">
           <form className="flex h-full w-full flex-col" onSubmit={onClickCreateSession}>
             <section className="flex w-full flex-1 flex-col items-start">
@@ -157,7 +157,7 @@ export default function Settings() {
             <BtnSubmit>시참 설정 완료 🎉 </BtnSubmit>
           </form>
         </div>
-      </CommonLayout>
-    )
+      )}
+    </CommonLayout>
   );
 }

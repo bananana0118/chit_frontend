@@ -358,9 +358,8 @@ export default function List() {
   if (!isTokenLoading) return <div>로딩중입니다.</div>;
   const maxGroupParticipants = sessionInfo?.maxGroupParticipants ?? 1;
   return (
-    isTokenLoading &&
-    sessionInfo && (
-      <CommonLayout>
+    <CommonLayout>
+      {isTokenLoading && sessionInfo && (
         <div className="flex h-full w-full flex-1 flex-col items-center justify-center">
           <section id="controlBox" className="w-full">
             <StreamerTools
@@ -426,7 +425,7 @@ export default function List() {
             )}
           </section>
         </div>
-      </CommonLayout>
-    )
+      )}
+    </CommonLayout>
   );
 }
