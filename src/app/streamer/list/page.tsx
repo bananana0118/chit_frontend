@@ -18,12 +18,11 @@ import { toast } from 'react-toastify';
 
 import ViewerList from '@/components/molecules/ViewerList';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
-import { handleError, isErrorResponse } from '@/lib/handleErrors';
+import { isErrorResponse } from '@/lib/handleErrors';
 import useDetectExit from '@/hooks/useDetectExit';
-import { logout } from '@/services/auth/auth';
 import { heartBeat } from '@/services/common/common';
-import SessionError, { SessionErrorCode } from '@/errors/sessionError';
 import { useRouter } from 'next/navigation';
+import { ErrorResponse, Result } from '@/services/streamer/type';
 
 export enum SessionStatus {
   INITIAL = 1,
@@ -49,23 +48,23 @@ const fetchParticipantsData = async ({
   pageParam?: unknown;
   accessToken: string | null;
   size?: number;
-}): Promise<getFetchParticipantsDataResponse | void> => {
+}): Promise<getFetchParticipantsDataResponse | ErrorResponse> => {
   const page = pageParam as number;
+
   if (!accessToken) {
     console.log('token이 없습니다.');
-    return;
+    return { status: 400, code: 400, message: 'accessToken이 없습니다' };
   }
   const response = await getContentsSessionInfo({ page, accessToken, size });
-  if (isErrorResponse(response)) {
+  if (!response.success) {
     console.error(`api error 발생: ${response.error}`);
-    return Promise.reject(new Error(response.error));
+    return response.error;
   }
 
   console.log('fetchParticipantsdata 정보', response.data);
-
   return {
-    participants: response.data.participants?.content ?? [],
-    nextPage: response.data.participants?.hasNext ? pageParam + 1 : undefined,
+    participants: response.data.data.participants?.content || [],
+    nextPage: response.data.data.participants?.hasNext ? page + 1 : undefined,
   };
 };
 
