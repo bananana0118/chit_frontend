@@ -12,7 +12,12 @@ export default function setUpTokenInterceptor(instance: AxiosInstance) {
     async (error) => {
       const originalRequest = error.config; //원래 보냈던 요청
 
-      if (error.response && error.response.status === 401 && !originalRequest._retry) {
+      if (
+        error.response &&
+        error.response.status === 401 &&
+        !originalRequest._retry &&
+        !originalRequest.url.includes('/auth/refresh')
+      ) {
         originalRequest._retry = true;
         //TODO ..토큰 재발급 + 요청 재시도 로직 추가
         console.warn('401 에러: refresh Token으로 accessToken 재발급 시도');
@@ -21,10 +26,13 @@ export default function setUpTokenInterceptor(instance: AxiosInstance) {
           if (!isRefreshing) {
             isRefreshing = true;
             const response = await refreshAccessToken();
-
+            console.log('response');
+            console.log(response);
             isRefreshing = false;
             if (response.success) {
-              const newAccessToken = response.data.data;
+              const newAccessToken = response.data.data.data;
+              console.log('hithithithithi');
+              console.log(newAccessToken);
               //쿠키 재설정
               originalRequest.headers = {
                 ...originalRequest.headers,

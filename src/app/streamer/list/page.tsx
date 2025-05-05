@@ -18,12 +18,11 @@ import { toast } from 'react-toastify';
 
 import ViewerList from '@/components/molecules/ViewerList';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
-import { handleError, isErrorResponse } from '@/lib/handleErrors';
 import useDetectExit from '@/hooks/useDetectExit';
-import { logout } from '@/services/auth/auth';
 import { heartBeat } from '@/services/common/common';
-import SessionError, { SessionErrorCode } from '@/errors/sessionError';
 import { useRouter } from 'next/navigation';
+import { Result } from '@/services/streamer/type';
+import { logout } from '@/services/auth/auth';
 
 export enum SessionStatus {
   INITIAL = 1,
@@ -49,23 +48,26 @@ const fetchParticipantsData = async ({
   pageParam?: unknown;
   accessToken: string | null;
   size?: number;
-}): Promise<getFetchParticipantsDataResponse | void> => {
+}): Promise<Result<getFetchParticipantsDataResponse>> => {
   const page = pageParam as number;
+
   if (!accessToken) {
     console.log('token이 없습니다.');
-    return;
+    return { success: false, error: { status: 400, code: 400, message: 'accessToken이 없습니다' } };
   }
   const response = await getContentsSessionInfo({ page, accessToken, size });
-  if (isErrorResponse(response)) {
+  if (!response.success) {
     console.error(`api error 발생: ${response.error}`);
-    return Promise.reject(new Error(response.error));
+    return { success: false, error: response.error };
   }
 
-  console.log('fetchParticipantsdata 정보', response.data);
-
+  console.log('fetchParticipantsdata 정보', response.data.data.participants?.content);
   return {
-    participants: response.data.participants?.content ?? [],
-    nextPage: response.data.participants?.hasNext ? pageParam + 1 : undefined,
+    success: true,
+    data: {
+      participants: response.data.data.participants?.content || [],
+      nextPage: response.data.data.participants?.hasNext ? page + 1 : undefined,
+    },
   };
 };
 
@@ -73,7 +75,6 @@ export default function List() {
   const queryClient = useQueryClient();
   const accessToken = useAuthStore((state) => state.accessToken);
   const {
-    isRehydrated: isLoadingContentsSessionInfo,
     sessionInfo,
     setSessionInfo,
     reset: resetContentsSession,
@@ -100,16 +101,24 @@ export default function List() {
     hasNextPage,
     isFetchingNextPage,
     error: isFetchError,
-  } = useInfiniteQuery<getFetchParticipantsDataResponse | void>({
+  } = useInfiniteQuery<getFetchParticipantsDataResponse>({
     queryKey: ['participants'],
     enabled: !!accessToken && isSessionOn !== SessionStatus.CLOSED,
     queryFn: async ({ pageParam = 1 }) => {
-      return await fetchParticipantsData({
+      const response = await fetchParticipantsData({
         pageParam,
         accessToken,
         size: 10,
       });
+      if (response.success) {
+        return response.data;
+      }
+      return {
+        participants: [],
+        nextPage: undefined,
+      };
     },
+
     retryDelay: () => 5000,
 
     initialPageParam: 0,
@@ -120,7 +129,12 @@ export default function List() {
   //브라우저 종료시 실행되는 콜백 함수
   const handleExit = async () => {
     alert('⚠️ 로그아웃 되었습니다.');
-    // await logout({ accessToken });
+    if (accessToken) {
+      toast.warn('세션이 종료되었습니다.');
+      await logout({ accessToken });
+
+      router.replace('/');
+    }
     //로그아웃 api 쓰기
   };
 
@@ -128,10 +142,13 @@ export default function List() {
 
   //다음 파티 호출 버튼 클릭시 Handler
   const nextPartyCallHandler = async () => {
-    if (!accessToken) return;
+    if (!accessToken) {
+      toast.warn('접근 토큰이 필요합니다. 잠시 후 다시 시도해주세요');
+      return;
+    }
     try {
       const response = await putContentsSessionNextGroup({ accessToken });
-      if (response.status === 200) {
+      if (response.success) {
         toast.success('다음 파티를 호출 했습니다.');
         queryClient.setQueryData(['participants'], () => ({
           pages: [],
@@ -255,7 +272,7 @@ export default function List() {
       const response = await deleteContentsSession(accessToken);
 
       if (
-        response.status === 200 &&
+        response &&
         (isSessionOn === SessionStatus.INITIAL || isSessionOn === SessionStatus.OPEN)
       ) {
         stopSSE();
@@ -267,16 +284,15 @@ export default function List() {
         return;
       }
     } else {
-      // 상태변화 sessionOff=>sessionOn
       const response = await onCreateSession();
-      if (response?.status !== 200) {
+      if (!response?.success) {
         toast.warn('에러가 발생했습니다. 나중에 다시 시도해 주세요');
         return;
       }
 
-      const url = makeUrl({ accessToken, sessionCode: response.data.sessionCode });
+      const url = makeUrl({ accessToken, sessionCode: response.data.data.sessionCode });
       startSSE(url);
-      setSessionInfo(response.data);
+      setSessionInfo(response.data.data);
       setIsSessionOn(SessionStatus.OPEN);
       toast.success('시참이 시작되었습니다.');
       return;
@@ -304,7 +320,6 @@ export default function List() {
         try {
           resetSSEStore();
           resetContentsSession();
-          handleError(new SessionError(SessionErrorCode.SESSION_CODE_NOT_FOUND));
           router.push('/');
         } finally {
           setProcessing(false); // 라우팅 후 unlock
@@ -344,6 +359,7 @@ export default function List() {
     isFetchError,
     sessionInfo?.sessionCode,
     startSSE,
+    isSessionOn,
   ]);
 
   console.log(participants);
@@ -351,9 +367,8 @@ export default function List() {
   if (!isTokenLoading) return <div>로딩중입니다.</div>;
   const maxGroupParticipants = sessionInfo?.maxGroupParticipants ?? 1;
   return (
-    isTokenLoading &&
-    sessionInfo && (
-      <CommonLayout>
+    <CommonLayout>
+      {isTokenLoading && sessionInfo && (
         <div className="flex h-full w-full flex-1 flex-col items-center justify-center">
           <section id="controlBox" className="w-full">
             <StreamerTools
@@ -419,7 +434,7 @@ export default function List() {
             )}
           </section>
         </div>
-      </CommonLayout>
-    )
+      )}
+    </CommonLayout>
   );
 }
